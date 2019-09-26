@@ -1,0 +1,15 @@
+{
+  "name": "typescript-odata-client",
+  "version": "2.0.0",
+  "description": "odata query builder",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "immutable": "^4.0.0-rc.12",
+    "moment": "^2.24.0"
+  }
+}

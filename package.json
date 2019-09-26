@@ -11,5 +11,8 @@
   "dependencies": {
     "immutable": "^4.0.0-rc.12",
     "moment": "^2.24.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18"
   }
 }

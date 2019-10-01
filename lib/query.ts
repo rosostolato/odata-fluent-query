@@ -1,7 +1,7 @@
 import { List, Map } from "immutable";
 import { EntityParser, parseCollection, parseEntity } from "./deserilisation";
 import { FilterBuilderComplex, FilterExpresion } from "./filterbuilder";
-import { OrderByBuilder, OrderBy, OrderByBuilderComplex } from "./orderbyBuilder";
+import { OrderBy, OrderByBuilderComplex } from "./orderbyBuilder";
 
 type QueryDescriptor = {
   filters: List<string>

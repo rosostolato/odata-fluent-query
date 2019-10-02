@@ -1,4 +1,8 @@
-# ts-odata-client
+# odata-fluent-query
+
+This is a fork of [typescript-odata-client](https://www.npmjs.com/package/typescript-odata-client)
+
+The only difference is that this lib only generates the query string, so you can use it with your own implementation of http request.
 
 **Clientside queries with extensive filtering and typesafe joins**
 

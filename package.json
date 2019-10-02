@@ -13,6 +13,7 @@
     "moment": "^2.24.0"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.18"
+    "@types/jest": "^24.0.18",
+    "ts-node": "^8.4.1"
   }
 }

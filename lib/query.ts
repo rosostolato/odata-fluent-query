@@ -280,6 +280,8 @@ export class SelectedQuery<M extends object, R extends object> {
     const expand = query((this.relationBuilder[String(key)] as any)())
     const des = expand.queryDescriptor
 
+    debugger;
+
     return new SelectedQuery(
       this.filterBuilder,
       { ...this.queryDescriptor, expands: this.queryDescriptor.expands.push(des) },
@@ -723,7 +725,7 @@ export class SelectedRelationQuery<M extends object, R extends object> {
 }
 
 export type RelationBuilder<M extends object> =
-  { [P in keyof M]: () => RelationQuery<
+  { [P in keyof M]?: () => RelationQuery<
     ObjectOrUnit<UnBoxed<M[P]>>,
     UnBoxed<ObjectOrUnit<M[P]>>
   > }

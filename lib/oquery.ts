@@ -3,12 +3,12 @@ import { getPropertyKeys, getPropertyType } from "./decorators";
 import { List } from "immutable";
 
 type QueryDescriptor = {
-  filters: List<string>;
-  expands: List<RelQueryDescriptor>;
   skip: number | 'none';
   take: number | 'none';
   orderby: string;
   select: List<string>;
+  filters: List<string>;
+  expands: List<RelQueryDescriptor>;
   count: boolean;
 }
 
@@ -22,6 +22,18 @@ type RelQueryDescriptor = {
   expands: List<RelQueryDescriptor>,
   strict: boolean
 }
+
+type RelationsOf<Model extends object> = Pick<Model, {
+  [P in keyof Model]: 
+    Model[P] extends Date ? never : 
+    Model[P] extends Uint8Array ? never : 
+    Model[P] extends object | List<any> ? P : 
+    never
+}[keyof Model]>
+
+type ExpandQueryComplex<T> = T extends (infer A)[]
+  ? ExpandArrayQuery<A>
+  : ExpandObjectQuery<T>
 
 export class OQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
@@ -95,21 +107,13 @@ export class OQuery<T extends object> {
    * 
    * @example q.exand('blogs', q => q.select('id', 'title')).
    */
-  // expand<key extends keyof RelationsOf<T>, U = T[key]>(
-  //   key: key,
-  //   query?: (_: ExpandQuery<U>) => ExpandQuery<U>
-  // ): OQuery<T>;
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
-    query?: (_: ExpandQuery<U>) => ExpandQuery<U>
+    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): OQuery<T> {
     const type = getPropertyType(this.entity, key);
-    let expand = new ExpandQuery(String(key), type);
-
-    if (query) {
-      // @ts-ignore
-      expand = query(expand);
-    }
+    let expand: any = new ExpandQuery(String(key), type);
+    if (query) expand = query(expand);
 
     const des = expand['queryDescriptor'];
 
@@ -199,6 +203,15 @@ export class OQuery<T extends object> {
   }
 }
 
+export interface ExpandObjectQuery<T extends Object> {
+  select<key extends keyof T>(...keys: key[]): ExpandObjectQuery<T>;
+}
+
+export interface ExpandArrayQuery<T extends Object> {
+  select<key extends keyof T>(...keys: key[]): ExpandArrayQuery<T>;
+  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>
+}
+
 export class ExpandQuery<T extends Object> {
   protected queryDescriptor: RelQueryDescriptor;
   protected filterBuilder: FilterBuilderComplex<T>;
@@ -259,37 +272,3 @@ export class ExpandQuery<T extends Object> {
     return this;
   }
 }
-
-export class SelectedRelationQuery<T extends object, R extends object> {
-}
-
-// export type RelationBuilder<T extends object> = {
-//   [P in keyof T]: () => ExpandQuery<
-//     ObjectOrUnit<UnBoxed<T[P]>>,
-//     UnBoxed<ObjectOrUnit<T[P]>>
-//   >
-// };
-
-export type UnBoxed<T> = T extends any[] ? T[0] : T extends List<infer R> ? R : T
-
-export type RelationsOf<Model extends object> = Pick<Model, {
-  [P in keyof Model]: 
-    Model[P] extends Date ? never : 
-    Model[P] extends Uint8Array ? never : 
-    Model[P] extends object | List<any> ? P : 
-    never
-}[keyof Model]>
-
-export type PropertiesOf<Model extends object> = Pick<Model, {
-  [P in keyof Model]: Model[P] extends string | number | boolean | Date | Uint8Array ? P : never
-}[keyof Model]>
-
-export type ObjectOrUnit<T> = T extends object ? T : {}
-
-export type InherentBoxing<From, To> =
-  From extends List<any> ? List<To> :
-  From extends any[] ? To[] :
-  To
-
-export type InferQueryResult<T> =
-  T extends SelectedRelationQuery<any, infer R> ? R : never

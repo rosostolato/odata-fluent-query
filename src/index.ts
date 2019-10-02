@@ -14,8 +14,13 @@ class Permission {
 }
 
 class UserMenu {
+  @Property
   id: number;
+  
+  @Property
   module: string;
+  
+  @Property
   value: boolean;
 }
 
@@ -41,8 +46,7 @@ class User {
 }
 
 const result2 = new OQuery<User>(User)
-  .filter(f => f.mail.contains('fugro.com'))
-  .expand('permission', q => q.filter(x => x.module.contains('DDPR')))
+  .expand('menu', q => q.filter(x => x.id.biggerThan(5)).select('id'))
   .toString();
 
 console.log(result2);

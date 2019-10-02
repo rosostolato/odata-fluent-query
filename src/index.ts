@@ -38,15 +38,17 @@ class User {
   createDate: Date;
 
 
+  @Property
   @Type(Permission)
   permission: Permission;
 
+  @Property
   @Type(UserMenu)
   menu: UserMenu[];
 }
 
 const result2 = new OQuery<User>(User)
-  .expand('menu', q => q.filter(x => x.id.biggerThan(5)).select('id'))
+  .orderBy(x => x.permission().id)
   .toString();
 
 console.log(result2);

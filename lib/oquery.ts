@@ -1,4 +1,5 @@
 import { FilterBuilderComplex, FilterExpresion, FilterBuilder } from "./filterbuilder";
+import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
 import { getPropertyKeys, getPropertyType } from "./decorators";
 import { List } from "immutable";
 
@@ -35,9 +36,27 @@ type ExpandQueryComplex<T> = T extends (infer A)[]
   ? ExpandArrayQuery<A>
   : ExpandObjectQuery<T>
 
+function mk_orderby_builder(entity: new () => any, prefix?: string) {
+  const keys: string[] = getPropertyKeys(entity.prototype);
+  const orderMap: any = {};
+
+  keys.forEach(key => {
+    const type = getPropertyType(entity, key as any);
+
+    if (type) {
+      orderMap[key] = (p?: string) => mk_orderby_builder(type, key);
+    } else {
+      orderMap[key] = new OrderByProp(`${prefix ? prefix + '/' : ''}${key}`);
+    }
+  });
+  
+  return orderMap;
+}
+
 export class OQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
   protected filterBuilder: FilterBuilderComplex<T>;
+  protected orderby: OrderByBuilderComplex<T>;
 
   constructor(private entity: new () => T) {
     this.queryDescriptor = {
@@ -49,12 +68,13 @@ export class OQuery<T extends object> {
       select: List<string>(),
       count: false
     }
+    
+    this.orderby = mk_orderby_builder(entity);
 
     const keys: string[] = getPropertyKeys(entity.prototype);
-    const map: any = {};
-
-    keys.forEach(key => map[key] = new FilterBuilder(key));
-    this.filterBuilder = map;
+    const filterMap: any = {};
+    keys.forEach(key => filterMap[key] = new FilterBuilder(key));
+    this.filterBuilder = filterMap;
   }
 
   /**
@@ -63,7 +83,7 @@ export class OQuery<T extends object> {
    * 
    * @param keys the names of the properties you want to select.
    * 
-   * @example q.select('Id', 'Title').
+   * @example q.select('id', 'title').
    */
   select<key extends keyof T>(...keys: key[]): OQuery<T> {
     this.queryDescriptor = {
@@ -120,6 +140,25 @@ export class OQuery<T extends object> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       expands: this.queryDescriptor.expands.push(des)
+    };
+
+    return this;
+  }
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check you OData implementation for details).
+   * 
+   * @param expression a lambda that builds the orderby expression from the builder.
+   * 
+   * @example q.orderBy(u => u.blogs().id.desc()).
+   */
+  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): OQuery<T> {
+    const orderby = expression(this.orderby).get();
+
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      orderby: orderby
     };
 
     return this;

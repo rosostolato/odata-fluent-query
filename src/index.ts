@@ -7,6 +7,8 @@ class User {
   @Property mail: string;
   @Property displayName: string;
   @Property createDate: Date;
+  permission: Permission;
+  menu: UserMenu;
 }
 
 interface Permission {
@@ -15,10 +17,15 @@ interface Permission {
   value: boolean;
 }
 
+interface UserMenu {
+  id: number;
+  module: string;
+  value: boolean;
+}
+
 const result2 = new OQuery<User>(User)
-  .select('id', 'displayName')
-  .filter(f => f.displayName.contains('rosostolato').and(f.id.biggerThan(5)).not())
-  .filter(f => f.mail.contains('fugro.com'))
+  .select('id')
+  .expand('permission', q => q.select('id'))
   .toString();
 
 console.log(result2);

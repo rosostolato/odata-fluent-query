@@ -1,7 +1,6 @@
 import { FilterBuilderComplex, FilterExpresion, FilterBuilder } from "./filterbuilder";
-import { getPropertyKeys } from "./decorators";
+import { getPropertyKeys, getPropertyType } from "./decorators";
 import { List } from "immutable";
-import 'reflect-metadata';
 
 type QueryDescriptor = {
   filters: List<string>;
@@ -28,7 +27,7 @@ export class OQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
   protected filterBuilder: FilterBuilderComplex<T>;
 
-  constructor(entity: new () => T) {
+  constructor(private entity: new () => T) {
     this.queryDescriptor = {
       filters: List<string>(),
       expands: List<RelQueryDescriptor>(),
@@ -96,16 +95,23 @@ export class OQuery<T extends object> {
    * 
    * @example q.exand('blogs', q => q.select('id', 'title')).
    */
-  expand<key extends keyof RelationsOf<T>, U extends object>(
+  // expand<key extends keyof RelationsOf<T>, U = T[key]>(
+  //   key: key,
+  //   query?: (_: ExpandQuery<U>) => ExpandQuery<U>
+  // ): OQuery<T>;
+  expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
-    query: (_: ExpandObjectQuery<
-      ObjectOrUnit<UnBoxed<RelationsOf<T>[key]>>,
-      UnBoxed<RelationsOf<T>[key]>
-    >,
-    ) => ExpandObjectQuery<RelationsOf<ObjectOrUnit<UnBoxed<T[key]>>>, U>
+    query?: (_: ExpandQuery<U>) => ExpandQuery<U>
   ): OQuery<T> {
-    const expand = query(new ExpandObjectQuery(String(key))); // query((this.relationBuilder[String(key)] as any)());
-    const des = expand.queryDescriptor;
+    const type = getPropertyType(this.entity, key);
+    let expand = new ExpandQuery(String(key), type);
+
+    if (query) {
+      // @ts-ignore
+      expand = query(expand);
+    }
+
+    const des = expand['queryDescriptor'];
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
@@ -151,63 +157,69 @@ export class OQuery<T extends object> {
   }
 
   private makeRelQueryString(rqd: RelQueryDescriptor): string {
-    let expand: string = rqd.key
+    let expand: string = rqd.key;
   
     if (rqd.strict) {
-      expand += '!'
+      expand += '!';
     }
   
     if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
-      expand += `(`
+      expand += `(`;
   
-      let operators = []
+      let operators = [];
   
       if (rqd.skip != 'none') {
-        operators.push(`$skip=${rqd.skip}`)
+        operators.push(`$skip=${rqd.skip}`);
       }
   
       if (rqd.take != 'none') {
-        operators.push(`$top=${rqd.take}`)
+        operators.push(`$top=${rqd.take}`);
       }
   
       if (rqd.orderby.isEmpty() == false) {
-        operators.push(`$orderby=${rqd.orderby.join(',')}`)
+        operators.push(`$orderby=${rqd.orderby.join(',')}`);
       }
   
       if (rqd.select.isEmpty() == false) {
-        operators.push(`$select=${rqd.select.join(',')}`)
+        operators.push(`$select=${rqd.select.join(',')}`);
       }
   
       if (rqd.filters.isEmpty() == false) {
-        operators.push(`$filter=${rqd.filters.join(' and ')}`)
+        operators.push(`$filter=${rqd.filters.join(' and ')}`);
       }
   
       if (rqd.expands.isEmpty() == false) {
-        operators.push(`$expand=${rqd.expands.map(this.makeRelQueryString).join(',')}`)
+        operators.push(`$expand=${rqd.expands.map(this.makeRelQueryString).join(',')}`);
       }
   
-      expand += operators.join(';')
-  
-      expand += ')'
+      expand += operators.join(';') + ')';
     }
   
     return expand
   }
 }
-export class ExpandObjectQuery<T extends object, U> {
-  queryDescriptor: RelQueryDescriptor;
 
-  constructor (key: string) {
+export class ExpandQuery<T extends Object> {
+  protected queryDescriptor: RelQueryDescriptor;
+  protected filterBuilder: FilterBuilderComplex<T>;
+
+  constructor (key: string, private entity: new () => T) {
     this.queryDescriptor = {
       key,
-      filters: List<string>(),
       skip: 'none',
       take: 'none',
+      filters: List<string>(),
       orderby: List<string>(),
       select: List<string>(),
       expands: List(),
       strict: false
     }
+
+    const keys: string[] = getPropertyKeys(entity.prototype);
+    const map: any = {};
+
+    keys.forEach(key => map[key] = new FilterBuilder(key));
+    this.filterBuilder = map;
   }
 
   /**
@@ -216,7 +228,7 @@ export class ExpandObjectQuery<T extends object, U> {
    * 
    * @example q => q.select('id', 'title').
    */
-  select<key extends keyof PropertiesOf<T>>(...keys: key[]): ExpandObjectQuery<T, U> {
+  select<key extends keyof T>(...keys: key[]): ExpandQuery<T> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       select: List(keys.map(String))
@@ -224,17 +236,39 @@ export class ExpandObjectQuery<T extends object, U> {
 
     return this;
   }
+
+  /**
+   * Adds a $filter operator to the OData query.
+   * Multiple calls to Filter will be merged with `and`.
+   * 
+   * @param conditional a lambda that builds an expression from the builder.
+   * 
+   * @example q.Filter(u => u.Id.Equals(1)).
+   */
+  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandQuery<T> {
+    const expr = conditional(this.filterBuilder)
+    if (expr.kind == 'none') {
+      return this
+    }
+
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
+    };
+
+    return this;
+  }
 }
 
-export class SelectedRelationQuery<M extends object, R extends object> {
+export class SelectedRelationQuery<T extends object, R extends object> {
 }
 
-export type RelationBuilder<M extends object> = {
-  [P in keyof M]: () => ExpandObjectQuery<
-    ObjectOrUnit<UnBoxed<M[P]>>,
-    UnBoxed<ObjectOrUnit<M[P]>>
-  >
-};
+// export type RelationBuilder<T extends object> = {
+//   [P in keyof T]: () => ExpandQuery<
+//     ObjectOrUnit<UnBoxed<T[P]>>,
+//     UnBoxed<ObjectOrUnit<T[P]>>
+//   >
+// };
 
 export type UnBoxed<T> = T extends any[] ? T[0] : T extends List<infer R> ? R : T
 

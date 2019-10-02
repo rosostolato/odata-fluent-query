@@ -1,31 +1,48 @@
 import { OQuery } from '../lib/oquery';
-import { Property } from '../lib/decorators';
+import { Property, Type } from '../lib/decorators';
 
+
+class Permission {
+  @Property
+  id: number;
+
+  @Property
+  module: string;
+
+  @Property
+  value: boolean;
+}
+
+class UserMenu {
+  id: number;
+  module: string;
+  value: boolean;
+}
 
 class User {
-  @Property id: number;
-  @Property mail: string;
-  @Property displayName: string;
-  @Property createDate: Date;
+  @Property
+  id: number;
+
+  @Property
+  mail: string;
+
+  @Property
+  displayName: string;
+
+  @Property
+  createDate: Date;
+
+
+  @Type(Permission)
   permission: Permission;
-  menu: UserMenu;
-}
 
-interface Permission {
-  id: number;
-  module: string;
-  value: boolean;
-}
-
-interface UserMenu {
-  id: number;
-  module: string;
-  value: boolean;
+  @Type(UserMenu)
+  menu: UserMenu[];
 }
 
 const result2 = new OQuery<User>(User)
-  .select('id')
-  .expand('permission', q => q.select('id'))
+  .filter(f => f.mail.contains('fugro.com'))
+  .expand('permission', q => q.filter(x => x.module.contains('DDPR')))
   .toString();
 
 console.log(result2);

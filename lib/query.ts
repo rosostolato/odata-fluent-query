@@ -1,6 +1,6 @@
 import { List, Map } from "immutable";
 import { EntityParser, parseCollection, parseEntity } from "./deserilisation";
-import { FilterBuilderComplex, FilterExpresion } from "./filterbuilder";
+import { FilterBuilderComplex, FilterExpresion } from "./filterbuilder.old";
 import { OrderBy, OrderByBuilderComplex } from "./orderbyBuilder";
 
 type QueryDescriptor = {
@@ -173,51 +173,13 @@ export function mk_query<M extends object>(
   )
 }
 
-// export class Query<M extends object, R> {
-
-//   constructor(
-//     protected readonly filterBuilder: FilterBuilderComplex<M>,
-//     protected readonly queryDescriptor: QueryDescriptor,
-//     protected readonly relationBuilder: RelationBuilder<RelationsOf<M>>,
-//     protected readonly parser: EntityParser<M>,
-//     protected readonly relationparser: EntityParser<RelationsOf<M>>,
-//     protected readonly orderby: OrderByBuilderComplex<M>
-//   ) { }
-
-//   /**
-//    * Adds a $select operator to the OData query.
-//    * Calling Select is required.
-//    * 
-//    * @param keys the names of the properties you want to select.
-//    * 
-//    * @example q.Select('Id', 'Title').
-//    */
-//   Select<key extends keyof PropertiesOf<M>>(...keys: key[]): SelectedQuery<M, Pick<M, key>> {
-//     return new SelectedQuery(
-//       this.filterBuilder,
-//       {
-//         ...this.queryDescriptor,
-//         select: List(keys.map(String)),
-//         expands: this.queryDescriptor.expands.filter(e => keys.some(k => e.key == String(k))).toList()
-//       },
-//       this.relationBuilder,
-//       keys.reduce((p, k) => {
-//         p[k] = this.parser[k]
-//         return p
-//       }, {} as any) as EntityParser<Pick<M, key>>,
-//       this.relationparser,
-//       this.orderby
-//     )
-//   }
-// }
-
-export class Query<M extends object, R extends object> {
+export class Query<M extends object, R> {
 
   constructor(
     protected readonly filterBuilder: FilterBuilderComplex<M>,
     protected readonly queryDescriptor: QueryDescriptor,
     protected readonly relationBuilder: RelationBuilder<RelationsOf<M>>,
-    protected readonly parser: EntityParser<R>,
+    protected readonly parser: EntityParser<M>,
     protected readonly relationparser: EntityParser<RelationsOf<M>>,
     protected readonly orderby: OrderByBuilderComplex<M>
   ) { }
@@ -230,8 +192,8 @@ export class Query<M extends object, R extends object> {
    * 
    * @example q.Select('Id', 'Title').
    */
-  Select<key extends keyof PropertiesOf<M>>(...keys: key[]): Query<M, Pick<M, key>> {
-    return new Query(
+  Select<key extends keyof PropertiesOf<M>>(...keys: key[]): SelectedQuery<M, Pick<M, key>> {
+    return new SelectedQuery(
       this.filterBuilder,
       {
         ...this.queryDescriptor,
@@ -247,6 +209,18 @@ export class Query<M extends object, R extends object> {
       this.orderby
     )
   }
+}
+
+export class SelectedQuery<M extends object, R extends object> {
+
+  constructor(
+    protected readonly filterBuilder: FilterBuilderComplex<M>,
+    protected readonly queryDescriptor: QueryDescriptor,
+    protected readonly relationBuilder: RelationBuilder<RelationsOf<M>>,
+    protected readonly parser: EntityParser<R>,
+    protected readonly relationparser: EntityParser<RelationsOf<M>>,
+    protected readonly orderby: OrderByBuilderComplex<M>
+  ) { }
 
   /** 
     * @deprecated use `Filter` instead.
@@ -261,13 +235,13 @@ export class Query<M extends object, R extends object> {
    * 
    * @example q.Filter(u => u.Id.Equals(1)).
    */
-  Filter(conditional: (_: FilterBuilderComplex<M>) => FilterExpresion): Query<M, R> {
+  Filter(conditional: (_: FilterBuilderComplex<M>) => FilterExpresion): SelectedQuery<M, R> {
     const expr = conditional(this.filterBuilder)
     if (expr.kind == 'none') {
       return this
     }
 
-    return new Query(
+    return new SelectedQuery(
       this.filterBuilder,
       { ...this.queryDescriptor, filters: this.queryDescriptor.filters.push(expr.GetFilterExpresion()) },
       this.relationBuilder,
@@ -299,14 +273,14 @@ export class Query<M extends object, R extends object> {
       UnBoxed<RelationsOf<M>[key]>
     >,
     ) => SelectedRelationQuery<RelationsOf<ObjectOrUnit<UnBoxed<M[key]>>>, R1>
-  ): Query<
+  ): SelectedQuery<
     M,
     R & { [_ in key]: InherentBoxing<M[key], InferQueryResult<ReturnType<typeof query>>> }
   > {
     const expand = query((this.relationBuilder[String(key)] as any)())
     const des = expand.queryDescriptor
 
-    return new Query(
+    return new SelectedQuery(
       this.filterBuilder,
       { ...this.queryDescriptor, expands: this.queryDescriptor.expands.push(des) },
       this.relationBuilder,
@@ -342,7 +316,7 @@ export class Query<M extends object, R extends object> {
       UnBoxed<RelationsOf<M>[key]>
     >,
     ) => SelectedRelationQuery<RelationsOf<ObjectOrUnit<UnBoxed<M[key]>>>, R1>
-  ): Query<
+  ): SelectedQuery<
     M,
     R & { [_ in key]: InherentBoxing<M[key], InferQueryResult<ReturnType<typeof query>>> }
   > {
@@ -352,7 +326,7 @@ export class Query<M extends object, R extends object> {
       strict: true
     }
 
-    return new Query(
+    return new SelectedQuery(
       this.filterBuilder,
       { ...this.queryDescriptor, expands: this.queryDescriptor.expands.push(des) },
       this.relationBuilder,
@@ -374,9 +348,9 @@ export class Query<M extends object, R extends object> {
    * 
    * @example q.OrderBy(u => u.Blogs().Id.Desc()).
    */
-  OrderBy(expression: (ob: OrderByBuilderComplex<M>) => OrderBy): Query<M, R> {
+  OrderBy(expression: (ob: OrderByBuilderComplex<M>) => OrderBy): SelectedQuery<M, R> {
     const orderby = expression(this.orderby).get()
-    return new Query(
+    return new SelectedQuery(
       this.filterBuilder,
       { ...this.queryDescriptor, orderby: orderby },
       this.relationBuilder,
@@ -471,7 +445,7 @@ export class Query<M extends object, R extends object> {
    * @param ctx the QueryContext to use for the execution.
    */
   First(ctx?: QueryContext): Promise<R> {
-    return new Query<M, R>(
+    return new SelectedQuery<M, R>(
       this.filterBuilder,
       { ...this.queryDescriptor, take: 1, skip: 0 },
       this.relationBuilder,

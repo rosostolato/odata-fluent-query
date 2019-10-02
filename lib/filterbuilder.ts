@@ -1,107 +1,146 @@
-import * as Moment from "moment"
-import { List } from "immutable"
+import * as Moment from "moment";
+import { List } from "immutable";
 
-export type FilterBuilder<T> =
+export type FilterBuilderTyped<T> =
   T extends Uint8Array ? FilterBuilderBinary :
   T extends string ? FilterBuilderString :
   T extends number ? FilterBuilderNumber :
   T extends boolean ? FilterBuilderBoolean :
   T extends Date ? FilterBuilderDate :
-  T extends List<infer R> ? R extends object ? FilterBuilderCollection<R> : never :
+  // T extends List<infer R> ? R extends object ? FilterBuilderCollection<R> : never :
   T extends object ? () => FilterBuilderComplex<T> :
-  never
+  never;
 
 export type FilterBuilderComplex<T extends object> = {
-  [P in keyof T]: FilterBuilder<T[P]>
+  [P in keyof T]: FilterBuilderTyped<T[P]>
 }
 
-export interface IFilterExpresion {
-  kind: 'expr'
-  Not: () => IFilterExpresion
-  And: (exp: IFilterExpresion) => IFilterExpresion
-  Or: (exp: IFilterExpresion) => IFilterExpresion
-  GetFilterExpresion: () => string
-}
-
-export type FilterExpresion = FilterExpresionUnit | IFilterExpresion
+export type FilterExpresion = FilterExpresionUnit | IFilterExpresion;
 
 export class ComplexFilterExpresion implements IFilterExpresion {
   constructor(protected readonly exp: string) { }
-  Not = () => mk_expr(`not (${this.exp})`)
-  And = (exp: IFilterExpresion) => mk_expr(`${this.GetFilterExpresion()} and ${exp.GetFilterExpresion()}`)
-  Or = (exp: IFilterExpresion) => mk_expr(`${this.GetFilterExpresion()} or ${exp.GetFilterExpresion()}`)
-  GetFilterExpresion = () => `(${this.exp})`
-  kind: 'expr' = 'expr'
+
+  not = () => mk_expr(`not (${this.exp})`);
+  and = (exp: IFilterExpresion) => mk_expr(`${this.getFilterExpresion()} and ${exp.getFilterExpresion()}`);
+  or = (exp: IFilterExpresion) => mk_expr(`${this.getFilterExpresion()} or ${exp.getFilterExpresion()}`);
+  getFilterExpresion = () => `(${this.exp})`;
+  kind: 'expr' = 'expr';
 }
 
 export class FilterExpresionUnit {
-  kind: 'none' = 'none'
-  Not = () => new FilterExpresionUnit()
-  And = (exp: IFilterExpresion) => exp
-  Or = (exp: IFilterExpresion) => exp
+  kind: 'none' = 'none';
+  not = () => new FilterExpresionUnit();
+  and = (exp: IFilterExpresion) => exp;
+  or = (exp: IFilterExpresion) => exp;
 }
 
-export const mk_expr_unit = () => new FilterExpresionUnit()
-
-const mk_expr = (exp: string) => new ComplexFilterExpresion(exp)
-
-export class FilterBuilderBinary {
-  constructor(protected readonly prefix: string) { }
+export interface IFilterExpresion {
+  kind: 'expr';
+  not: () => IFilterExpresion;
+  and: (exp: IFilterExpresion) => IFilterExpresion;
+  or: (exp: IFilterExpresion) => IFilterExpresion;
+  getFilterExpresion: () => string;
 }
 
-export class FilterBuilderDate {
+export const mk_expr_unit = () => new FilterExpresionUnit();
+
+const mk_expr = (exp: string) => new ComplexFilterExpresion(exp);
+
+export interface FilterBuilderBinary {}
+
+export interface FilterBuilderDate {
+  inTimeSpan: (y: number, m?: number, d?: number, h?: number, mm?: number) => ComplexFilterExpresion;
+  isSame: (m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second') => ComplexFilterExpresion;
+  isAfter: (d: Date) => ComplexFilterExpresion;
+  isBefore: (d: Date) => ComplexFilterExpresion;
+}
+
+export interface FilterBuilderString {
+  getPropName: () => string;
+  equals: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  contains: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  notNull: () => ComplexFilterExpresion;
+  equalsCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  notEquals: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  notEqualsCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  containsCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  startsWith: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  startsWithCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  endsWith: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  endsWithCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+}
+
+export interface FilterBuilderNumber {
+  getPropName: () => string;
+  equals: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
+  notEquals: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
+  biggerThan: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
+  lessThan: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
+}
+
+export interface FilterBuilderBoolean {
+  getPropName: () => string;
+  equals: (b: boolean | FilterBuilderBoolean) => ComplexFilterExpresion;
+  notEquals: (b: boolean | FilterBuilderBoolean) => ComplexFilterExpresion;
+}
+
+export class FilterBuilder {
   constructor(protected readonly prefix: string) { }
 
-  InTimeSpan = (y: number, m?: number, d?: number, h?: number, mm?: number) => {
-    let exps = [`year(${this.prefix}) eq ${y}`]
-    if (m != undefined) exps.push(`month(${this.prefix}) eq ${m}`)
-    if (d != undefined) exps.push(`day(${this.prefix}) eq ${d}`)
-    if (h != undefined) exps.push(`hour(${this.prefix}) eq ${h}`)
-    if (mm != undefined) exps.push(`minute(${this.prefix}) eq ${mm}`)
-    return mk_expr('(' + exps.join(') and (') + ')')
+  getPropName = () => this.prefix;
+
+  // FilterBuilderDate
+
+  inTimeSpan = (y: number, m?: number, d?: number, h?: number, mm?: number) => {
+    let exps = [`year(${this.prefix}) eq ${y}`];
+    if (m != undefined) exps.push(`month(${this.prefix}) eq ${m}`);
+    if (d != undefined) exps.push(`day(${this.prefix}) eq ${d}`);
+    if (h != undefined) exps.push(`hour(${this.prefix}) eq ${h}`);
+    if (mm != undefined) exps.push(`minute(${this.prefix}) eq ${mm}`);
+    return mk_expr('(' + exps.join(') and (') + ')');
   }
 
-  IsSame = (m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
-    const min = this.ToMinRange(m, g)
-    const max = this.ToMaxRange(m, g)
+  isSame = (m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
+    const min = this.toMinRange(m, g);
+    const max = this.toMaxRange(m, g);
 
-    return this.IsAfter(min.toDate()).And(this.IsBefore(max.toDate()))
+    return this.isAfter(min.toDate()).and(this.isBefore(max.toDate()));
   }
 
-  IsAfter = (d: Date) => mk_expr(`${this.prefix} gt ${d.toISOString()}`)
+  isAfter = (d: Date) => mk_expr(`${this.prefix} gt ${d.toISOString()}`);
 
-  IsBefore = (d: Date) => mk_expr(`${this.prefix} lt ${d.toISOString()}`)
+  isBefore = (d: Date) => mk_expr(`${this.prefix} lt ${d.toISOString()}`);
 
-  protected ToMaxRange = (d: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
+  protected toMaxRange = (d: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
     if (g == 'second') {
       return d.clone()
-        .set('millisecond', 999)
+        .set('millisecond', 999);
     }
     if (g == 'minute') {
       return d.clone()
         .set('millisecond', 999)
-        .set('second', 59)
+        .set('second', 59);
     }
     if (g == 'hour') {
       return d.clone()
         .set('millisecond', 999)
         .set('second', 59)
-        .set('minute', 59)
+        .set('minute', 59);
     }
     if (g == 'day') {
       return d.clone()
         .set('millisecond', 999)
         .set('hours', 23)
         .set('minute', 59)
-        .set('second', 59)
+        .set('second', 59);
     }
     if (g == 'month') {
       const r = d.clone()
         .set('millisecond', 999)
         .set('second', 59)
         .set('minute', 59)
-        .set('hour', 23)
-      return r.set('date', r.daysInMonth())
+        .set('hour', 23);
+      return r.set('date', r.daysInMonth());
     }
     if (g == 'year') {
       return d.clone()
@@ -110,33 +149,33 @@ export class FilterBuilderDate {
         .set('millisecond', 999)
         .set('second', 59)
         .set('minute', 59)
-        .set('hour', 23)
+        .set('hour', 23);
     }
     return d
   }
 
-  protected ToMinRange = (d: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
+  protected toMinRange = (d: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
     if (g == 'second') {
       return d.clone()
-        .set('millisecond', 0)
+        .set('millisecond', 0);
     }
     if (g == 'minute') {
       return d.clone()
         .set('millisecond', 0)
-        .set('second', 0)
+        .set('second', 0);
     }
     if (g == 'hour') {
       return d.clone()
         .set('millisecond', 0)
         .set('second', 0)
-        .set('minute', 0)
+        .set('minute', 0);
     }
     if (g == 'day') {
       return d.clone()
         .set('millisecond', 0)
         .set('hour', 0)
         .set('minute', 0)
-        .set('second', 0)
+        .set('second', 0);
     }
     if (g == 'month') {
       return d.clone()
@@ -144,7 +183,7 @@ export class FilterBuilderDate {
         .set('second', 0)
         .set('minute', 0)
         .set('hour', 0)
-        .set('day', 1)
+        .set('day', 1);
     }
     if (g == 'year') {
       return d.clone()
@@ -153,117 +192,125 @@ export class FilterBuilderDate {
         .set('millisecond', 0)
         .set('second', 0)
         .set('minute', 0)
-        .set('hour', 0)
+        .set('hour', 0);
     }
-    return d
+    return d;
   }
-}
 
-export class FilterBuilderString {
-  constructor(protected readonly prefix: string) { }
+  // FilterBuilderString
 
-  GetPropName = () => this.prefix
+  // Equals = (s: string | FilterBuilder) => mk_expr(`${this.prefix} eq ${typeof s == 'string' ? `'${s}'` : s.GetPropName()}`)
 
-  Equals = (s: string | FilterBuilderString) => mk_expr(`${this.prefix} eq ${typeof s == 'string' ? `'${s}'` : s.GetPropName()}`)
+  // NotEquals = (s: string | FilterBuilder) => mk_expr(`${this.prefix} ne ${typeof s == 'string' ? `'${s}'` : s.GetPropName()}`)
 
-  Contains = (s: string | FilterBuilderString) => mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.GetPropName()})`)
+  contains = (s: string | FilterBuilder) => mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
 
-  NotNull = () => mk_expr(`${this.prefix} ne null`)
+  notNull = () => mk_expr(`${this.prefix} ne null`);
 
-  EqualsCaseInsensitive = (s: string | FilterBuilderString) => mk_expr(`tolower(${this.prefix}) eq ${
+  equalsCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`tolower(${this.prefix}) eq ${
     typeof s == 'string'
       ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.GetPropName()})`
-    }`)
+      : `tolower(${s.getPropName()})`
+    }`);
 
-  NotEquals = (s: string | FilterBuilderString) => mk_expr(`${this.prefix} ne ${typeof s == 'string' ? `'${s}'` : s.GetPropName()}`)
-
-  NotEqualsCaseInsensitive = (s: string | FilterBuilderString) => mk_expr(`tolower(${this.prefix}) ne ${
+  notEqualsCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`tolower(${this.prefix}) ne ${
     typeof s == 'string'
       ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.GetPropName()})`
-    }`)
+      : `tolower(${s.getPropName()})`
+    }`);
 
-  ContainsCaseInsensitive = (s: string | FilterBuilderString) => mk_expr(`contains(tolower(${this.prefix}), ${
+  containsCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`contains(tolower(${this.prefix}), ${
     typeof s == 'string'
       ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.GetPropName()})`
-    })`)
+      : `tolower(${s.getPropName()})`
+    })`);
 
-  StartsWith = (s: string | FilterBuilderString) => mk_expr(`startswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.GetPropName()})`)
+  startsWith = (s: string | FilterBuilder) => mk_expr(`startswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
 
-  StartsWithCaseInsensitive = (s: string | FilterBuilderString) => mk_expr(`startswith(tolower(${this.prefix}), ${
+  startsWithCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`startswith(tolower(${this.prefix}), ${
     typeof s == 'string'
       ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.GetPropName()})`
-    })`)
+      : `tolower(${s.getPropName()})`
+    })`);
 
-  EndsWith = (s: string | FilterBuilderString) => mk_expr(`endswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.GetPropName()})`)
+  endsWith = (s: string | FilterBuilder) => mk_expr(`endswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
 
-  EndsWithCaseInsensitive = (s: string | FilterBuilderString) => mk_expr(`endswith(tolower(${this.prefix}), ${
+  endsWithCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`endswith(tolower(${this.prefix}), ${
     typeof s == 'string'
       ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.GetPropName()})`
-    })`)
-}
+      : `tolower(${s.getPropName()})`
+    })`);
 
-export class FilterBuilderNumber {
-  constructor(protected readonly prefix: string) { }
+  // FilterBuilderNumber
 
-  GetPropName = () => this.prefix
+  // Equals = (n: number | FilterBuilder) => mk_expr(`${this.prefix} eq ${
+  //   typeof n == 'number'
+  //     ? n
+  //     : n.GetPropName()
+  //   }`)
 
-  Equals = (n: number | FilterBuilderNumber) => mk_expr(`${this.prefix} eq ${
+  // NotEquals = (n: number | FilterBuilder) => mk_expr(`${this.prefix} ne ${
+  //   typeof n == 'number'
+  //     ? n
+  //     : this.GetPropName()
+  //   }`)
+
+  biggerThan = (n: number | FilterBuilder) => mk_expr(`${this.prefix} gt ${
     typeof n == 'number'
       ? n
-      : n.GetPropName()
-    }`)
+      : n.getPropName()
+    }`);
 
-  NotEquals = (n: number | FilterBuilderNumber) => mk_expr(`${this.prefix} ne ${
+  lessThan = (n: number | FilterBuilder) => mk_expr(`${this.prefix} lt ${
     typeof n == 'number'
       ? n
-      : this.GetPropName()
-    }`)
+      : n.getPropName()
+    }`);
 
-  BiggerThan = (n: number | FilterBuilderNumber) => mk_expr(`${this.prefix} gt ${
-    typeof n == 'number'
-      ? n
-      : n.GetPropName()
-    }`)
+  // FilterBuilder Generic Methods
 
-  LessThan = (n: number | FilterBuilderNumber) => mk_expr(`${this.prefix} lt ${
-    typeof n == 'number'
-      ? n
-      : n.GetPropName()
-    }`)
+  equals = (x: string|FilterBuilder | number|FilterBuilder | boolean|FilterBuilder) => {
+    switch (typeof x) {
+      case 'string':
+      return mk_expr(`${this.prefix} eq '${x}'`);
+
+      case 'number':
+      return mk_expr(`${this.prefix} eq ${x}`);
+
+      case 'boolean':
+      return mk_expr(`${this.prefix} eq ${x}`);
+
+      default:
+      return mk_expr(`${this.prefix} eq ${x.getPropName()}`);
+    }
+  };
+
+  notEquals = (x: string|FilterBuilder | number|FilterBuilder | boolean|FilterBuilder) => {
+    switch (typeof x) {
+      case 'string':
+      return mk_expr(`${this.prefix} eq '${x}'`);
+
+      case 'number':
+      return mk_expr(`${this.prefix} eq ${x}`);
+
+      case 'boolean':
+      return mk_expr(`${this.prefix} eq ${x}`);
+
+      default:
+      return mk_expr(`${this.prefix} eq ${x.getPropName()}`);
+    }
+  };
 }
 
-export class FilterBuilderBoolean {
-  constructor(protected readonly prefix: string) { }
+// export class FilterBuilderCollection<T extends object> {
+//   constructor(
+//     protected readonly prefix: string,
+//     protected readonly filterBuilder: (prefix: string) => FilterBuilderComplex<T>
+//   ) { }
 
-  GetPropName = () => this.prefix
+//   NotEmpty = () => mk_expr(`${this.prefix}/any()`)
 
-  Equals = (b: boolean | FilterBuilderBoolean) => mk_expr(`${this.prefix} eq ${
-    typeof b == 'boolean'
-      ? b
-      : b.GetPropName()
-    }`)
+//   Any = (c: (_: FilterBuilderComplex<T>) => IFilterExpresion) => mk_expr(`${this.prefix}/any(x:${c(this.filterBuilder('x')).GetFilterExpresion()})`)
 
-  NotEquals = (b: boolean | FilterBuilderBoolean) => mk_expr(`${this.prefix} ne ${
-    typeof b == 'boolean'
-      ? b
-      : b.GetPropName()
-    }`)
-}
-
-export class FilterBuilderCollection<T extends object> {
-  constructor(
-    protected readonly prefix: string,
-    protected readonly filterBuilder: (prefix: string) => FilterBuilderComplex<T>
-  ) { }
-
-  NotEmpty = () => mk_expr(`${this.prefix}/any()`)
-
-  Any = (c: (_: FilterBuilderComplex<T>) => IFilterExpresion) => mk_expr(`${this.prefix}/any(x:${c(this.filterBuilder('x')).GetFilterExpresion()})`)
-
-  All = (c: (_: FilterBuilderComplex<T>) => IFilterExpresion) => mk_expr(`${this.prefix}/all(x:${c(this.filterBuilder('x')).GetFilterExpresion()})`)
-}
+//   All = (c: (_: FilterBuilderComplex<T>) => IFilterExpresion) => mk_expr(`${this.prefix}/all(x:${c(this.filterBuilder('x')).GetFilterExpresion()})`)
+// }

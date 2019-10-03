@@ -1,5 +1,5 @@
 import { FilterBuilderComplex, FilterExpresion, FilterBuilder, FilterBuilderTyped } from "./filterbuilder";
-import { OrderByBuilderComplex, OrderBy, OrderByProp, OrderByBuilder } from "./orderbyBuilder";
+import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
 import { getQueryKeys, getExpandType } from "./decorators";
 import { List } from "immutable";
 
@@ -51,7 +51,6 @@ function mk_orderby_builder(entity: new () => any, prefix?: string) {
 
 export class OQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
-  protected filterBuilder: FilterBuilderComplex<T>;
   protected orderby: OrderByBuilderComplex<T>;
 
   constructor();
@@ -70,15 +69,6 @@ export class OQuery<T extends object> {
     }
     
     this.orderby = mk_orderby_builder(entity);
-
-    // filterBuilder
-    this.filterBuilder = {} as any;
-    
-    if (entity) {
-      getQueryKeys(entity.prototype).forEach(
-        key => this.filterBuilder[key] = new FilterBuilder(key)
-      );
-    }
   }
 
   /**
@@ -98,44 +88,45 @@ export class OQuery<T extends object> {
 
     return this;
   }
-  
-  /**
-   * Adds a $filter operator to the OData query.
-   * Multiple calls to Filter will be merged with `and`.
-   * 
-   * @param key property key selector.
-   * @param conditional a lambda that builds an expression from the builder.
-   * 
-   * @example q.filter('id', id => id.equals(1)).
-   */
-  filter<TKey extends keyof T>(key: TKey, conditional: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): OQuery<T>;
 
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * You need to use @EnableQuery decorator on desired property to work.
    * 
-   * @param conditional a lambda that builds an expression from the builder.
+   * @param expression a lambda that builds an expression from the builder.
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): OQuery<T>;
+  filter(expression: (_: FilterBuilderComplex<T>) => FilterExpresion): OQuery<T>;
+  
+  /**
+   * Adds a $filter operator to the OData query.
+   * Multiple calls to Filter will be merged with `and`.
+   * 
+   * @param key property key selector.
+   * @param expression a lambda that builds an expression from the builder.
+   * 
+   * @example q.filter('id', id => id.equals(1)).
+   */
+  filter<TKey extends keyof T>(key: TKey, expression: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): OQuery<T>;
 
-  filter(key: any, conditional?: any): OQuery<T> {
+  filter(key: any, expression?: (_: any) => any): OQuery<T> {
     let expr: FilterExpresion;
-
+    
     if (typeof key === 'string') {
-      expr = conditional(new FilterBuilder(key));
+      // run expression
+      expr = expression(new FilterBuilder(key));
     } else {
-      conditional = key;
+      expression = key;
 
-      try {
-        expr = conditional(this.filterBuilder);
-      } catch (e) {
-        throw new Error(
-          e.message + ".\n\nThis error occurs when @EnableQuery decorator is not on your property.\n"
-        );
-      }
+      // read funciton string
+      const funcStr = expression.toString();
+      key = RegExp(/return \w+\.(\w+)\./).exec(funcStr)[1];
+      const builder = { [key]: new FilterBuilder(key) };
+      
+      // run expression
+      expr = expression(builder);
     }
 
     if (expr.kind == 'none') {
@@ -299,28 +290,28 @@ export interface ExpandArrayQuery<T extends Object> {
    * @example q => q.select('id', 'title').
    */
   select<key extends keyof T>(...keys: key[]): ExpandArrayQuery<T>;
-  
-  /**
-   * Adds a $filter operator to the OData query.
-   * Multiple calls to Filter will be merged with `and`.
-   * 
-   * @param key property key selector.
-   * @param conditional a lambda that builds an expression from the builder.
-   * 
-   * @example q.filter('id', id => id.equals(1)).
-   */
-  filter<TKey extends keyof T>(key: TKey, conditional: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ExpandArrayQuery<T>;
 
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * You need to use @EnableQuery decorator on desired property to work.
    * 
-   * @param conditional a lambda that builds an expression from the builder.
+   * @param expression a lambda that builds an expression from the builder.
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
+  filter(expression: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
+  
+  /**
+   * Adds a $filter operator to the OData query.
+   * Multiple calls to Filter will be merged with `and`.
+   * 
+   * @param key property key selector.
+   * @param expression a lambda that builds an expression from the builder.
+   * 
+   * @example q.filter('id', id => id.equals(1)).
+   */
+  filter<TKey extends keyof T>(key: TKey, expression: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ExpandArrayQuery<T>;
 
   /**
    * Adds a $orderby operator to the OData query.

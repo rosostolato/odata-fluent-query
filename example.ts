@@ -1,5 +1,4 @@
 import { OQuery } from './src/oquery';
-import { EnableQuery } from './src/decorators';
 
 
 class UserMenu {
@@ -16,22 +15,18 @@ class Permission {
 }
 
 class User {
-  @EnableQuery()
   id: number;
   mail: string;
   displayName: string;
   createDate: Date;
 
-  
-  @EnableQuery(Permission)
   permission: Permission;
-  
-  @EnableQuery(Permission)
   menu: UserMenu[];
 }
 
 const result = new OQuery<User>(User)
-  .expand('menu', q => q.filter('id', c => c.biggerThan(5)))
+  .filter(x => x.id.biggerThan(5))
+  .filter('id', id => id.biggerThan(5))
   .toString();
 
 console.log(result);

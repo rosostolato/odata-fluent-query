@@ -75,7 +75,6 @@ export class OQuery<T extends object> {
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
-   * You need to use @EnableQuery decorator on desired property to work.
    * 
    * @param expression a lambda that builds an expression from the builder.
    * 
@@ -294,7 +293,6 @@ export interface ExpandArrayQuery<T extends Object> {
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
-   * You need to use @EnableQuery decorator on desired property to work.
    * 
    * @param expression a lambda that builds an expression from the builder.
    * 

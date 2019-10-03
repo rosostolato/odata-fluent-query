@@ -1,4 +1,4 @@
-import { failed, parseBoolean, parseDate, parseNullBoolean, parseNullDate, parseNullCollection, parseNullString, parseString, succes, parseNullNumber, parseNumber, parseEntity, parseCollection } from "../lib/deserilisation";
+import { failed, parseBoolean, parseDate, parseNullBoolean, parseNullDate, parseNullCollection, parseNullString, parseString, succes, parseNullNumber, parseNumber, parseEntity, parseCollection } from "../src/deserilisation";
 import { List } from "immutable"
 
 describe('string parsing', () => {

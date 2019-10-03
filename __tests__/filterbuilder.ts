@@ -1,4 +1,4 @@
-import { ComplexFilterExpresion, FilterExpresionUnit } from "../lib/filterbuilder.old"
+import { ComplexFilterExpresion, FilterExpresionUnit } from "../src/filterbuilder.old"
 
 describe('test filter expressions', () => {
   test('parentheses', () => expect(new ComplexFilterExpresion('expr').GetFilterExpresion()).toEqual('(expr)'))

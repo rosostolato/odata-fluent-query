@@ -2,7 +2,7 @@
   "name": "odata-fluent-query",
   "version": "1.0.0",
   "description": "odata fluent query builder",
-  "main": "lib/index.ts",
+  "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

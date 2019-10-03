@@ -1,6 +1,6 @@
 import { FilterBuilderComplex, FilterExpresion, FilterBuilder } from "./filterbuilder";
 import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
-import { getPropertyKeys, getPropertyType } from "./decorators";
+import { getQueryKeys, getExpandType } from "./decorators";
 import { List } from "immutable";
 
 type QueryDescriptor = {
@@ -37,11 +37,11 @@ type ExpandQueryComplex<T> = T extends (infer A)[]
   : ExpandObjectQuery<T>
 
 function mk_orderby_builder(entity: new () => any, prefix?: string) {
-  const keys: string[] = getPropertyKeys(entity.prototype);
+  const keys: string[] = getQueryKeys(entity.prototype);
   const orderMap: any = {};
 
   keys.forEach(key => {
-    const type = getPropertyType(entity, key as any);
+    const type = getExpandType(entity, key as any);
 
     if (type) {
       orderMap[key] = (p?: string) => mk_orderby_builder(type, key);
@@ -71,7 +71,7 @@ export class OQuery<T extends object> {
     
     this.orderby = mk_orderby_builder(entity);
 
-    const keys: string[] = getPropertyKeys(entity.prototype);
+    const keys: string[] = getQueryKeys(entity.prototype);
     const filterMap: any = {};
     keys.forEach(key => filterMap[key] = new FilterBuilder(key));
     this.filterBuilder = filterMap;
@@ -131,7 +131,7 @@ export class OQuery<T extends object> {
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): OQuery<T> {
-    const type = getPropertyType(this.entity, key);
+    const type = getExpandType(this.entity, key);
     let expand: any = new ExpandQuery(String(key), type);
     if (query) expand = query(expand);
 
@@ -267,7 +267,7 @@ export class ExpandQuery<T extends Object> {
       strict: false
     }
 
-    const keys: string[] = getPropertyKeys(entity.prototype);
+    const keys: string[] = getQueryKeys(entity.prototype);
     const map: any = {};
 
     keys.forEach(key => map[key] = new FilterBuilder(key));

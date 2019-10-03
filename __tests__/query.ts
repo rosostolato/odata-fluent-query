@@ -1,4 +1,4 @@
-import { mk_query_string, mk_query_descriptor, mk_rel_query_string, mk_rel_query_descriptor } from "../lib/query"
+import { mk_query_string, mk_query_descriptor, mk_rel_query_string, mk_rel_query_descriptor } from "../src/query"
 import { List } from "immutable"
 
 describe('testing querybuilding', () => {

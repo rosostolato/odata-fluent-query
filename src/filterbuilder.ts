@@ -13,6 +13,8 @@ export type FilterBuilderTyped<T> =
 
 export type FilterBuilderComplex<T extends object> = {
   [P in keyof T]: FilterBuilderTyped<T[P]>
+} & {
+  key<TKey extends keyof T>(key: TKey): FilterBuilderTyped<T[TKey]>
 }
 
 export type FilterExpresion = FilterExpresionUnit | IFilterExpresion;

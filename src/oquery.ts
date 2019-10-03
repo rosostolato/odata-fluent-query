@@ -15,17 +15,6 @@ type QueryDescriptor = {
   count: boolean;
 }
 
-// type RelQueryDescriptor = {
-//   key: string;
-//   skip: number | 'none';
-//   take: number | 'none';
-//   orderby: List<string>;
-//   select: List<string>;
-//   filters: List<string>;
-//   expands: List<RelQueryDescriptor>;
-//   strict: boolean;
-// }
-
 type RelationsOf<Model extends object> = Pick<Model, {
   [P in keyof Model]: 
     Model[P] extends Date ? never : 
@@ -39,18 +28,23 @@ type ExpandQueryComplex<T> = T extends (infer A)[]
   : ExpandObjectQuery<T>
 
 function mk_orderby_builder(entity: new () => any, prefix?: string) {
-  const keys: string[] = getQueryKeys(entity.prototype);
-  const orderMap: any = {};
-
-  keys.forEach(key => {
-    const type = getExpandType(entity, key as any);
-
-    if (type) {
-      orderMap[key] = (p?: string) => mk_orderby_builder(type, key);
-    } else {
-      orderMap[key] = new OrderByProp(`${prefix ? prefix + '/' : ''}${key}`);
-    }
-  });
+  const orderMap: any = {
+    key: (key: string) => new OrderByProp(`${prefix ? prefix + '/' : ''}${key}`)
+  };
+  
+  if (entity) {
+    const keys: string[] = getQueryKeys(entity.prototype);
+  
+    keys.forEach(key => {
+      const type = getExpandType(entity, key as any);
+  
+      if (type) {
+        orderMap[key] = mk_orderby_builder(type, key);
+      } else {
+        orderMap[key] = new OrderByProp(`${prefix ? prefix + '/' : ''}${key}`);
+      }
+    });
+  }
   
   return orderMap;
 }
@@ -68,10 +62,6 @@ export function mk_query_string(qd: QueryDescriptor): string {
   if (qd.select.isEmpty() == false) {
     params.push(`$select=${qd.select.join(',')}`);
   }
-
-  // if (qd.orderby) {
-  //   params.push(`$orderby=${qd.orderby}`);
-  // }
 
   if (qd.orderby.isEmpty() == false) {
     params.push(`$orderby=${qd.orderby.join(',')}`);
@@ -139,15 +129,16 @@ export class OQuery<T extends object> {
   protected filterBuilder: FilterBuilderComplex<T>;
   protected orderby: OrderByBuilderComplex<T>;
 
+  constructor();
   constructor(entity: new () => T);
   constructor(entity: new () => T, key: string);
-  constructor(private entity: new () => T, key?: string) {
+  constructor(private entity?: new () => T, key?: string) {
     this.queryDescriptor = {
       key,
-      filters: List<string>(),
-      expands: List<QueryDescriptor>(),
       skip: 'none',
       take: 'none',
+      filters: List<string>(),
+      expands: List<QueryDescriptor>(),
       orderby: List<string>(),
       select: List<string>(),
       count: false
@@ -155,10 +146,16 @@ export class OQuery<T extends object> {
     
     this.orderby = mk_orderby_builder(entity);
 
-    const keys: string[] = getQueryKeys(entity.prototype);
-    const filterMap: any = {};
-    keys.forEach(key => filterMap[key] = new FilterBuilder(key));
-    this.filterBuilder = filterMap;
+    // filterBuilder
+    this.filterBuilder = {
+      key: (key: string) => new FilterBuilder(key)
+    } as any;
+    
+    if (entity) {
+      getQueryKeys(entity.prototype).forEach(
+        key => this.filterBuilder[key] = new FilterBuilder(key)
+      );
+    }
   }
 
   /**
@@ -173,7 +170,7 @@ export class OQuery<T extends object> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       select: List(keys.map(String)),
-      expands: this.queryDescriptor.expands.filter(e => keys.some(k => e.key == String(k))).toList()
+      expands: this.queryDescriptor.expands.filter(e => keys.some(k => e.key == String(k)))
     };
 
     return this;
@@ -188,7 +185,18 @@ export class OQuery<T extends object> {
    * @example q.filter(u => u.id.equals(1)).
    */
   filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): OQuery<T> {
-    const expr = conditional(this.filterBuilder);
+    let expr: FilterExpresion
+    
+    try {
+      expr = conditional(this.filterBuilder);
+    } catch (e) {
+      throw new Error(
+        e.message +
+        ".\n\nThis error occurs when @EnableQuery decorator is on your property.\n" +
+        "You can add it to your prop or use the 'key' prop to select the property key string.\n"
+      );
+    }
+
     if (expr.kind == 'none') {
       return this;
     }
@@ -242,7 +250,7 @@ export class OQuery<T extends object> {
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      orderby: this.queryDescriptor.orderby.concat(orderby).toList()
+      orderby: this.queryDescriptor.orderby.concat(orderby)
     };
 
     return this;
@@ -265,7 +273,7 @@ export class OQuery<T extends object> {
    * 
    * @param page the object with the pagesize and page.
    * 
-   * @example q.paginate({page: 0, pagesize: 10, count: false}).
+   * @example q.paginate({page: 0, pagesize: 50, count: false}).
    */
   paginate(page: { page: number, pagesize: number, count?: boolean }): OQuery<T>
 
@@ -348,11 +356,11 @@ export interface ExpandArrayQuery<T extends Object> {
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
    * 
-   * @param props the props and mode to sort on.
+   * @param expression a lambda that builds the orderby expression from the builder.
    * 
-   * @example q.orderBy({prop: 'id', mode: 'desc'}).
+   * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): OQuery<T>;
+  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): ExpandArrayQuery<T>;
 
   /**
    * Adds a $expand operator to the OData query.
@@ -386,7 +394,7 @@ export interface ExpandArrayQuery<T extends Object> {
    * 
    * @param page the object with the pagesize and page.
    * 
-   * @example q.paginate({page: 0, pagesize: 10, count: false}).
+   * @example q.paginate({page: 0, pagesize: 50}).
    */
   paginate(page: { page: number, pagesize: number }): ExpandArrayQuery<T>;
 }

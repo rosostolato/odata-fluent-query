@@ -239,6 +239,53 @@ export class OQuery<T extends object> {
     return this;
   }
 
+  /**
+   * Adds a $skip and $top to the OData query.
+   * The pageindex in zero-based. This method automatically adds $count=true to the query.
+   * 
+   * @param page page index ($skip).
+   * @param pagesize page size ($top);
+   * 
+   * @example q.paginate(0, 50).
+   */
+  paginate(page: number, pagesize: number): OQuery<T>;
+
+  /**
+   * Adds a $skip and $top to the OData query.
+   * The pageindex in zero-based.
+   * 
+   * @param page the object with the pagesize and page.
+   * 
+   * @example q.paginate({page: 0, pagesize: 10, count: false}).
+   */
+  paginate(page: { page: number, pagesize: number, count?: boolean }): OQuery<T>
+
+  paginate(page: number|{ page: number, pagesize: number, count?: boolean }, pagesize?: number): OQuery<T> {
+    let o: { page: number, pagesize: number, count?: boolean };
+    
+    if (typeof page === 'number') {
+      o = {
+        page,
+        pagesize,
+        count: true
+      }
+    } else {
+      o = page;
+    }
+
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      take: o.pagesize,
+      skip: o.pagesize * o.page,
+      count: o.count || true
+    };
+
+    return this;
+  }
+
+  /**
+   * exports query to string
+   */
   toString(): string {
     return mk_query_string(this.queryDescriptor);
   }
@@ -350,10 +397,69 @@ export class ExpandQuery<T extends Object> {
 
     return this;
   }
+
+  /**
+   * Adds a $skip and $top to the OData query.
+   * The pageindex in zero-based. This method automatically adds $count=true to the query.
+   * 
+   * @param page page index ($skip).
+   * @param pagesize page size ($top);
+   * 
+   * @example q.paginate(0, 50).
+   */
+  paginate(page: number, pagesize: number): ExpandQuery<T>;
+
+  /**
+   * Adds a $skip and $top to the OData query.
+   * The pageindex in zero-based.
+   * 
+   * @param page the object with the pagesize and page.
+   * 
+   * @example q.paginate({page: 0, pagesize: 10, count: false}).
+   */
+  paginate(page: { page: number, pagesize: number }): ExpandQuery<T>
+
+  paginate(page: number|{ page: number, pagesize: number }, pagesize?: number): ExpandQuery<T> {
+    let o: { page: number, pagesize: number };
+    
+    if (typeof page === 'number') {
+      o = {
+        page,
+        pagesize
+      }
+    } else {
+      o = page;
+    }
+
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      take: o.pagesize,
+      skip: o.pagesize * o.page
+    };
+
+    return this;
+  }
 }
 
 export interface ExpandObjectQuery<T extends Object> {
+  /**
+   * selects properties from the model.
+   * @param keys the names of the properties.
+   * 
+   * @example q => q.select('id', 'title').
+   */
   select<key extends keyof T>(...keys: key[]): ExpandObjectQuery<T>;
+
+  /**
+   * Adds a $expand operator to the OData query.
+   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
+   * The lambda in the second parameter allows you to build a complex inner query.
+   * 
+   * @param key the name of the relation.
+   * @param query   a lambda that build the subquery from the querybuilder.
+   * 
+   * @example q.exand('blogs', q => q.select('id', 'title')).
+   */
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
@@ -361,11 +467,67 @@ export interface ExpandObjectQuery<T extends Object> {
 }
 
 export interface ExpandArrayQuery<T extends Object> {
+  /**
+   * selects properties from the model.
+   * @param keys the names of the properties.
+   * 
+   * @example q => q.select('id', 'title').
+   */
   select<key extends keyof T>(...keys: key[]): ExpandArrayQuery<T>;
+
+  /**
+   * Adds a $filter operator to the OData query.
+   * Multiple calls to Filter will be merged with `and`.
+   * 
+   * @param conditional a lambda that builds an expression from the builder.
+   * 
+   * @example q.Filter(u => u.Id.Equals(1)).
+   */
   filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check you OData implementation for details).
+   * 
+   * @param props the props and mode to sort on.
+   * 
+   * @example q.orderBy({prop: 'id', mode: 'desc'}).
+   */
   orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): ExpandQuery<T>;
+
+  /**
+   * Adds a $expand operator to the OData query.
+   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
+   * The lambda in the second parameter allows you to build a complex inner query.
+   * 
+   * @param key the name of the relation.
+   * @param query   a lambda that build the subquery from the querybuilder.
+   * 
+   * @example q.exand('blogs', q => q.select('id', 'title')).
+   */
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ExpandArrayQuery<T>;
+  
+  /**
+   * Adds a $skip and $top to the OData query.
+   * The pageindex in zero-based. This method automatically adds $count=true to the query.
+   * 
+   * @param page page index ($skip).
+   * @param pagesize page size ($top);
+   * 
+   * @example q.paginate(0, 50).
+   */
+  paginate(page: number, pagesize: number): ExpandQuery<T>;
+
+  /**
+   * Adds a $skip and $top to the OData query.
+   * The pageindex in zero-based.
+   * 
+   * @param page the object with the pagesize and page.
+   * 
+   * @example q.paginate({page: 0, pagesize: 10, count: false}).
+   */
+  paginate(page: { page: number, pagesize: number }): ExpandQuery<T>;
 }

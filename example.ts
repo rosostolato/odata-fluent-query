@@ -45,12 +45,14 @@ class User {
   @EnableQuery
   @EnableExpand(Permission)
   permission: Permission;
+
+  @EnableQuery
+  @EnableExpand(UserMenu)
+  menu: UserMenu[];
 }
 
-const result = new OQuery<User>(User)
-  .expand('permission', q => q
-    .expand('menu', q2 => q2
-      .filter(x => x.id.biggerThan(5))))
+const result = new OQuery(User)
+  .expand('menu', q => q.paginate(5, 10))
   .toString();
 
 console.log(result);

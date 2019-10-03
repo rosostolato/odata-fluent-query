@@ -9,8 +9,6 @@ export type OrderByBuilder<T> =
 
 export type OrderByBuilderComplex<T extends object> = {
   [P in keyof T]: OrderByBuilder<T[P]>;
-} & {
-  key<TKey extends keyof T>(key: TKey): OrderByBuilder<T[TKey]>;
 }
 
 export interface OrderBy {
@@ -18,17 +16,23 @@ export interface OrderBy {
 }
 
 export class OrderWithAscOrDesc implements OrderBy {
-  constructor(private readonly order: string) { }
+  constructor(private readonly key: string) { }
 
-  get = () => this.order;
+  get = () => this.key;
 }
 
 export class OrderByProp implements OrderBy {
-  constructor(private readonly order: string) { }
+  constructor(private readonly key: string) { }
 
-  get = () => this.order;
-  Asc = () => new OrderWithAscOrDesc(this.order + ' asc');
-  Desc = () => new OrderWithAscOrDesc(this.order + ' desc');
+  get() {
+    return this.key;
+  }
 
-  private key = (key: string) => new OrderByProp(`${this.order ? this.order + '/' : ''}${key}`);
+  asc() {
+    return new OrderWithAscOrDesc(this.key + ' asc');
+  }
+  
+  desc() {
+    return new OrderWithAscOrDesc(this.key + ' desc');
+  }
 }

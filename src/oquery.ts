@@ -1,5 +1,5 @@
-import { FilterBuilderComplex, FilterExpresion, FilterBuilder } from "./filterbuilder";
-import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
+import { FilterBuilderComplex, FilterExpresion, FilterBuilder, FilterBuilderTyped } from "./filterbuilder";
+import { OrderByBuilderComplex, OrderBy, OrderByProp, OrderByBuilder } from "./orderbyBuilder";
 import { getQueryKeys, getExpandType } from "./decorators";
 import { List } from "immutable";
 
@@ -72,9 +72,7 @@ export class OQuery<T extends object> {
     this.orderby = mk_orderby_builder(entity);
 
     // filterBuilder
-    this.filterBuilder = {
-      key: (key: string) => new FilterBuilder(key)
-    } as any;
+    this.filterBuilder = {} as any;
     
     if (entity) {
       getQueryKeys(entity.prototype).forEach(
@@ -100,26 +98,44 @@ export class OQuery<T extends object> {
 
     return this;
   }
+  
+  /**
+   * Adds a $filter operator to the OData query.
+   * Multiple calls to Filter will be merged with `and`.
+   * 
+   * @param key property key selector.
+   * @param conditional a lambda that builds an expression from the builder.
+   * 
+   * @example q.filter('id', id => id.equals(1)).
+   */
+  filter<TKey extends keyof T>(key: TKey, conditional: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): OQuery<T>;
 
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
+   * You need to use @EnableQuery decorator on desired property to work.
    * 
    * @param conditional a lambda that builds an expression from the builder.
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): OQuery<T> {
-    let expr: FilterExpresion
-    
-    try {
-      expr = conditional(this.filterBuilder);
-    } catch (e) {
-      throw new Error(
-        e.message +
-        ".\n\nThis error occurs when @EnableQuery decorator is on your property.\n" +
-        "You can add it to your prop or use the 'key' prop to select the property key string.\n"
-      );
+  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): OQuery<T>;
+
+  filter(key: any, conditional?: any): OQuery<T> {
+    let expr: FilterExpresion;
+
+    if (typeof key === 'string') {
+      expr = conditional(new FilterBuilder(key));
+    } else {
+      conditional = key;
+
+      try {
+        expr = conditional(this.filterBuilder);
+      } catch (e) {
+        throw new Error(
+          e.message + ".\n\nThis error occurs when @EnableQuery decorator is not on your property.\n"
+        );
+      }
     }
 
     if (expr.kind == 'none') {
@@ -166,12 +182,33 @@ export class OQuery<T extends object> {
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
    * 
+   * @param key key in T.
+   * @param order the order of the sort.
+   * 
+   * @example q.orderBy('blogs', 'desc').
+   */
+  orderBy<TKey extends keyof T>(key: TKey, order?: 'asc'|'desc'): OQuery<T>;
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check you OData implementation for details).
+   * 
    * @param expression a lambda that builds the orderby expression from the builder.
    * 
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): OQuery<T> {
-    const orderby = expression(this.orderby).get();
+  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): OQuery<T>;
+  
+  orderBy(keyGetter: any, order?: 'asc'|'desc') {
+    let orderby: any;
+
+    if (typeof keyGetter === 'string') {
+      orderby = new OrderByProp(keyGetter);
+      if (order) orderby = orderby[order]();
+      orderby = orderby.get();
+    } else {
+      orderby = keyGetter(this.orderby).get();
+    }
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
@@ -202,15 +239,11 @@ export class OQuery<T extends object> {
    */
   paginate(page: { page: number, pagesize: number, count?: boolean }): OQuery<T>
 
-  paginate(page: number|{ page: number, pagesize: number, count?: boolean }, pagesize?: number): OQuery<T> {
+  paginate(page: any, pagesize?: number): OQuery<T> {
     let o: { page: number, pagesize: number, count?: boolean };
     
     if (typeof page === 'number') {
-      o = {
-        page,
-        pagesize,
-        count: true
-      }
+      o = { page, pagesize, count: true };
     } else {
       o = page;
     }
@@ -266,14 +299,26 @@ export interface ExpandArrayQuery<T extends Object> {
    * @example q => q.select('id', 'title').
    */
   select<key extends keyof T>(...keys: key[]): ExpandArrayQuery<T>;
-
+  
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * 
+   * @param key property key selector.
    * @param conditional a lambda that builds an expression from the builder.
    * 
-   * @example q.Filter(u => u.Id.Equals(1)).
+   * @example q.filter('id', id => id.equals(1)).
+   */
+  filter<TKey extends keyof T>(key: TKey, conditional: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ExpandArrayQuery<T>;
+
+  /**
+   * Adds a $filter operator to the OData query.
+   * Multiple calls to Filter will be merged with `and`.
+   * You need to use @EnableQuery decorator on desired property to work.
+   * 
+   * @param conditional a lambda that builds an expression from the builder.
+   * 
+   * @example q.filter(u => u.id.equals(1)).
    */
   filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
 

@@ -12,8 +12,6 @@ export type FilterBuilderTyped<T> =
 
 export type FilterBuilderComplex<T extends object> = {
   [P in keyof T]: FilterBuilderTyped<T[P]>
-} & {
-  key<TKey extends keyof T>(key: TKey): FilterBuilderTyped<T[TKey]>
 }
 
 export type FilterExpresion = FilterExpresionUnit | IFilterExpresion;
@@ -56,7 +54,6 @@ export interface FilterBuilderDate {
 }
 
 export interface FilterBuilderString {
-  getPropName(): string;
   equals(s: string | FilterBuilderString): ComplexFilterExpresion;
   contains(s: string | FilterBuilderString): ComplexFilterExpresion;
   notNull(): ComplexFilterExpresion;
@@ -71,7 +68,6 @@ export interface FilterBuilderString {
 }
 
 export interface FilterBuilderNumber {
-  getPropName(): string;
   equals(n: number | FilterBuilderNumber): ComplexFilterExpresion;
   notEquals(n: number | FilterBuilderNumber): ComplexFilterExpresion;
   biggerThan(n: number | FilterBuilderNumber): ComplexFilterExpresion;
@@ -79,7 +75,6 @@ export interface FilterBuilderNumber {
 }
 
 export interface FilterBuilderBoolean {
-  getPropName(): string;
   equals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
   notEquals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
 }

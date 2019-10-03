@@ -18,14 +18,8 @@ class Permission {
 class User {
   @EnableQuery()
   id: number;
-  
-  @EnableQuery()
   mail: string;
-  
-  @EnableQuery()
   displayName: string;
-  
-  @EnableQuery()
   createDate: Date;
 
   
@@ -37,7 +31,7 @@ class User {
 }
 
 const result = new OQuery<User>(User)
-  .filter(x => x.createDate.isSame(new Date(), 'minute'))
+  .expand('menu', q => q.filter('id', c => c.biggerThan(5)))
   .toString();
 
 console.log(result);

@@ -1,6 +1,5 @@
 import { FilterBuilderComplex, FilterExpresion, FilterBuilder, FilterBuilderTyped } from "./filterbuilder";
 import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
-import { getQueryKeys, getExpandType } from "./decorators";
 import { List } from "immutable";
 
 type QueryDescriptor = {
@@ -23,40 +22,26 @@ type RelationsOf<Model extends object> = Pick<Model, {
     never
 }[keyof Model]>
 
-type ExpandQueryComplex<T> = T extends (infer A)[]
-  ? ExpandArrayQuery<A>
+type ExpandQueryComplex<T> = T extends (infer U)[]
+  ? ExpandArrayQuery<U>
   : ExpandObjectQuery<T>
-
-function mk_orderby_builder(entity: new () => any, prefix?: string) {
-  const orderMap: any = {
-    key: (key: string) => new OrderByProp(`${prefix ? prefix + '/' : ''}${key}`)
-  };
-  
-  if (entity) {
-    const keys: string[] = getQueryKeys(entity.prototype);
-  
-    keys.forEach(key => {
-      const type = getExpandType(entity, key as any);
-  
-      if (type) {
-        orderMap[key] = mk_orderby_builder(type, key);
-      } else {
-        orderMap[key] = new OrderByProp(`${prefix ? prefix + '/' : ''}${key}`);
-      }
-    });
-  }
-  
-  return orderMap;
-}
 
 export class OQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
-  protected orderby: OrderByBuilderComplex<T>;
 
+  /**
+   * Create a new instance of OQuery
+   */
   constructor();
-  constructor(entity: new () => T);
-  constructor(entity: new () => T, key: string);
-  constructor(private entity?: new () => T, key?: string) {
+
+  /**
+   * @param key internal key selector
+   * 
+   * @internal
+   */
+  constructor(key: string);
+
+  constructor(key?: string) {
     this.queryDescriptor = {
       key,
       skip: 'none',
@@ -67,8 +52,6 @@ export class OQuery<T extends object> {
       select: List<string>(),
       count: false
     }
-    
-    this.orderby = mk_orderby_builder(entity);
   }
 
   /**
@@ -118,11 +101,11 @@ export class OQuery<T extends object> {
       // run expression
       expr = expression(new FilterBuilder(key));
     } else {
+      // set expression
       expression = key;
 
       // read funciton string
-      const funcStr = expression.toString();
-      key = RegExp(/return \w+\.(\w+)\./).exec(funcStr)[1];
+      key = this.readPropertyKey(expression);
       const builder = { [key]: new FilterBuilder(key) };
       
       // run expression
@@ -155,19 +138,26 @@ export class OQuery<T extends object> {
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): OQuery<T> {
-    const type: any = getExpandType(this.entity, key);
-    let expand: any = new OQuery(type, String(key));
+    let expand: any = new OQuery(String(key));
     if (query) expand = query(expand);
-
-    const des = expand['queryDescriptor'];
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      expands: this.queryDescriptor.expands.push(des)
+      expands: this.queryDescriptor.expands.push(expand['queryDescriptor'])
     };
 
     return this;
   }
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check you OData implementation for details).
+   * 
+   * @param expression a lambda that builds the orderby expression from the builder.
+   * 
+   * @example q.orderBy(u => u.blogs().id.desc()).
+   */
+  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): OQuery<T>;
 
   /**
    * Adds a $orderby operator to the OData query.
@@ -179,26 +169,26 @@ export class OQuery<T extends object> {
    * @example q.orderBy('blogs', 'desc').
    */
   orderBy<TKey extends keyof T>(key: TKey, order?: 'asc'|'desc'): OQuery<T>;
-
-  /**
-   * Adds a $orderby operator to the OData query.
-   * Ordering over relations is supported (check you OData implementation for details).
-   * 
-   * @param expression a lambda that builds the orderby expression from the builder.
-   * 
-   * @example q.orderBy(u => u.blogs().id.desc()).
-   */
-  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): OQuery<T>;
   
   orderBy(keyGetter: any, order?: 'asc'|'desc') {
     let orderby: any;
 
     if (typeof keyGetter === 'string') {
       orderby = new OrderByProp(keyGetter);
-      if (order) orderby = orderby[order]();
+
+      // run orderer
+      if (order) {
+        orderby = orderby[order]();
+      }
+
+      // get string
       orderby = orderby.get();
     } else {
-      orderby = keyGetter(this.orderby).get();
+      // read funciton string
+      const key = this.readPropertyKey(keyGetter);
+      const builder = { [key]: new OrderByProp(key) };
+
+      orderby = keyGetter(builder).get();
     }
 
     this.queryDescriptor = {
@@ -254,6 +244,16 @@ export class OQuery<T extends object> {
    */
   toString(): string {
     return mk_query_string(this.queryDescriptor);
+  }
+
+  /**
+   * read funciton string
+   * 
+   * @param expression expression function
+   */
+  private readPropertyKey(expression: (_: any) => any) {
+    const funcStr = expression.toString();
+    return RegExp(/return \w+\.(\w+)/).exec(funcStr)[1];
   }
 }
 
@@ -322,6 +322,17 @@ export interface ExpandArrayQuery<T extends Object> {
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
   orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): ExpandArrayQuery<T>;
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check you OData implementation for details).
+   * 
+   * @param key key in T.
+   * @param order the order of the sort.
+   * 
+   * @example q.orderBy('blogs', 'desc').
+   */
+  orderBy<TKey extends keyof T>(key: TKey, order?: 'asc'|'desc'): ExpandArrayQuery<T>;
 
   /**
    * Adds a $expand operator to the OData query.
@@ -411,7 +422,7 @@ export function mk_query_string(qd: QueryDescriptor): string {
   }
 
   if (qd.orderby.isEmpty() == false) {
-    params.push(`$orderby=${qd.orderby.join(',')}`);
+    params.push(`$orderby=${qd.orderby.last()}`);
   }
 
   if (qd.skip != 'none') {

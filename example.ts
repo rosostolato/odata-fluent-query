@@ -48,7 +48,7 @@ class User {
 }
 
 const result2 = new OQuery<User>(User)
-  .expand('menu', q => q.)
+  .expand('menu')
   .toString();
 
 console.log(result2);

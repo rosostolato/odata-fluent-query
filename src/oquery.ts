@@ -53,6 +53,81 @@ function mk_orderby_builder(entity: new () => any, prefix?: string) {
   return orderMap;
 }
 
+export function mk_query_string(qd: QueryDescriptor): string {
+  let params: string[] = [];
+
+  if (qd.filters.isEmpty() == false)
+    params.push(`$filter=${qd.filters.join(' and ')}`);
+
+  if (qd.expands.isEmpty() == false) {
+    params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
+  }
+
+  if (qd.select.isEmpty() == false) {
+    params.push(`$select=${qd.select.join(',')}`);
+  }
+
+  if (qd.orderby) {
+    params.push(`$orderby=${qd.orderby}`);
+  }
+
+  if (qd.skip != 'none') {
+    params.push(`$skip=${qd.skip}`);
+  }
+
+  if (qd.take != 'none') {
+    params.push(`$top=${qd.take}`);
+  }
+
+  if (qd.count == true) {
+    params.push(`$count=true`);
+  }
+
+  return params.join('&');
+}
+
+export function mk_rel_query_string(rqd: RelQueryDescriptor): string {
+  let expand: string = rqd.key;
+
+  if (rqd.strict) {
+    expand += '!';
+  }
+
+  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
+    expand += `(`;
+
+    let operators = [];
+
+    if (rqd.skip != 'none') {
+      operators.push(`$skip=${rqd.skip}`);
+    }
+
+    if (rqd.take != 'none') {
+      operators.push(`$top=${rqd.take}`);
+    }
+
+    if (rqd.orderby.isEmpty() == false) {
+      operators.push(`$orderby=${rqd.orderby.join(',')}`);
+    }
+
+    if (rqd.select.isEmpty() == false) {
+      operators.push(`$select=${rqd.select.join(',')}`);
+    }
+
+    if (rqd.filters.isEmpty() == false) {
+      operators.push(`$filter=${rqd.filters.join(' and ')}`);
+    }
+
+    if (rqd.expands.isEmpty() == false) {
+      operators.push(`$expand=${rqd.expands.map(mk_rel_query_string).join(',')}`);
+    }
+
+    expand += operators.join(';') + ')';
+  }
+
+  return expand
+}
+
 export class OQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
   protected filterBuilder: FilterBuilderComplex<T>;
@@ -165,80 +240,7 @@ export class OQuery<T extends object> {
   }
 
   toString(): string {
-    let params: string[] = [];
-    const qd = this.queryDescriptor;
-  
-    if (qd.filters.isEmpty() == false) {
-      params.push(`$filter=${qd.filters.join(' and ')}`);
-    }
-  
-    if (qd.expands.isEmpty() == false) {
-      params.push(`$expand=${qd.expands.map(this.makeRelQueryString).join(',')}`)
-    }
-  
-    if (qd.select.isEmpty() == false) {
-      params.push(`$select=${qd.select.join(',')}`);
-    }
-  
-    if (qd.orderby) {
-      params.push(`$orderby=${qd.orderby}`);
-    }
-  
-    if (qd.skip != 'none') {
-      params.push(`$skip=${qd.skip}`);
-    }
-  
-    if (qd.take != 'none') {
-      params.push(`$top=${qd.take}`)
-    }
-  
-    if (qd.count == true) {
-      params.push(`$count=true`);
-    }
-  
-    return `${params.join('&')}`
-  }
-
-  private makeRelQueryString(rqd: RelQueryDescriptor): string {
-    let expand: string = rqd.key;
-  
-    if (rqd.strict) {
-      expand += '!';
-    }
-  
-    if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
-      expand += `(`;
-  
-      let operators = [];
-  
-      if (rqd.skip != 'none') {
-        operators.push(`$skip=${rqd.skip}`);
-      }
-  
-      if (rqd.take != 'none') {
-        operators.push(`$top=${rqd.take}`);
-      }
-  
-      if (rqd.orderby.isEmpty() == false) {
-        operators.push(`$orderby=${rqd.orderby.join(',')}`);
-      }
-  
-      if (rqd.select.isEmpty() == false) {
-        operators.push(`$select=${rqd.select.join(',')}`);
-      }
-  
-      if (rqd.filters.isEmpty() == false) {
-        operators.push(`$filter=${rqd.filters.join(' and ')}`);
-      }
-  
-      if (rqd.expands.isEmpty() == false) {
-        operators.push(`$expand=${rqd.expands.map(this.makeRelQueryString).join(',')}`);
-      }
-  
-      expand += operators.join(';') + ')';
-    }
-  
-    return expand
+    return mk_query_string(this.queryDescriptor);
   }
 }
 

@@ -93,7 +93,7 @@ export function mk_rel_query_string(rqd: RelQueryDescriptor): string {
     expand += '!';
   }
 
-  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
+  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
     expand += `(`;
 
     let operators = [];
@@ -207,7 +207,7 @@ export class OQuery<T extends object> {
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): OQuery<T> {
     const type = getExpandType(this.entity, key);
-    let expand: any = new ExpandQuery(String(key), type);
+    let expand: any = new ExpandQuery(type, String(key));
     if (query) expand = query(expand);
 
     const des = expand['queryDescriptor'];
@@ -244,20 +244,11 @@ export class OQuery<T extends object> {
   }
 }
 
-export interface ExpandObjectQuery<T extends Object> {
-  select<key extends keyof T>(...keys: key[]): ExpandObjectQuery<T>;
-}
-
-export interface ExpandArrayQuery<T extends Object> {
-  select<key extends keyof T>(...keys: key[]): ExpandArrayQuery<T>;
-  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>
-}
-
 export class ExpandQuery<T extends Object> {
   protected queryDescriptor: RelQueryDescriptor;
   protected filterBuilder: FilterBuilderComplex<T>;
 
-  constructor (key: string, private entity: new () => T) {
+  constructor (private entity: new () => T, key: string) {
     this.queryDescriptor = {
       key,
       skip: 'none',
@@ -312,4 +303,69 @@ export class ExpandQuery<T extends Object> {
 
     return this;
   }
+
+  /**
+   * Adds a $expand operator to the OData query.
+   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
+   * The lambda in the second parameter allows you to build a complex inner query.
+   * 
+   * @param key the name of the relation.
+   * @param query   a lambda that build the subquery from the querybuilder.
+   * 
+   * @example q.exand('blogs', q => q.select('id', 'title')).
+   */
+  expand<key extends keyof RelationsOf<T>, U = T[key]>(
+    key: key,
+    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+  ): ExpandQuery<T> {
+    const type = getExpandType(this.entity, key);
+    let expand: any = new ExpandQuery(type, String(key));
+    if (query) expand = query(expand);
+
+    const des = expand['queryDescriptor'];
+
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      expands: this.queryDescriptor.expands.push(des)
+    };
+
+    return this;
+  }
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check you OData implementation for details).
+   * 
+   * @param props the props and mode to sort on.
+   * 
+   * @example q.orderBy({prop: 'id', mode: 'desc'}).
+   */
+  orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): ExpandQuery<T> {
+    const orderby = props.map(s => `${s.prop}${s.mode ? ` ${s.mode}` : ''}`);
+
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      orderby: this.queryDescriptor.orderby.concat(orderby).toList()
+    };
+
+    return this;
+  }
+}
+
+export interface ExpandObjectQuery<T extends Object> {
+  select<key extends keyof T>(...keys: key[]): ExpandObjectQuery<T>;
+  expand<key extends keyof RelationsOf<T>, U = T[key]>(
+    key: key,
+    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+  ): ExpandObjectQuery<T>;
+}
+
+export interface ExpandArrayQuery<T extends Object> {
+  select<key extends keyof T>(...keys: key[]): ExpandArrayQuery<T>;
+  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
+  orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): ExpandQuery<T>;
+  expand<key extends keyof RelationsOf<T>, U = T[key]>(
+    key: key,
+    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+  ): ExpandArrayQuery<T>;
 }

@@ -37,8 +37,7 @@ class User {
 }
 
 const result = new OQuery<User>(User)
-  .filter(x => x.id.biggerThan(5))
-  .expand('menu', q => q.filter(x => x.key('id').biggerThan(5)))
+  .filter(x => x.createDate.isSame(new Date(), 'minute'))
   .toString();
 
 console.log(result);

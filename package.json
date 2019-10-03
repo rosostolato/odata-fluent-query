@@ -1,16 +1,16 @@
 {
   "name": "odata-fluent-query",
-  "version": "1.0.0",
-  "description": "odata fluent query builder",
+  "version": "0.0.1",
+  "description": "OData fluent query builder",
   "main": "src/index.ts",
   "scripts": {
+    "start": "ts-node example.ts",
     "test": "jest"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "immutable": "^4.0.0-rc.12",
-    "moment": "^2.24.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

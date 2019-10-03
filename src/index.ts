@@ -1,4 +1,3 @@
-export * from './query.old'
-export * from './filterbuilder.old'
-export * from './deserilisation'
-export * from './orderbyBuilder'
+export * from './oquery';
+export * from './filterbuilder';
+export * from './orderbyBuilder';

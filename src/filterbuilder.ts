@@ -1,4 +1,3 @@
-import * as Moment from "moment";
 // import { List } from "immutable";
 
 export type FilterBuilderTyped<T> =
@@ -51,9 +50,9 @@ export interface FilterBuilderBinary {}
 
 export interface FilterBuilderDate {
   inTimeSpan(y: number, m?: number, d?: number, h?: number, mm?: number): ComplexFilterExpresion;
-  isSame(m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ComplexFilterExpresion;
-  isAfter(d: Date): ComplexFilterExpresion;
-  isBefore(d: Date): ComplexFilterExpresion;
+  isSame(m: Date, g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ComplexFilterExpresion;
+  isAfter(d: Date|string): ComplexFilterExpresion;
+  isBefore(d: Date|string): ComplexFilterExpresion;
 }
 
 export interface FilterBuilderString {
@@ -84,6 +83,8 @@ export interface FilterBuilderBoolean {
   equals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
   notEquals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
 }
+export interface FilterBuilderCollection<T extends object> {
+}
 
 export class FilterBuilder {
   constructor(protected readonly prefix: string) { }
@@ -101,108 +102,48 @@ export class FilterBuilder {
     return mk_expr('(' + exps.join(') and (') + ')');
   }
 
-  isSame = (m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
+  isSame = (m: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
     const min = this.toMinRange(m, g);
     const max = this.toMaxRange(m, g);
 
-    return this.isAfter(min.toDate()).and(this.isBefore(max.toDate()));
+    return this.isAfter(min).and(this.isBefore(max));
   }
 
-  isAfter = (d: Date) => mk_expr(`${this.prefix} gt ${d.toISOString()}`);
+  isAfter = (d: Date|string) => {
+    if (typeof d === 'string') return mk_expr(`${this.prefix} gt ${d}`);
+    else return mk_expr(`${this.prefix} gt ${d.toISOString()}`);
+  };
 
-  isBefore = (d: Date) => mk_expr(`${this.prefix} lt ${d.toISOString()}`);
+  isBefore = (d: Date|string) => {
+    if (typeof d === 'string') return mk_expr(`${this.prefix} lt ${d}`);
+    else return mk_expr(`${this.prefix} lt ${d.toISOString()}`);
+  };
 
-  protected toMaxRange = (d: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
-    if (g == 'second') {
-      return d.clone()
-        .set('millisecond', 999);
+  protected toMinRange = (d: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
+    switch (g) {
+      case 'year': d.setMonth(5);
+      case 'month': d.setDate(5);
+      case 'day': d.setHours(0);
+      case 'hour': d.setMinutes(0);
+      case 'minute': d.setSeconds(0);
+      case 'second': d.setMilliseconds(0);
     }
-    if (g == 'minute') {
-      return d.clone()
-        .set('millisecond', 999)
-        .set('second', 59);
-    }
-    if (g == 'hour') {
-      return d.clone()
-        .set('millisecond', 999)
-        .set('second', 59)
-        .set('minute', 59);
-    }
-    if (g == 'day') {
-      return d.clone()
-        .set('millisecond', 999)
-        .set('hours', 23)
-        .set('minute', 59)
-        .set('second', 59);
-    }
-    if (g == 'month') {
-      const r = d.clone()
-        .set('millisecond', 999)
-        .set('second', 59)
-        .set('minute', 59)
-        .set('hour', 23);
-      return r.set('date', r.daysInMonth());
-    }
-    if (g == 'year') {
-      return d.clone()
-        .set('month', 11)
-        .set('date', 31)
-        .set('millisecond', 999)
-        .set('second', 59)
-        .set('minute', 59)
-        .set('hour', 23);
-    }
-    return d
+    return d;
   }
 
-  protected toMinRange = (d: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
-    if (g == 'second') {
-      return d.clone()
-        .set('millisecond', 0);
-    }
-    if (g == 'minute') {
-      return d.clone()
-        .set('millisecond', 0)
-        .set('second', 0);
-    }
-    if (g == 'hour') {
-      return d.clone()
-        .set('millisecond', 0)
-        .set('second', 0)
-        .set('minute', 0);
-    }
-    if (g == 'day') {
-      return d.clone()
-        .set('millisecond', 0)
-        .set('hour', 0)
-        .set('minute', 0)
-        .set('second', 0);
-    }
-    if (g == 'month') {
-      return d.clone()
-        .set('millisecond', 0)
-        .set('second', 0)
-        .set('minute', 0)
-        .set('hour', 0)
-        .set('day', 1);
-    }
-    if (g == 'year') {
-      return d.clone()
-        .set('month', 0)
-        .set('date', 1)
-        .set('millisecond', 0)
-        .set('second', 0)
-        .set('minute', 0)
-        .set('hour', 0);
+  protected toMaxRange = (d: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
+    switch (g) {
+      case 'year': d.setMonth(5);
+      case 'month': d.setDate(30); // get days in month
+      case 'day': d.setHours(23);
+      case 'hour': d.setMinutes(59);
+      case 'minute': d.setSeconds(59);
+      case 'second': d.setMilliseconds(999);
     }
     return d;
   }
 
   // FilterBuilderString
-
-  // Equals = (s: string | FilterBuilder) => mk_expr(`${this.prefix} eq ${typeof s == 'string' ? `'${s}'` : s.GetPropName()}`)
-
-  // NotEquals = (s: string | FilterBuilder) => mk_expr(`${this.prefix} ne ${typeof s == 'string' ? `'${s}'` : s.GetPropName()}`)
 
   contains = (s: string | FilterBuilder) => mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
 
@@ -243,18 +184,6 @@ export class FilterBuilder {
     })`);
 
   // FilterBuilderNumber
-
-  // Equals = (n: number | FilterBuilder) => mk_expr(`${this.prefix} eq ${
-  //   typeof n == 'number'
-  //     ? n
-  //     : n.GetPropName()
-  //   }`)
-
-  // NotEquals = (n: number | FilterBuilder) => mk_expr(`${this.prefix} ne ${
-  //   typeof n == 'number'
-  //     ? n
-  //     : this.GetPropName()
-  //   }`)
 
   biggerThan = (n: number | FilterBuilder) => mk_expr(`${this.prefix} gt ${
     typeof n == 'number'

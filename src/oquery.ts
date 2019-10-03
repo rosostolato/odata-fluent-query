@@ -12,7 +12,7 @@ type QueryDescriptor = {
   filters: List<string>;
   expands: List<QueryDescriptor>;
   strict?: boolean;
-  count: boolean;
+  count?: boolean;
 }
 
 type RelationsOf<Model extends object> = Pick<Model, {
@@ -47,81 +47,6 @@ function mk_orderby_builder(entity: new () => any, prefix?: string) {
   }
   
   return orderMap;
-}
-
-export function mk_query_string(qd: QueryDescriptor): string {
-  let params: string[] = [];
-
-  if (qd.filters.isEmpty() == false)
-    params.push(`$filter=${qd.filters.join(' and ')}`);
-
-  if (qd.expands.isEmpty() == false) {
-    params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
-  }
-
-  if (qd.select.isEmpty() == false) {
-    params.push(`$select=${qd.select.join(',')}`);
-  }
-
-  if (qd.orderby.isEmpty() == false) {
-    params.push(`$orderby=${qd.orderby.join(',')}`);
-  }
-
-  if (qd.skip != 'none') {
-    params.push(`$skip=${qd.skip}`);
-  }
-
-  if (qd.take != 'none') {
-    params.push(`$top=${qd.take}`);
-  }
-
-  if (qd.count == true) {
-    params.push(`$count=true`);
-  }
-
-  return params.join('&');
-}
-
-export function mk_rel_query_string(rqd: QueryDescriptor): string {
-  let expand: string = rqd.key;
-
-  if (rqd.strict) {
-    expand += '!';
-  }
-
-  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
-    expand += `(`;
-
-    let operators = [];
-
-    if (rqd.skip != 'none') {
-      operators.push(`$skip=${rqd.skip}`);
-    }
-
-    if (rqd.take != 'none') {
-      operators.push(`$top=${rqd.take}`);
-    }
-
-    if (rqd.orderby.isEmpty() == false) {
-      operators.push(`$orderby=${rqd.orderby.join(',')}`);
-    }
-
-    if (rqd.select.isEmpty() == false) {
-      operators.push(`$select=${rqd.select.join(',')}`);
-    }
-
-    if (rqd.filters.isEmpty() == false) {
-      operators.push(`$filter=${rqd.filters.join(' and ')}`);
-    }
-
-    if (rqd.expands.isEmpty() == false) {
-      operators.push(`$expand=${rqd.expands.map(mk_rel_query_string).join(',')}`);
-    }
-
-    expand += operators.join(';') + ')';
-  }
-
-  return expand
 }
 
 export class OQuery<T extends object> {
@@ -397,4 +322,115 @@ export interface ExpandArrayQuery<T extends Object> {
    * @example q.paginate({page: 0, pagesize: 50}).
    */
   paginate(page: { page: number, pagesize: number }): ExpandArrayQuery<T>;
+}
+
+export function mk_query_descriptor(baseuri: string, base?: Partial<QueryDescriptor>): QueryDescriptor {
+  const empty: QueryDescriptor = {
+    filters: List<string>(),
+    expands: List<QueryDescriptor>(),
+    skip: 'none',
+    take: 'none',
+    orderby: List<string>(),
+    select: List<string>(),
+    count: false
+  }
+
+  if (base != undefined) {
+    return { ...empty, ...base }
+  }
+  return empty
+}
+
+export function mk_rel_query_descriptor(key: string, base?: Partial<QueryDescriptor>): QueryDescriptor {
+  const empty: QueryDescriptor = {
+    key,
+    skip: 'none',
+    take: 'none',
+    filters: List<string>(),
+    orderby: List<string>(),
+    select: List<string>(),
+    expands: List(),
+    strict: false
+  }
+
+  if (base != undefined) {
+    return { ...empty, ...base }
+  }
+
+  return empty
+}
+
+export function mk_query_string(qd: QueryDescriptor): string {
+  let params: string[] = [];
+
+  if (qd.filters.isEmpty() == false)
+    params.push(`$filter=${qd.filters.join(' and ')}`);
+
+  if (qd.expands.isEmpty() == false) {
+    params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
+  }
+
+  if (qd.select.isEmpty() == false) {
+    params.push(`$select=${qd.select.join(',')}`);
+  }
+
+  if (qd.orderby.isEmpty() == false) {
+    params.push(`$orderby=${qd.orderby.join(',')}`);
+  }
+
+  if (qd.skip != 'none') {
+    params.push(`$skip=${qd.skip}`);
+  }
+
+  if (qd.take != 'none') {
+    params.push(`$top=${qd.take}`);
+  }
+
+  if (qd.count == true) {
+    params.push(`$count=true`);
+  }
+
+  return params.join('&');
+}
+
+export function mk_rel_query_string(rqd: QueryDescriptor): string {
+  let expand: string = rqd.key;
+
+  if (rqd.strict) {
+    expand += '!';
+  }
+
+  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
+    expand += `(`;
+
+    let operators = [];
+
+    if (rqd.skip != 'none') {
+      operators.push(`$skip=${rqd.skip}`);
+    }
+
+    if (rqd.take != 'none') {
+      operators.push(`$top=${rqd.take}`);
+    }
+
+    if (rqd.orderby.isEmpty() == false) {
+      operators.push(`$orderby=${rqd.orderby.join(',')}`);
+    }
+
+    if (rqd.select.isEmpty() == false) {
+      operators.push(`$select=${rqd.select.join(',')}`);
+    }
+
+    if (rqd.filters.isEmpty() == false) {
+      operators.push(`$filter=${rqd.filters.join(' and ')}`);
+    }
+
+    if (rqd.expands.isEmpty() == false) {
+      operators.push(`$expand=${rqd.expands.map(mk_rel_query_string).join(',')}`);
+    }
+
+    expand += operators.join(';') + ')';
+  }
+
+  return expand
 }

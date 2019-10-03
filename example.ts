@@ -38,7 +38,7 @@ class User {
 
 const result = new OQuery<User>(User)
   .filter(x => x.id.biggerThan(5))
-  .expand('menu', q => q.filter(x => x.id.biggerThan(5)))
+  .expand('menu', q => q.filter(x => x.key('id').biggerThan(5)))
   .toString();
 
 console.log(result);

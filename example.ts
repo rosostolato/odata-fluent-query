@@ -52,7 +52,10 @@ class User {
 }
 
 const result = new OQuery(User)
-  .expand('menu', q => q.paginate(5, 10))
+  .filter(x => x.id.biggerThan(4))
+  .expand('permission', q => q.select('id'))
+  .expand('menu', q => q.paginate(5, 10).filter(x => x.module.startsWith('test')))
+  .orderBy(x => x.id)
   .toString();
 
 console.log(result);

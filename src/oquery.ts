@@ -4,25 +4,27 @@ import { getQueryKeys, getExpandType } from "./decorators";
 import { List } from "immutable";
 
 type QueryDescriptor = {
+  key?: string;
   skip: number | 'none';
   take: number | 'none';
-  orderby: string;
+  orderby: List<string>
   select: List<string>;
   filters: List<string>;
-  expands: List<RelQueryDescriptor>;
+  expands: List<QueryDescriptor>;
+  strict?: boolean;
   count: boolean;
 }
 
-type RelQueryDescriptor = {
-  key: string
-  skip: number | 'none'
-  take: number | 'none'
-  orderby: List<string>
-  select: List<string>
-  filters: List<string>
-  expands: List<RelQueryDescriptor>,
-  strict: boolean
-}
+// type RelQueryDescriptor = {
+//   key: string;
+//   skip: number | 'none';
+//   take: number | 'none';
+//   orderby: List<string>;
+//   select: List<string>;
+//   filters: List<string>;
+//   expands: List<RelQueryDescriptor>;
+//   strict: boolean;
+// }
 
 type RelationsOf<Model extends object> = Pick<Model, {
   [P in keyof Model]: 
@@ -67,8 +69,12 @@ export function mk_query_string(qd: QueryDescriptor): string {
     params.push(`$select=${qd.select.join(',')}`);
   }
 
-  if (qd.orderby) {
-    params.push(`$orderby=${qd.orderby}`);
+  // if (qd.orderby) {
+  //   params.push(`$orderby=${qd.orderby}`);
+  // }
+
+  if (qd.orderby.isEmpty() == false) {
+    params.push(`$orderby=${qd.orderby.join(',')}`);
   }
 
   if (qd.skip != 'none') {
@@ -86,7 +92,7 @@ export function mk_query_string(qd: QueryDescriptor): string {
   return params.join('&');
 }
 
-export function mk_rel_query_string(rqd: RelQueryDescriptor): string {
+export function mk_rel_query_string(rqd: QueryDescriptor): string {
   let expand: string = rqd.key;
 
   if (rqd.strict) {
@@ -133,13 +139,16 @@ export class OQuery<T extends object> {
   protected filterBuilder: FilterBuilderComplex<T>;
   protected orderby: OrderByBuilderComplex<T>;
 
-  constructor(private entity: new () => T) {
+  constructor(entity: new () => T);
+  constructor(entity: new () => T, key: string);
+  constructor(private entity: new () => T, key?: string) {
     this.queryDescriptor = {
+      key,
       filters: List<string>(),
-      expands: List<RelQueryDescriptor>(),
+      expands: List<QueryDescriptor>(),
       skip: 'none',
       take: 'none',
-      orderby: '',
+      orderby: List<string>(),
       select: List<string>(),
       count: false
     }
@@ -206,8 +215,8 @@ export class OQuery<T extends object> {
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): OQuery<T> {
-    const type = getExpandType(this.entity, key);
-    let expand: any = new ExpandQuery(type, String(key));
+    const type: any = getExpandType(this.entity, key);
+    let expand: any = new OQuery(type, String(key));
     if (query) expand = query(expand);
 
     const des = expand['queryDescriptor'];
@@ -233,7 +242,7 @@ export class OQuery<T extends object> {
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      orderby: orderby
+      orderby: this.queryDescriptor.orderby.concat(orderby).toList()
     };
 
     return this;
@@ -291,156 +300,6 @@ export class OQuery<T extends object> {
   }
 }
 
-export class ExpandQuery<T extends Object> {
-  protected queryDescriptor: RelQueryDescriptor;
-  protected filterBuilder: FilterBuilderComplex<T>;
-
-  constructor (private entity: new () => T, key: string) {
-    this.queryDescriptor = {
-      key,
-      skip: 'none',
-      take: 'none',
-      filters: List<string>(),
-      orderby: List<string>(),
-      select: List<string>(),
-      expands: List(),
-      strict: false
-    }
-
-    const keys: string[] = getQueryKeys(entity.prototype);
-    const map: any = {};
-
-    keys.forEach(key => map[key] = new FilterBuilder(key));
-    this.filterBuilder = map;
-  }
-
-  /**
-   * selects properties from the model.
-   * @param keys the names of the properties.
-   * 
-   * @example q => q.select('id', 'title').
-   */
-  select<key extends keyof T>(...keys: key[]): ExpandQuery<T> {
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      select: List(keys.map(String))
-    };
-
-    return this;
-  }
-
-  /**
-   * Adds a $filter operator to the OData query.
-   * Multiple calls to Filter will be merged with `and`.
-   * 
-   * @param conditional a lambda that builds an expression from the builder.
-   * 
-   * @example q.Filter(u => u.Id.Equals(1)).
-   */
-  filter(conditional: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandQuery<T> {
-    const expr = conditional(this.filterBuilder)
-    if (expr.kind == 'none') {
-      return this
-    }
-
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
-    };
-
-    return this;
-  }
-
-  /**
-   * Adds a $expand operator to the OData query.
-   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
-   * The lambda in the second parameter allows you to build a complex inner query.
-   * 
-   * @param key the name of the relation.
-   * @param query   a lambda that build the subquery from the querybuilder.
-   * 
-   * @example q.exand('blogs', q => q.select('id', 'title')).
-   */
-  expand<key extends keyof RelationsOf<T>, U = T[key]>(
-    key: key,
-    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
-  ): ExpandQuery<T> {
-    const type = getExpandType(this.entity, key);
-    let expand: any = new ExpandQuery(type, String(key));
-    if (query) expand = query(expand);
-
-    const des = expand['queryDescriptor'];
-
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      expands: this.queryDescriptor.expands.push(des)
-    };
-
-    return this;
-  }
-
-  /**
-   * Adds a $orderby operator to the OData query.
-   * Ordering over relations is supported (check you OData implementation for details).
-   * 
-   * @param props the props and mode to sort on.
-   * 
-   * @example q.orderBy({prop: 'id', mode: 'desc'}).
-   */
-  orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): ExpandQuery<T> {
-    const orderby = props.map(s => `${s.prop}${s.mode ? ` ${s.mode}` : ''}`);
-
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      orderby: this.queryDescriptor.orderby.concat(orderby).toList()
-    };
-
-    return this;
-  }
-
-  /**
-   * Adds a $skip and $top to the OData query.
-   * The pageindex in zero-based. This method automatically adds $count=true to the query.
-   * 
-   * @param page page index ($skip).
-   * @param pagesize page size ($top);
-   * 
-   * @example q.paginate(0, 50).
-   */
-  paginate(page: number, pagesize: number): ExpandQuery<T>;
-
-  /**
-   * Adds a $skip and $top to the OData query.
-   * The pageindex in zero-based.
-   * 
-   * @param page the object with the pagesize and page.
-   * 
-   * @example q.paginate({page: 0, pagesize: 10, count: false}).
-   */
-  paginate(page: { page: number, pagesize: number }): ExpandQuery<T>
-
-  paginate(page: number|{ page: number, pagesize: number }, pagesize?: number): ExpandQuery<T> {
-    let o: { page: number, pagesize: number };
-    
-    if (typeof page === 'number') {
-      o = {
-        page,
-        pagesize
-      }
-    } else {
-      o = page;
-    }
-
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      take: o.pagesize,
-      skip: o.pagesize * o.page
-    };
-
-    return this;
-  }
-}
-
 export interface ExpandObjectQuery<T extends Object> {
   /**
    * selects properties from the model.
@@ -493,7 +352,7 @@ export interface ExpandArrayQuery<T extends Object> {
    * 
    * @example q.orderBy({prop: 'id', mode: 'desc'}).
    */
-  orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): ExpandQuery<T>;
+  orderBy(...props: { prop: keyof T, mode?: 'asc' | 'desc' }[]): OQuery<T>;
 
   /**
    * Adds a $expand operator to the OData query.
@@ -519,7 +378,7 @@ export interface ExpandArrayQuery<T extends Object> {
    * 
    * @example q.paginate(0, 50).
    */
-  paginate(page: number, pagesize: number): ExpandQuery<T>;
+  paginate(page: number, pagesize: number): ExpandArrayQuery<T>;
 
   /**
    * Adds a $skip and $top to the OData query.
@@ -529,5 +388,5 @@ export interface ExpandArrayQuery<T extends Object> {
    * 
    * @example q.paginate({page: 0, pagesize: 10, count: false}).
    */
-  paginate(page: { page: number, pagesize: number }): ExpandQuery<T>;
+  paginate(page: { page: number, pagesize: number }): ExpandArrayQuery<T>;
 }

@@ -1,5 +1,5 @@
 import * as Moment from "moment";
-import { List } from "immutable";
+// import { List } from "immutable";
 
 export type FilterBuilderTyped<T> =
   T extends Uint8Array ? FilterBuilderBinary :
@@ -36,52 +36,51 @@ export class FilterExpresionUnit {
 
 export interface IFilterExpresion {
   kind: 'expr';
-  not: () => IFilterExpresion;
-  and: (exp: IFilterExpresion) => IFilterExpresion;
-  or: (exp: IFilterExpresion) => IFilterExpresion;
-  getFilterExpresion: () => string;
+  not(): IFilterExpresion;
+  and(exp: IFilterExpresion): IFilterExpresion;
+  or(exp: IFilterExpresion): IFilterExpresion;
+  getFilterExpresion(): string;
 }
 
 export const mk_expr_unit = () => new FilterExpresionUnit();
-
 const mk_expr = (exp: string) => new ComplexFilterExpresion(exp);
 
 export interface FilterBuilderBinary {}
 
 export interface FilterBuilderDate {
-  inTimeSpan: (y: number, m?: number, d?: number, h?: number, mm?: number) => ComplexFilterExpresion;
-  isSame: (m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second') => ComplexFilterExpresion;
-  isAfter: (d: Date) => ComplexFilterExpresion;
-  isBefore: (d: Date) => ComplexFilterExpresion;
+  inTimeSpan(y: number, m?: number, d?: number, h?: number, mm?: number): ComplexFilterExpresion;
+  isSame(m: Moment.Moment, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ComplexFilterExpresion;
+  isAfter(d: Date): ComplexFilterExpresion;
+  isBefore(d: Date): ComplexFilterExpresion;
 }
 
 export interface FilterBuilderString {
-  getPropName: () => string;
-  equals: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  contains: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  notNull: () => ComplexFilterExpresion;
-  equalsCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  notEquals: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  notEqualsCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  containsCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  startsWith: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  startsWithCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  endsWith: (s: string | FilterBuilderString) => ComplexFilterExpresion;
-  endsWithCaseInsensitive: (s: string | FilterBuilderString) => ComplexFilterExpresion;
+  getPropName(): string;
+  equals(s: string | FilterBuilderString): ComplexFilterExpresion;
+  contains(s: string | FilterBuilderString): ComplexFilterExpresion;
+  notNull(): ComplexFilterExpresion;
+  equalsCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
+  notEquals(s: string | FilterBuilderString): ComplexFilterExpresion;
+  notEqualsCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
+  containsCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
+  startsWith(s: string | FilterBuilderString): ComplexFilterExpresion;
+  startsWithCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
+  endsWith(s: string | FilterBuilderString): ComplexFilterExpresion;
+  endsWithCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
 }
 
 export interface FilterBuilderNumber {
-  getPropName: () => string;
-  equals: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
-  notEquals: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
-  biggerThan: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
-  lessThan: (n: number | FilterBuilderNumber) => ComplexFilterExpresion;
+  getPropName(): string;
+  equals(n: number | FilterBuilderNumber): ComplexFilterExpresion;
+  notEquals(n: number | FilterBuilderNumber): ComplexFilterExpresion;
+  biggerThan(n: number | FilterBuilderNumber): ComplexFilterExpresion;
+  lessThan(n: number | FilterBuilderNumber): ComplexFilterExpresion;
 }
 
 export interface FilterBuilderBoolean {
-  getPropName: () => string;
-  equals: (b: boolean | FilterBuilderBoolean) => ComplexFilterExpresion;
-  notEquals: (b: boolean | FilterBuilderBoolean) => ComplexFilterExpresion;
+  getPropName(): string;
+  equals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
+  notEquals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
 }
 
 export class FilterBuilder {

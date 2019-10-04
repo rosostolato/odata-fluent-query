@@ -104,7 +104,12 @@ export class OQuery<T extends object> {
       expression = key;
 
       // read funciton string
-      key = this.readPropertyKey(expression);
+      key = getPropertyKey(expression);
+
+      if (!key) {
+        throw new Error('Could not find property key. Use the second overload of filter instead');
+      }
+
       const builder = { [key]: new FilterBuilder(key) };
       
       // run expression
@@ -184,9 +189,13 @@ export class OQuery<T extends object> {
       orderby = orderby.get();
     } else {
       // read funciton string
-      const key = this.readPropertyKey(keyGetter);
-      const builder = { [key]: new OrderByProp(key) };
+      const key = getPropertyKey(keyGetter);
 
+      if (!key) {
+        throw new Error('Could not find property key. Use the second overload of orderBy instead');
+      }
+
+      const builder = { [key]: new OrderByProp(key) };
       orderby = keyGetter(builder).get();
     }
 
@@ -243,16 +252,6 @@ export class OQuery<T extends object> {
    */
   toString(): string {
     return mk_query_string(this.queryDescriptor);
-  }
-
-  /**
-   * read funciton string
-   * 
-   * @param expression expression function
-   */
-  private readPropertyKey(expression: (_: any) => any) {
-    const funcStr = expression.toString();
-    return RegExp(/return \w+\.(\w+)/).exec(funcStr)[1];
   }
 }
 
@@ -478,4 +477,14 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
   }
 
   return expand
+}
+/**
+ * get property key name used in the expression function
+ * 
+ * @param expression expression function
+ */
+export function getPropertyKey(expression: (_: any) => any): string {
+  const keyExp = /(return *|=> *?)[a-zA-Z_0-9]+?\.([a-zA-Z_0-9]+)/;
+  const funcStr = expression.toString();
+  return new RegExp(keyExp).exec(funcStr)[2];
 }

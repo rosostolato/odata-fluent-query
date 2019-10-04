@@ -1,6 +1,6 @@
 {
   "name": "odata-fluent-query",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "OData fluent query builder",
   "main": "src/index.ts",
   "repository": {
@@ -14,8 +14,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "immutable": "^4.0.0-rc.12",
-    "reflect-metadata": "^0.1.13"
+    "immutable": "^4.0.0-rc.12"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",

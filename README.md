@@ -2,36 +2,34 @@
 
 This is a fork of [typescript-odata-client](https://www.npmjs.com/package/typescript-odata-client)
 
-The only difference is that this lib only generates the query string, so you can use it with your own implementation of http request.
+The difference is that this lib only generates the query string, so you can use it with your own implementation of http request.
 
 **Clientside queries with extensive filtering and typesafe joins**
 
 * [Development](#development)
-* [Generating the QueryContext](#generating-the-querycontext)
-* [Using the QueryContext](#using-the-querycontext)
 * [Filtering with `Filter`](#filtering-with-filter)
 * [Expanding with `Expand`](#expanding-with-expand)
 * [Selecting properties with `Select`](#selecting-properties-with-select)
 * [Ordering with `OrderBy`](#ordering-with-orderby)
 * [Executing queries](#executing-queries)
 
-> See also the [examples](./EXAMPLES.md) to see the library in action
+<!-- > See also the [examples](./EXAMPLES.md) to see the library in action
 
-> Looking for all the filteroperators? They are listed [here](./FILTER_BUILDER_API.md)
+> Looking for all the filteroperators? They are listed [here](./FILTER_BUILDER_API.md) -->
 
 ## Development
 
-Dependencies are managed by using `yarn`. To install all the dependencies run:
+Dependencies are managed by using `npm`. To install all the dependencies run:
 ```sh
-yarn
+npm
 ```
 To build the project run:
 ```sh
-yarn build
+npm build
 ```
 The output files will be placed in the `build` directory. This project contains unittest using `jest` and `ts-jest`. They are placed in the `__test__` directory. To run all the test run:
 ```sh
-yarn test
+npm test
 ```
 After this you can open `coverage/lcov-report/index.html` in your browser to see all the details about you tests. To publish the package you can run:
 ```sh

@@ -25,7 +25,7 @@ class User {
 }
 
 const result = new OQuery<User>()
-  .expand('menu', m => m.filter(x => x.id.biggerThan(5)).filter('id', id => id.biggerThan(5)).orderBy(x => x.id))
-  .toString();
+.filter(u => u.mail.equals('test').and(u.displayName.contains('dave')))
+.toString();
 
 console.log(result);

@@ -3,8 +3,9 @@ import { OQuery } from './src/oquery';
 
 class UserMenu {
   id: number;
-  module: string;
+  title: string;
   value: boolean;
+  reactions: UserMenu[];
 }
 
 class Permission {
@@ -21,11 +22,11 @@ class User {
   createDate: Date;
 
   permission: Permission;
-  menu: UserMenu[];
+  blogs: UserMenu[];
 }
 
 const result = new OQuery<User>()
-.filter(u => u.mail.equals('test@test.com').and(u.displayName.contains('test')))
+.orderBy(x => x.permission.id)
 .toString();
 
 console.log(result);

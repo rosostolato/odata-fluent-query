@@ -104,13 +104,14 @@ export class OQuery<T extends object> {
       expression = key;
 
       // read funciton string
-      key = getPropertyKey(expression);
+      const keys = getPropertyKey(expression);
 
-      if (!key) {
+      if (!keys || !keys.length) {
         throw new Error('Could not find property key. Use the second overload of filter instead');
       }
 
-      const builder = { [key]: new FilterBuilder(key) };
+      const builder: { [TKey in keyof T]?: FilterBuilder } = { };
+      keys.forEach(k => builder[k] = new FilterBuilder(k));
       
       // run expression
       expr = expression(builder);
@@ -189,13 +190,15 @@ export class OQuery<T extends object> {
       orderby = orderby.get();
     } else {
       // read funciton string
-      const key = getPropertyKey(keyGetter);
+      const keys = getPropertyKey(keyGetter);
 
-      if (!key) {
+      if (!keys || !keys.length) {
         throw new Error('Could not find property key. Use the second overload of orderBy instead');
       }
 
-      const builder = { [key]: new OrderByProp(key) };
+      const builder: { [TKey in keyof T]?: OrderByProp } = { };
+      keys.forEach(k => builder[k] = new OrderByProp(k));
+
       orderby = keyGetter(builder).get();
     }
 
@@ -478,13 +481,24 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
 
   return expand
 }
+
 /**
  * get property key name used in the expression function
  * 
  * @param expression expression function
  */
-export function getPropertyKey(expression: (_: any) => any): string {
-  const keyExp = /(return *|=> *?)[a-zA-Z_0-9]+?\.([a-zA-Z_0-9]+)/;
-  const funcStr = expression.toString();
-  return new RegExp(keyExp).exec(funcStr)[2];
+export function getPropertyKey(expression: (_: any) => any): string[] {
+  let funcStr = expression.toString();
+  const arg = new RegExp(/(return *|=> *?)([a-zA-Z_0-9]+)/).exec(funcStr)[2];
+
+  let match: RegExpExecArray;
+  const keys: string[] = [];
+  const reg = new RegExp(arg + '\\.([a-zA-Z_0-9]+)');
+
+  while (match = reg.exec(funcStr)) {
+    funcStr = funcStr.replace(reg, '');
+    keys.push(match[1]);
+  }
+
+  return keys;
 }

@@ -25,7 +25,7 @@ class User {
 }
 
 const result = new OQuery<User>()
-.filter(u => u.mail.equals('test').and(u.displayName.contains('dave')))
+.filter(u => u.mail.equals('test@test.com').and(u.displayName.contains('test')))
 .toString();
 
 console.log(result);

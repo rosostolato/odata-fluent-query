@@ -3,7 +3,7 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "declaration": true,
-        "outDir": "buildd",
+        "outDir": "build",
         "target": "es5",
         "lib": [
             "es2018",

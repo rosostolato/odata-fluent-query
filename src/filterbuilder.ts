@@ -213,16 +213,16 @@ export class FilterBuilder {
   notEquals = (x: string|FilterBuilder | number|FilterBuilder | boolean|FilterBuilder) => {
     switch (typeof x) {
       case 'string':
-      return mk_expr(`${this.prefix} eq '${x}'`);
+      return mk_expr(`${this.prefix} ne '${x}'`);
 
       case 'number':
-      return mk_expr(`${this.prefix} eq ${x}`);
+      return mk_expr(`${this.prefix} ne ${x}`);
 
       case 'boolean':
-      return mk_expr(`${this.prefix} eq ${x}`);
+      return mk_expr(`${this.prefix} ne ${x}`);
 
       default:
-      return mk_expr(`${this.prefix} eq ${x.getPropName()}`);
+      return mk_expr(`${this.prefix} ne ${x.getPropName()}`);
     }
   };
 }

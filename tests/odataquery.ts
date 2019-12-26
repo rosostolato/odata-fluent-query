@@ -17,6 +17,22 @@ describe('testing ODataQuery select', () => {
   })
 })
 
+describe('testing ODataQuery count', () => {
+  test('count', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.count().toString();
+    const expected = "$count=true";
+    expect(actual).toBe(expected);
+  })
+
+  test('count on expand', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.expand('posts', q => q.count()).toString();
+    const expected = "$expand=posts($count=true)";
+    expect(actual).toBe(expected);
+  })
+})
+
 describe('testing ODataQuery orderby', () => {
   test('orderby', () => {
     const query = new ODataQuery<User>();

@@ -3,15 +3,15 @@ import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
 import { List } from "immutable";
 
 type QueryDescriptor = {
-  key?: string;
-  skip: number | 'none';
-  take: number | 'none';
-  orderby: List<string>
-  select: List<string>;
-  filters: List<string>;
-  expands: List<QueryDescriptor>;
-  strict?: boolean;
-  count?: boolean;
+  key?:     string;
+  skip:     number | 'none';
+  take:     number | 'none';
+  orderby:  List<string>
+  select:   List<string>;
+  filters:  List<string>;
+  expands:  List<QueryDescriptor>;
+  strict?:  boolean;
+  count?:   boolean;
 }
 
 type RelationsOf<Model extends object> = Pick<Model, {
@@ -271,6 +271,18 @@ export class ODataQuery<T extends object> {
   }
 
   /**
+   * set $count=true
+   */
+  count() {
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      count: true
+    };
+
+    return this;
+  }
+
+  /**
    * exports query to string
    */
   toString(): string {
@@ -396,22 +408,28 @@ export interface ExpandArrayQuery<T extends Object> {
    * @example q.paginate({ pagesize: 50, page: 0, count: false }).
    */
   paginate(options: { pagesize: number, page?: number, count?: boolean }): ExpandArrayQuery<T>;
+
+  /**
+   * set $count=true
+   */
+  count(): ExpandArrayQuery<T>;
 }
 
 export function mk_query_descriptor(baseuri: string, base?: Partial<QueryDescriptor>): QueryDescriptor {
   const empty: QueryDescriptor = {
     filters: List<string>(),
     expands: List<QueryDescriptor>(),
-    skip: 'none',
-    take: 'none',
     orderby: List<string>(),
     select: List<string>(),
+    skip: 'none',
+    take: 'none',
     count: false
   }
 
   if (base != undefined) {
     return { ...empty, ...base }
   }
+
   return empty
 }
 
@@ -420,6 +438,7 @@ export function mk_rel_query_descriptor(key: string, base?: Partial<QueryDescrip
     key,
     skip: 'none',
     take: 'none',
+    count: false,
     filters: List<string>(),
     orderby: List<string>(),
     select: List<string>(),
@@ -487,7 +506,7 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
     expand += '!';
   }
 
-  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none') {
+  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none' || rqd.count != false) {
     expand += `(`;
 
     let operators = [];

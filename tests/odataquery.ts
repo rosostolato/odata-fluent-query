@@ -372,3 +372,102 @@ describe('testing ODataQuery filter', () => {
     expect(actual).toBe(expected);
   })
 })
+
+describe('testing ODataQuery expand', () => {
+  // one2one
+  test('expand', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.expand('address').toString();
+    const expected = "$expand=address";
+    expect(actual).toBe(expected);
+  })
+
+  test('expand and select', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('address', q => q.select('code'))
+      .toString();
+
+    const expected = "$expand=address($select=code)";
+    expect(actual).toBe(expected);
+  })
+
+  test('expand twice', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('address', q => q.expand('user', q => q.select('id')))
+      .toString();
+
+    const expected = "$expand=address($expand=user($select=id))";
+    expect(actual).toBe(expected);
+  })
+
+  // one2many
+  test('expand and filter', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('posts', e => e.filter(q => q.content.startsWith('test')))
+      .toString();
+    
+    const expected = "$expand=posts($filter=startswith(content, 'test'))";
+    expect(actual).toBe(expected);
+  })
+
+  test('expand and filter composed', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('posts', e => e.filter(q =>
+        q.content.startsWith('test')
+        .or(q.id.biggerThan(5))))
+      .toString();
+    
+    const expected = "$expand=posts($filter=startswith(content, 'test') or id gt 5)";
+    expect(actual).toBe(expected);
+  })
+
+  test('expand and filter composed multiline', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('posts', e => e
+        .filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
+        .filter(q => q.date.isAfter(new Date(2020, 0))))
+      .toString();
+    
+    const expected = "$expand=posts($filter=(startswith(content, 'test') or id gt 5) and date gt 2020-01-01T02:00:00.000Z)";
+    expect(actual).toBe(expected);
+  })
+  
+  test('expand and orderby', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('posts', e => e.orderBy(q => q.id.desc()))
+      .toString();
+    
+    const expected = "$expand=posts($orderby=id desc)";
+    expect(actual).toBe(expected);
+  })
+  
+  test('expand and paginate', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('posts', e => e.paginate(0))
+      .toString();
+    
+    const expected = "$expand=posts($top=0;$count=true)";
+    expect(actual).toBe(expected);
+  })
+  
+  test('expand and paginate object', () => {
+    const query = new ODataQuery<User>();
+    const actual = query
+      .expand('posts', e => e.paginate({
+        pagesize: 10,
+        page: 5,
+        count: false
+      }))
+      .toString();
+    
+    const expected = "$expand=posts($skip=50;$top=10)";
+    expect(actual).toBe(expected);
+  })
+})

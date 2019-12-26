@@ -242,18 +242,18 @@ export class ODataQuery<T extends object> {
       count?: boolean
     };
     
-    if (typeof options === 'object') {
-      data = options;
-
-      if (data.count === undefined) {
-        data.count = true;
-      }
-    } else {
+    if (typeof options === 'number') {
       data = {
         pagesize: options,
         page: page,
         count: true
       };
+    } else {
+      data = options;
+
+      if (data.count === undefined) {
+        data.count = true;
+      }
     }
 
     this.queryDescriptor = {
@@ -374,27 +374,28 @@ export interface ExpandArrayQuery<T extends Object> {
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ExpandArrayQuery<T>;
-  
+
   /**
    * Adds a $skip and $top to the OData query.
-   * The pageindex in zero-based. This method automatically adds $count=true to the query.
+   * The pageindex in zero-based. 
+   * This method automatically adds $count=true to the query.
    * 
-   * @param page page index ($skip).
-   * @param pagesize page size ($top);
+   * @param pagesize page index ($skip).
+   * @param page page size ($top)
    * 
-   * @example q.paginate(0, 50).
+   * @example q.paginate(50, 0).
    */
-  paginate(page: number, pagesize: number): ExpandArrayQuery<T>;
+  paginate(pagesize: number, page?: number): ExpandArrayQuery<T>;
 
   /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
    * 
-   * @param page the object with the pagesize and page.
+   * @param options paginate query options
    * 
-   * @example q.paginate({page: 0, pagesize: 50}).
+   * @example q.paginate({ pagesize: 50, page: 0, count: false }).
    */
-  paginate(page: { page: number, pagesize: number }): ExpandArrayQuery<T>;
+  paginate(options: { pagesize: number, page?: number, count?: boolean }): ExpandArrayQuery<T>;
 }
 
 export function mk_query_descriptor(baseuri: string, base?: Partial<QueryDescriptor>): QueryDescriptor {
@@ -499,6 +500,10 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
       operators.push(`$top=${rqd.take}`);
     }
 
+    if (rqd.count == true) {
+      operators.push(`$count=true`);
+    }
+
     if (rqd.orderby.isEmpty() == false) {
       operators.push(`$orderby=${rqd.orderby.join(',')}`);
     }
@@ -508,7 +513,11 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
     }
 
     if (rqd.filters.isEmpty() == false) {
-      operators.push(`$filter=(${rqd.filters.join(') and (')})`);
+      if (rqd.filters.count() > 1) {
+        operators.push(`$filter=${rqd.filters.map(mk_query_string_parentheses).join(' and ')}`);
+      } else {
+        operators.push(`$filter=${rqd.filters.join()}`);
+      }
     }
 
     if (rqd.expands.isEmpty() == false) {

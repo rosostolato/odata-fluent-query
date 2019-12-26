@@ -12,19 +12,19 @@ export type OrderByBuilderComplex<T extends object> = {
 }
 
 export interface OrderBy {
-  get: () => string;
+  _get: () => string;
 }
 
 export class OrderWithAscOrDesc implements OrderBy {
   constructor(private readonly key: string) { }
 
-  get = () => this.key;
+  _get = () => this.key;
 }
 
 export class OrderByProp implements OrderBy {
   constructor(private readonly key: string) { }
 
-  get() {
+  _get() {
     return this.key;
   }
 

@@ -190,7 +190,7 @@ export class ODataQuery<T extends object> {
       }
 
       // get string
-      orderby = orderby.get();
+      orderby = orderby._get();
     } else {
       // read funciton string
       const keys = getPropertyKey(keyGetter);
@@ -202,7 +202,7 @@ export class ODataQuery<T extends object> {
       const builder: { [TKey in keyof T]?: OrderByProp } = { };
       keys.forEach(k => builder[k] = new OrderByProp(k));
 
-      orderby = keyGetter(builder).get();
+      orderby = keyGetter(builder)._get();
     }
 
     this.queryDescriptor = {

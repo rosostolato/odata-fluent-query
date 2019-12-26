@@ -215,40 +215,57 @@ export class ODataQuery<T extends object> {
 
   /**
    * Adds a $skip and $top to the OData query.
-   * The pageindex in zero-based. This method automatically adds $count=true to the query.
+   * The pageindex in zero-based. 
+   * This method automatically adds $count=true to the query.
    * 
-   * @param page page index ($skip).
-   * @param pagesize page size ($top);
+   * @param pagesize page index ($skip).
+   * @param page page size ($top)
    * 
-   * @example q.paginate(0, 50).
+   * @example q.paginate(50, 0).
    */
-  paginate(page: number, pagesize: number): ODataQuery<T>;
+  paginate(pagesize: number, page?: number): ODataQuery<T>;
 
   /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
    * 
-   * @param page the object with the pagesize and page.
+   * @param options paginate query options
    * 
-   * @example q.paginate({page: 0, pagesize: 50, count: false}).
+   * @example q.paginate({ pagesize: 50, page: 0, count: false }).
    */
-  paginate(page: { page: number, pagesize: number, count?: boolean }): ODataQuery<T>
+  paginate(options: { pagesize: number, page?: number, count?: boolean }): ODataQuery<T>
 
-  paginate(page: any, pagesize?: number): ODataQuery<T> {
-    let o: { page: number, pagesize: number, count?: boolean };
+  paginate(options: any, page?: number): ODataQuery<T> {
+    let data: {
+      pagesize: number,
+      page?: number,
+      count?: boolean
+    };
     
-    if (typeof page === 'number') {
-      o = { page, pagesize, count: true };
+    if (typeof options === 'object') {
+      data = options;
+
+      if (data.count === undefined) {
+        data.count = true;
+      }
     } else {
-      o = page;
+      data = {
+        pagesize: options,
+        page: page,
+        count: true
+      };
     }
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      take: o.pagesize,
-      skip: o.pagesize * o.page,
-      count: o.count || true
+      take: data.pagesize,
+      skip: data.pagesize * data.page,
+      count: data.count
     };
+
+    if (!this.queryDescriptor.skip) {
+      this.queryDescriptor.skip = 'none';
+    }
 
     return this;
   }

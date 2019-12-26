@@ -17,6 +17,87 @@ describe('testing ODataQuery select', () => {
   })
 })
 
+describe('testing ODataQuery orderby', () => {
+  test('orderby', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy(q => q.mail).toString();
+    const expected = "$orderby=mail";
+    expect(actual).toBe(expected);
+  })
+
+  test('orderby explicit', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy('mail').toString();
+    const expected = "$orderby=mail";
+    expect(actual).toBe(expected);
+  })
+
+  test('orderby asc', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy(q => q.mail.asc()).toString();
+    const expected = "$orderby=mail asc";
+    expect(actual).toBe(expected);
+  })
+
+  test('orderby asc explicit', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy('mail', 'asc').toString();
+    const expected = "$orderby=mail asc";
+    expect(actual).toBe(expected);
+  })
+
+  test('orderby desc', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy(q => q.mail.desc()).toString();
+    const expected = "$orderby=mail desc";
+    expect(actual).toBe(expected);
+  })
+
+  test('orderby desc explicit', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy('mail', 'desc').toString();
+    const expected = "$orderby=mail desc";
+    expect(actual).toBe(expected);
+  })
+})
+
+describe('testing ODataQuery paginate', () => {
+  test('paginate', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.paginate(10).toString();
+    const expected = "$top=10&$count=true";
+    expect(actual).toBe(expected);
+  })
+
+  test('paginate with skip', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.paginate(25, 5).toString();
+    const expected = "$skip=125&$top=25&$count=true";
+    expect(actual).toBe(expected);
+  })
+
+  test('paginate object', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.paginate({ pagesize: 10 }).toString();
+    const expected = "$top=10&$count=true";
+    expect(actual).toBe(expected);
+  })
+
+  test('paginate object with skip', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.paginate({ page: 5, pagesize: 25 }).toString();
+    const expected = "$skip=125&$top=25&$count=true";
+    expect(actual).toBe(expected);
+  })
+
+  test('paginate disable count', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.paginate({ page: 5, pagesize: 25, count: false }).toString();
+    const expected = "$skip=125&$top=25";
+    expect(actual).toBe(expected);
+  })
+})
+
 describe('testing ODataQuery filter', () => {
   // string
   test('contains', () => {
@@ -288,50 +369,6 @@ describe('testing ODataQuery filter', () => {
       .toString();
 
     const expected = "$filter=startswith(mail, 'test') and startswith(givenName, 'test')";
-    expect(actual).toBe(expected);
-  })
-})
-
-describe('testing ODataQuery orderby', () => {
-  test('orderby', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.orderBy(q => q.mail).toString();
-    const expected = "$orderby=mail";
-    expect(actual).toBe(expected);
-  })
-
-  test('orderby explicit', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.orderBy('mail').toString();
-    const expected = "$orderby=mail";
-    expect(actual).toBe(expected);
-  })
-
-  test('orderby asc', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.orderBy(q => q.mail.asc()).toString();
-    const expected = "$orderby=mail asc";
-    expect(actual).toBe(expected);
-  })
-
-  test('orderby asc explicit', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.orderBy('mail', 'asc').toString();
-    const expected = "$orderby=mail asc";
-    expect(actual).toBe(expected);
-  })
-
-  test('orderby desc', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.orderBy(q => q.mail.desc()).toString();
-    const expected = "$orderby=mail desc";
-    expect(actual).toBe(expected);
-  })
-
-  test('orderby desc explicit', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.orderBy('mail', 'desc').toString();
-    const expected = "$orderby=mail desc";
     expect(actual).toBe(expected);
   })
 })

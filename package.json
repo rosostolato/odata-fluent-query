@@ -1,6 +1,6 @@
 {
   "name": "odata-fluent-query",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OData fluent query builder",
   "main": "src/index.ts",
   "repository": {

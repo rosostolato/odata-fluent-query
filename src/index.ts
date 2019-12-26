@@ -1,3 +1,3 @@
-export { OQuery, ExpandArrayQuery, ExpandObjectQuery } from './oquery';
+export { ODataQuery as OQuery, ExpandArrayQuery, ExpandObjectQuery } from './odataquery';
 export * from './filterbuilder';
 export * from './orderbyBuilder';

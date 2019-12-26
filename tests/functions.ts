@@ -1,4 +1,4 @@
-import { mk_query_string, mk_query_descriptor, mk_rel_query_string, mk_rel_query_descriptor, getPropertyKey } from "../src/oquery";
+import { mk_query_string, mk_query_descriptor, mk_rel_query_string, mk_rel_query_descriptor, getPropertyKey } from "../src/odataquery";
 import { List } from "immutable";
 
 describe('testing getPropertyKey function', () => {

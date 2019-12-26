@@ -26,11 +26,14 @@ type ExpandQueryComplex<T> = T extends (infer U)[]
   ? ExpandArrayQuery<U>
   : ExpandObjectQuery<T>
 
-export class OQuery<T extends object> {
+/**
+ * OData Query instance where T is the object that will be used on query
+ */
+export class ODataQuery<T extends object> {
   protected queryDescriptor: QueryDescriptor;
 
   /**
-   * Create a new instance of OQuery
+   * Create a new instance of ODataQuery
    */
   constructor();
 
@@ -62,7 +65,7 @@ export class OQuery<T extends object> {
    * 
    * @example q.select('id', 'title').
    */
-  select<key extends keyof T>(...keys: key[]): OQuery<T> {
+  select<key extends keyof T>(...keys: key[]): ODataQuery<T> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       select: List(keys.map(String)),
@@ -80,7 +83,7 @@ export class OQuery<T extends object> {
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(expression: (_: FilterBuilderComplex<T>) => FilterExpresion): OQuery<T>;
+  filter(expression: (_: FilterBuilderComplex<T>) => FilterExpresion): ODataQuery<T>;
   
   /**
    * Adds a $filter operator to the OData query.
@@ -91,9 +94,9 @@ export class OQuery<T extends object> {
    * 
    * @example q.filter('id', id => id.equals(1)).
    */
-  filter<TKey extends keyof T>(key: TKey, expression: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): OQuery<T>;
+  filter<TKey extends keyof T>(key: TKey, expression: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ODataQuery<T>;
 
-  filter(key: any, expression?: (_: any) => any): OQuery<T> {
+  filter(key: any, expression?: (_: any) => any): ODataQuery<T> {
     let expr: FilterExpresion;
     
     if (typeof key === 'string') {
@@ -142,8 +145,8 @@ export class OQuery<T extends object> {
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
     query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
-  ): OQuery<T> {
-    let expand: any = new OQuery(String(key));
+  ): ODataQuery<T> {
+    let expand: any = new ODataQuery(String(key));
     if (query) expand = query(expand);
 
     this.queryDescriptor = {
@@ -162,7 +165,7 @@ export class OQuery<T extends object> {
    * 
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): OQuery<T>;
+  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): ODataQuery<T>;
 
   /**
    * Adds a $orderby operator to the OData query.
@@ -173,7 +176,7 @@ export class OQuery<T extends object> {
    * 
    * @example q.orderBy('blogs', 'desc').
    */
-  orderBy<TKey extends keyof T>(key: TKey, order?: 'asc'|'desc'): OQuery<T>;
+  orderBy<TKey extends keyof T>(key: TKey, order?: 'asc'|'desc'): ODataQuery<T>;
   
   orderBy(keyGetter: any, order?: 'asc'|'desc') {
     let orderby: any;
@@ -219,7 +222,7 @@ export class OQuery<T extends object> {
    * 
    * @example q.paginate(0, 50).
    */
-  paginate(page: number, pagesize: number): OQuery<T>;
+  paginate(page: number, pagesize: number): ODataQuery<T>;
 
   /**
    * Adds a $skip and $top to the OData query.
@@ -229,9 +232,9 @@ export class OQuery<T extends object> {
    * 
    * @example q.paginate({page: 0, pagesize: 50, count: false}).
    */
-  paginate(page: { page: number, pagesize: number, count?: boolean }): OQuery<T>
+  paginate(page: { page: number, pagesize: number, count?: boolean }): ODataQuery<T>
 
-  paginate(page: any, pagesize?: number): OQuery<T> {
+  paginate(page: any, pagesize?: number): ODataQuery<T> {
     let o: { page: number, pagesize: number, count?: boolean };
     
     if (typeof page === 'number') {
@@ -257,6 +260,12 @@ export class OQuery<T extends object> {
     return mk_query_string(this.queryDescriptor);
   }
 }
+
+/**
+ * OData Query instance where T is the object that will be used on query
+ * @deprecated use 'ODataQuery' instead
+ */
+export class OQuery<T extends Object> extends ODataQuery<T> {}
 
 export interface ExpandObjectQuery<T extends Object> {
   /**

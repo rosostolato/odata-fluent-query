@@ -5,7 +5,9 @@ This is a fork of [typescript-odata-client](https://www.npmjs.com/package/typesc
 The difference is that this lib only generates the query string, so you can use it with your own implementation of http request.
 And there is no need to scaffold any pre build model, this one uses the function string to get property keys.
 
-> **WARNING**: needs more testigs, still under development. Please be free to contribute on github.
+<!-- > **WARNING**: needs more testigs, still under development. Please be free to contribute on github. -->
+
+> **WARNING**: `ODataQuery` classs is deprecated and will be removed on future, use `ODataQuery` instead.
 
 **Clientside queries with extensive filtering and typesafe joins**
 
@@ -43,13 +45,13 @@ npm publish
 Every query exposes a method called `filter`. This method accepts a function as parameter that builds an expersion. For example:
 
 ```ts
-import { OQuery } as QueryContext from "odata-fluent-query";
+import { ODataQuery } as QueryContext from "odata-fluent-query";
 
-const query = new OQuery<User>()
+const query = new ODataQuery<User>()
   .filter(u => u.id.equals(1))
   .toString();
 
-// $filter=(id eq 1)
+// $filter=id eq 1
 ```
 
 Note that the parameter `u` is not of type `User`, but of the type `FilterBuiderComplex<User>`. The `FilterBuiderComplex` type is a very special and important type. It exposes for every property of the type `T` a `Filterbuilder` of that actual property. The FilterBuilders of the primitive types do expose the methods that return an instance of FilterExpersion.
@@ -72,14 +74,14 @@ The `FilterExpersion` class exposes an API to alter and combine the existing exp
 Calling `filter` multiple times on a query will merge the experions in a bigger expersion via the `and` operator. In this example you will get the users where `the id is not equal to 1 AND the username start with 'harry'`.
 
 ```ts
-import { OQuery } as QueryContext from "odata-fluent-query";
+import { ODataQuery } as QueryContext from "odata-fluent-query";
 
-const query = new OQuery<User>()
+const query = new ODataQuery<User>()
   .filter(u => u.id.notEquals(1))
   .filter(u => u.username.startsWith('Harry'))
   .toString()
 
-// $filter=(id eq 1) and (startswith(username, 'Harry'))
+// $filter=id eq 1 and startswith(username, 'Harry')
 ```
 
 <!-- See [FILTER_BUILDER_API.md](./FILTER_BUILDER_API.md) for a complete list of all filteroperators -->
@@ -109,23 +111,23 @@ You can also select the key with a string at the first parameter:
 `expand` is used to load the relationships of the model within the current query. This query can be used to filter, expand and select on the relation you are including.
 
 ```ts
-import { OQuery } as QueryContext from "odata-fluent-query";
+import { ODataQuery } as QueryContext from "odata-fluent-query";
 
-const query = new OQuery<User>()
+const query = new ODataQuery<User>()
   .expand('blogs', q => q
     .select('id', 'title')
     .filter(b => b.public.equals(true))
   )
   .toString();
   
-// $expand=blogs($select=id,title;$filter=(public eq true))
+// $expand=blogs($select=id,title;$filter=public eq true)
 ```
 
 _all the query methods are available inside an Expand call_
 ```ts
-import { OQuery } from "odata-fluent-query";
+import { ODataQuery } from "odata-fluent-query";
 
-const query = new OQuery<User>()
+const query = new ODataQuery<User>()
   .expand('blogs', q => q
     .select('id', 'title')
     .filter(b => b.public.equals(true))
@@ -134,14 +136,14 @@ const query = new OQuery<User>()
   )
   .toString();
 
-// $expand=blogs($skip=0;$top=10;$orderby=id;$select=id,title;$filter=(public eq true))
+// $expand=blogs($skip=0;$top=10;$orderby=id;$select=id,title;$filter=public eq true)
 ```
 
 _it is posible to nest Expand calls inside each other_
 ```ts
-import { OQuery } from "odata-fluent-query";
+import { ODataQuery } from "odata-fluent-query";
 
-const query = new OQuery<User>()
+const query = new ODataQuery<User>()
   .expand('blogs', q => q
     .select('id', 'title')
     .expand('reactions' q => q
@@ -158,9 +160,9 @@ const query = new OQuery<User>()
 
 `select` is used to select a set of properties of your model:
 ```ts
-import { OQuery } from "odata-fluent-query";
+import { ODataQuery } from "odata-fluent-query";
 
-new OQuery<Query>().select('id', 'Username');
+new ODataQuery<Query>().select('id', 'Username');
 ```
 
 ## Ordering with `orderBy`

@@ -120,13 +120,13 @@ export class ODataQuery<T extends object> {
       expr = expression(builder);
     }
 
-    if (expr.kind == 'none') {
+    if (expr._kind == 'none') {
       return this;
     }
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
+      filters: this.queryDescriptor.filters.push(expr._getFilterExpresion())
     };
 
     return this;
@@ -419,8 +419,13 @@ export function mk_rel_query_descriptor(key: string, base?: Partial<QueryDescrip
 export function mk_query_string(qd: QueryDescriptor): string {
   let params: string[] = [];
 
-  if (qd.filters.isEmpty() == false)
-    params.push(`$filter=${qd.filters.join(' and ')}`);
+  if (qd.filters.isEmpty() == false) {
+    if (qd.filters.count() > 1) {
+      params.push(`$filter=(${qd.filters.join(') and (')})`);
+    } else {
+      params.push(`$filter=${qd.filters.join()}`);
+    }
+  }
 
   if (qd.expands.isEmpty() == false) {
     params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
@@ -478,7 +483,7 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
     }
 
     if (rqd.filters.isEmpty() == false) {
-      operators.push(`$filter=${rqd.filters.join(' and ')}`);
+      operators.push(`$filter=(${rqd.filters.join(') and (')})`);
     }
 
     if (rqd.expands.isEmpty() == false) {
@@ -496,7 +501,7 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
  * 
  * @param expression expression function
  */
-export function getPropertyKey(expression: (_: any) => any): string[] {
+export function getPropertyKey(expression: (...args: any[]) => any): string[] {
   let funcStr = expression.toString();
   const arg = new RegExp(/(return *|=> *?)([a-zA-Z_0-9]+)/).exec(funcStr)[2];
 

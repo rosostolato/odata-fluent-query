@@ -23,7 +23,7 @@ describe('testing getPropertyKey function', () => {
   test('get key in function call [6]', () => expect(getPropertyKey(func6)).toStrictEqual(['id']))
 
   const func7 = (x, y) => x.id.biggerThan(5)
-  test('get key in function call [7]', () => expect(getPropertyKey(func7 as any)).toStrictEqual(['id']))
+  test('get key in function call [7]', () => expect(getPropertyKey(func7)).toStrictEqual(['id']))
 
   const func8 = x => { return   x.id.biggerThan(5); }
   test('get key in function call [8]', () => expect(getPropertyKey(func8)).toStrictEqual(['id']))

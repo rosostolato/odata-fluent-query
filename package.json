@@ -9,6 +9,7 @@
   "scripts": {
     "start": "ts-node example.ts",
     "test": "jest",
+    "test:watch": "jest --watch",
     "build": "tsc"
   },
   "author": "",

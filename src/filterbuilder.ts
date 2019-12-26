@@ -19,26 +19,28 @@ export type FilterExpresion = FilterExpresionUnit | IFilterExpresion;
 export class ComplexFilterExpresion implements IFilterExpresion {
   constructor(protected readonly exp: string) { }
 
+  _kind: 'expr' = 'expr';
   not = () => mk_expr(`not (${this.exp})`);
-  and = (exp: IFilterExpresion) => mk_expr(`${this.getFilterExpresion()} and ${exp.getFilterExpresion()}`);
-  or = (exp: IFilterExpresion) => mk_expr(`${this.getFilterExpresion()} or ${exp.getFilterExpresion()}`);
-  getFilterExpresion = () => `(${this.exp})`;
-  kind: 'expr' = 'expr';
+  and = (exp: IFilterExpresion) => mk_expr(`${this._getFilterExpresion()} and (${exp._getFilterExpresion()})`);
+  or = (exp: IFilterExpresion) => mk_expr(`${this._getFilterExpresion()} or (${exp._getFilterExpresion()})`);
+  
+  _getFilterExpresion = () => this.exp;
 }
 
 export class FilterExpresionUnit {
-  kind: 'none' = 'none';
+  _kind: 'none' = 'none';
   not = () => new FilterExpresionUnit();
   and = (exp: IFilterExpresion) => exp;
   or = (exp: IFilterExpresion) => exp;
+  _getFilterExpresion = () => null;
 }
 
 export interface IFilterExpresion {
-  kind: 'expr';
+  _kind: 'expr';
   not(): IFilterExpresion;
   and(exp: IFilterExpresion): IFilterExpresion;
   or(exp: IFilterExpresion): IFilterExpresion;
-  getFilterExpresion(): string;
+  _getFilterExpresion(): string;
 }
 
 export const mk_expr_unit = () => new FilterExpresionUnit();

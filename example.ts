@@ -1,4 +1,4 @@
-import { OQuery } from './src/oquery';
+import { OQuery } from './src/odataquery';
 
 
 class UserMenu {

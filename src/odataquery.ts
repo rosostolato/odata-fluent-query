@@ -416,12 +416,20 @@ export function mk_rel_query_descriptor(key: string, base?: Partial<QueryDescrip
   return empty
 }
 
+function mk_query_string_parentheses(query: string) {
+  if (query.indexOf(' or ') > -1 || query.indexOf(' and ') > -1) {
+    return `(${query})`;
+  }
+
+  return query;
+}
+
 export function mk_query_string(qd: QueryDescriptor): string {
   let params: string[] = [];
 
   if (qd.filters.isEmpty() == false) {
     if (qd.filters.count() > 1) {
-      params.push(`$filter=(${qd.filters.join(') and (')})`);
+      params.push(`$filter=${qd.filters.map(mk_query_string_parentheses).join(' and ')}`);
     } else {
       params.push(`$filter=${qd.filters.join()}`);
     }

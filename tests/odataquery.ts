@@ -94,7 +94,7 @@ describe('testing ODataQuery filter', () => {
       .and(q.mail.endsWith('z'))
     ).toString();
 
-    const expected = "$filter=startswith(mail, 'a') and (contains(mail, 'o')) and (endswith(mail, 'z'))";
+    const expected = "$filter=startswith(mail, 'a') and contains(mail, 'o') and endswith(mail, 'z')";
     expect(actual).toBe(expected);
   });
 
@@ -106,7 +106,7 @@ describe('testing ODataQuery filter', () => {
       .filter(q => q.mail.endsWith('z'))
       .toString();
 
-    const expected = "$filter=(startswith(mail, 'a')) and (contains(mail, 'o')) and (endswith(mail, 'z'))";
+    const expected = "$filter=startswith(mail, 'a') and contains(mail, 'o') and endswith(mail, 'z')";
     expect(actual).toBe(expected);
   });
 
@@ -116,7 +116,7 @@ describe('testing ODataQuery filter', () => {
       .startsWith('a').or(q.mail.contains('o')).or(q.mail.endsWith('z'))
     ).toString();
 
-    const expected = "$filter=startswith(mail, 'a') or (contains(mail, 'o')) or (endswith(mail, 'z'))";
+    const expected = "$filter=startswith(mail, 'a') or contains(mail, 'o') or endswith(mail, 'z')";
     expect(actual).toBe(expected);
   });
 
@@ -130,7 +130,7 @@ describe('testing ODataQuery filter', () => {
         ))
       .toString();
 
-    const expected = "$filter=startswith(givenName, 'search') and (startswith(surname, 'search') or (startswith(mail, 'search')))";
+    const expected = "$filter=startswith(givenName, 'search') and (startswith(surname, 'search') or startswith(mail, 'search'))";
     expect(actual).toBe(expected);
   });
 
@@ -144,7 +144,7 @@ describe('testing ODataQuery filter', () => {
       .filter(q => q.accountEnabled.equals(true))
       .toString();
 
-    const expected = "$filter=(startswith(givenName, 'search') or (startswith(surname, 'search')) or (startswith(mail, 'search'))) and (accountEnabled eq true)";
+    const expected = "$filter=(startswith(givenName, 'search') or startswith(surname, 'search') or startswith(mail, 'search')) and accountEnabled eq true";
     expect(actual).toBe(expected);
   });
 
@@ -156,7 +156,7 @@ describe('testing ODataQuery filter', () => {
       .not()
     ).toString();
 
-    const expected = "$filter=not (startswith(mail, 'a') or (startswith(mail, 'b')))";
+    const expected = "$filter=not (startswith(mail, 'a') or startswith(mail, 'b'))";
     expect(actual).toBe(expected);
   });
 

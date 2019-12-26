@@ -21,10 +21,18 @@ export class ComplexFilterExpresion implements IFilterExpresion {
 
   _kind: 'expr' = 'expr';
   not = () => mk_expr(`not (${this.exp})`);
-  and = (exp: IFilterExpresion) => mk_expr(`${this._getFilterExpresion()} and (${exp._getFilterExpresion()})`);
-  or = (exp: IFilterExpresion) => mk_expr(`${this._getFilterExpresion()} or (${exp._getFilterExpresion()})`);
-  
-  _getFilterExpresion = () => this.exp;
+  and = (exp: IFilterExpresion) => mk_expr(`${this._getFilterExpresion()} and ${exp._getFilterExpresion(true)}`);
+  or = (exp: IFilterExpresion) => mk_expr(`${this._getFilterExpresion()} or ${exp._getFilterExpresion(true)}`);
+
+  _getFilterExpresion = (checkParetheses = false) => {
+    if (!checkParetheses) return this.exp;
+
+    if (this.exp.indexOf(' or ') > -1 || this.exp.indexOf(' and ') > -1) {
+      return `(${this.exp})`;
+    }
+
+    return this.exp;
+  }
 }
 
 export class FilterExpresionUnit {
@@ -40,7 +48,7 @@ export interface IFilterExpresion {
   not(): IFilterExpresion;
   and(exp: IFilterExpresion): IFilterExpresion;
   or(exp: IFilterExpresion): IFilterExpresion;
-  _getFilterExpresion(): string;
+  _getFilterExpresion(checkParetheses?: boolean): string;
 }
 
 export const mk_expr_unit = () => new FilterExpresionUnit();

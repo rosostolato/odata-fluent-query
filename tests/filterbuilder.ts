@@ -3,8 +3,10 @@ import { ComplexFilterExpresion, FilterExpresionUnit } from "../src/filterbuilde
 describe('test filter expressions', () => {
   test('parentheses', () => expect(new ComplexFilterExpresion('expr')._getFilterExpresion()).toEqual('expr'))
   test('not expr', () => expect(new ComplexFilterExpresion('expr').not()._getFilterExpresion()).toEqual('not (expr)'))
-  test('and expr', () => expect(new ComplexFilterExpresion('expr').and(new ComplexFilterExpresion('expr'))._getFilterExpresion()).toEqual('expr and (expr)'))
-  test('or expr', () => expect(new ComplexFilterExpresion('expr').or(new ComplexFilterExpresion('expr'))._getFilterExpresion()).toEqual('expr or (expr)'))
+  test('and expr', () => expect(new ComplexFilterExpresion('expr').and(new ComplexFilterExpresion('expr'))._getFilterExpresion()).toEqual('expr and expr'))
+  test('or expr', () => expect(new ComplexFilterExpresion('expr').or(new ComplexFilterExpresion('expr'))._getFilterExpresion()).toEqual('expr or expr'))
+  test('and expr inception', () => expect(new ComplexFilterExpresion('expr').and(new ComplexFilterExpresion('expr or expr'))._getFilterExpresion()).toEqual('expr and (expr or expr)'))
+  test('or expr inception', () => expect(new ComplexFilterExpresion('expr').or(new ComplexFilterExpresion('expr or expr'))._getFilterExpresion()).toEqual('expr or (expr or expr)'))
 });
 
 describe('test unit expression', () => {

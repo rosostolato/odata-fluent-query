@@ -35,14 +35,12 @@ export class ODataQuery<T> {
    * Create a new instance of ODataQuery
    */
   constructor();
-
   /**
    * @param key internal key selector
    * 
    * @internal
    */
   constructor(key: string);
-
   constructor(key?: string) {
     this.queryDescriptor = {
       key,
@@ -78,45 +76,48 @@ export class ODataQuery<T> {
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * 
-   * @param expression a lambda that builds an expression from the builder.
+   * @param exp a lambda expression that builds an expression from the builder.
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(expression: (_: FilterBuilderComplex<T>) => FilterExpresion): ODataQuery<T>;
-  
+  filter(exp: (x: FilterBuilderComplex<T>) => FilterExpresion): ODataQuery<T>;
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * 
    * @param key property key selector.
-   * @param expression a lambda that builds an expression from the builder.
+   * @param exp a lambda expression that builds an expression from the builder.
    * 
    * @example q.filter('id', id => id.equals(1)).
    */
-  filter<TKey extends keyof T>(key: TKey, expression: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ODataQuery<T>;
-
-  filter(key: any, expression?: (_: any) => any): ODataQuery<T> {
+  filter<TKey extends keyof T>(key: TKey, exp: (x: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ODataQuery<T>;
+  filter(keyOrExp: any, exp?: (x: any) => any): ODataQuery<T> {
     let expr: FilterExpresion;
     
-    if (typeof key === 'string') {
+    if (typeof keyOrExp === 'string') {
       // run expression
-      expr = expression(new FilterBuilder(key));
+      expr = exp(new FilterBuilder(keyOrExp));
     } else {
       // set expression
-      expression = key;
+      exp = keyOrExp;
 
-      // read funciton string
-      const keys = getPropertyKey(expression);
+      // read funciton string to retrieve keys
+      const keys = get_property_keys(exp);
 
       if (!keys || !keys.length) {
-        throw new Error('Could not find property key. Use the second overload of filter instead');
+        throw new Error('Could not find property key.');
       }
 
-      const builder: { [TKey in keyof T]?: FilterBuilder } = { };
-      keys.forEach(k => builder[k] = new FilterBuilder(k));
+      const builder: {
+        [TKey in keyof T]?: FilterBuilder
+      } = { };
+
+      keys.forEach(k => {
+        builder[k] = new FilterBuilder(k);
+      });
       
       // run expression
-      expr = expression(builder);
+      expr = exp(builder);
     }
 
     if (expr._kind == 'none') {
@@ -137,13 +138,13 @@ export class ODataQuery<T> {
    * The lambda in the second parameter allows you to build a complex inner query.
    * 
    * @param key the name of the relation.
-   * @param query a lambda that build the subquery from the querybuilder.
+   * @param query a lambda expression that build the subquery from the querybuilder.
    * 
    * @example q.exand('blogs', q => q.select('id', 'title')).
    */
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
-    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ODataQuery<T> {
     let expand: any = new ODataQuery(String(key));
     if (query) expand = query(expand);
@@ -160,12 +161,11 @@ export class ODataQuery<T> {
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
    * 
-   * @param expression a lambda that builds the orderby expression from the builder.
+   * @param exp a lambda expression that builds the orderby expression from the builder.
    * 
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): ODataQuery<T>;
-
+  orderBy(exp: (ob: OrderByBuilderComplex<T>) => OrderBy): ODataQuery<T>;
   /**
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
@@ -176,12 +176,11 @@ export class ODataQuery<T> {
    * @example q.orderBy('blogs', 'desc').
    */
   orderBy<TKey extends keyof T>(key: TKey, order?: 'asc'|'desc'): ODataQuery<T>;
-  
-  orderBy(keyGetter: any, order?: 'asc'|'desc') {
+  orderBy(keyOrExp: any, order?: 'asc'|'desc') {
     let orderby: any;
 
-    if (typeof keyGetter === 'string') {
-      orderby = new OrderByProp(keyGetter);
+    if (typeof keyOrExp === 'string') {
+      orderby = new OrderByProp(keyOrExp);
 
       // run orderer
       if (order) {
@@ -192,7 +191,7 @@ export class ODataQuery<T> {
       orderby = orderby._get();
     } else {
       // read funciton string
-      const keys = getPropertyKey(keyGetter);
+      const keys = get_property_keys(keyOrExp);
 
       if (!keys || !keys.length) {
         throw new Error('Could not find property key. Use the second overload of orderBy instead');
@@ -201,7 +200,7 @@ export class ODataQuery<T> {
       const builder: { [TKey in keyof T]?: OrderByProp } = { };
       keys.forEach(k => builder[k] = new OrderByProp(k));
 
-      orderby = keyGetter(builder)._get();
+      orderby = keyOrExp(builder)._get();
     }
 
     this.queryDescriptor = {
@@ -223,7 +222,6 @@ export class ODataQuery<T> {
    * @example q.paginate(50, 0).
    */
   paginate(pagesize: number, page?: number): ODataQuery<T>;
-
   /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
@@ -233,7 +231,6 @@ export class ODataQuery<T> {
    * @example q.paginate({ pagesize: 50, page: 0, count: false }).
    */
   paginate(options: { pagesize: number, page?: number, count?: boolean }): ODataQuery<T>
-
   paginate(options: any, page?: number): ODataQuery<T> {
     let data: {
       pagesize: number,
@@ -310,13 +307,13 @@ export interface ExpandObjectQuery<T> {
    * The lambda in the second parameter allows you to build a complex inner query.
    * 
    * @param key the name of the relation.
-   * @param query   a lambda that build the subquery from the querybuilder.
+   * @param query   a lambda expression that build the subquery from the querybuilder.
    * 
    * @example q.exand('blogs', q => q.select('id', 'title')).
    */
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
-    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ExpandObjectQuery<T>;
 }
 
@@ -333,33 +330,31 @@ export interface ExpandArrayQuery<T> {
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * 
-   * @param expression a lambda that builds an expression from the builder.
+   * @param exp a lambda expression that builds an expression from the builder.
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(expression: (_: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
-  
+  filter(exp: (x: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
    * 
    * @param key property key selector.
-   * @param expression a lambda that builds an expression from the builder.
+   * @param exp a lambda expression that builds an expression from the builder.
    * 
    * @example q.filter('id', id => id.equals(1)).
    */
-  filter<TKey extends keyof T>(key: TKey, expression: (_: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ExpandArrayQuery<T>;
+  filter<TKey extends keyof T>(key: TKey, exp: (x: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ExpandArrayQuery<T>;
 
   /**
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
    * 
-   * @param expression a lambda that builds the orderby expression from the builder.
+   * @param exp a lambda expression that builds the orderby expression from the builder.
    * 
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(expression: (ob: OrderByBuilderComplex<T>) => OrderBy): ExpandArrayQuery<T>;
-
+  orderBy(exp: (ob: OrderByBuilderComplex<T>) => OrderBy): ExpandArrayQuery<T>;
   /**
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
@@ -377,13 +372,13 @@ export interface ExpandArrayQuery<T> {
    * The lambda in the second parameter allows you to build a complex inner query.
    * 
    * @param key the name of the relation.
-   * @param query   a lambda that build the subquery from the querybuilder.
+   * @param query   a lambda expression that build the subquery from the querybuilder.
    * 
    * @example q.exand('blogs', q => q.select('id', 'title')).
    */
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
-    query?: (_: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ExpandArrayQuery<T>;
 
   /**
@@ -397,7 +392,6 @@ export interface ExpandArrayQuery<T> {
    * @example q.paginate(50, 0).
    */
   paginate(pagesize: number, page?: number): ExpandArrayQuery<T>;
-
   /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
@@ -414,45 +408,7 @@ export interface ExpandArrayQuery<T> {
   count(): ExpandArrayQuery<T>;
 }
 
-export function mk_query_descriptor(baseuri: string, base?: Partial<QueryDescriptor>): QueryDescriptor {
-  const empty: QueryDescriptor = {
-    filters: List<string>(),
-    expands: List<QueryDescriptor>(),
-    orderby: List<string>(),
-    select: List<string>(),
-    skip: 'none',
-    take: 'none',
-    count: false
-  }
-
-  if (base != undefined) {
-    return { ...empty, ...base }
-  }
-
-  return empty
-}
-
-export function mk_rel_query_descriptor(key: string, base?: Partial<QueryDescriptor>): QueryDescriptor {
-  const empty: QueryDescriptor = {
-    key,
-    skip: 'none',
-    take: 'none',
-    count: false,
-    filters: List<string>(),
-    orderby: List<string>(),
-    select: List<string>(),
-    expands: List(),
-    strict: false
-  }
-
-  if (base != undefined) {
-    return { ...empty, ...base }
-  }
-
-  return empty
-}
-
-function mk_query_string_parentheses(query: string) {
+export function mk_query_string_parentheses(query: string) {
   if (query.indexOf(' or ') > -1 || query.indexOf(' and ') > -1) {
     return `(${query})`;
   }
@@ -551,10 +507,10 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
 /**
  * get property key name used in the expression function
  * 
- * @param expression expression function
+ * @param exp expression function
  */
-export function getPropertyKey(expression: (...args: any[]) => any): string[] {
-  let funcStr = expression.toString();
+export function get_property_keys(exp: (...args: any[]) => any): string[] {
+  let funcStr = exp.toString();
   const arg = new RegExp(/(return *|=> *?)([a-zA-Z_0-9]+)/).exec(funcStr)[2];
 
   let match: RegExpExecArray;

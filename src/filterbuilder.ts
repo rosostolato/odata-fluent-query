@@ -54,9 +54,10 @@ const mk_expr = (exp: string) => new ComplexFilterExpresion(exp);
 
 export interface FilterBuilderDate {
   inTimeSpan(y: number, m?: number, d?: number, h?: number, mm?: number): ComplexFilterExpresion;
-  isSame(m: Date, g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ComplexFilterExpresion;
-  isAfter(d: Date|string): ComplexFilterExpresion;
-  isBefore(d: Date|string): ComplexFilterExpresion;
+  isSame(d: string|Date|FilterBuilderDate): ComplexFilterExpresion;
+  isSame(d: number|Date|FilterBuilderDate, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ComplexFilterExpresion;
+  isAfter(d: string|Date|FilterBuilderDate): ComplexFilterExpresion;
+  isBefore(d: string|Date|FilterBuilderDate): ComplexFilterExpresion;
 }
 
 export interface FilterBuilderString {
@@ -84,6 +85,7 @@ export interface FilterBuilderBoolean {
   equals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
   notEquals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
 }
+
 export interface FilterBuilderCollection<T> {
 }
 
@@ -103,22 +105,55 @@ export class FilterBuilder {
     return mk_expr('(' + exps.join(') and (') + ')');
   }
 
-  isSame = (m: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
-    const min = this.toMinRange(m, g);
-    const max = this.toMaxRange(m, g);
+  isSame = (x: string|number|Date|FilterBuilder, g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second') => {
+    if (typeof x === 'string') {
+      return mk_expr(`${this.prefix} eq ${x}`);
+    }
 
-    return this.isAfter(min).and(this.isBefore(max));
+    else if (typeof x === 'number') {
+      return mk_expr(`${g}(${this.prefix}) eq ${x}`);
+    }
+    
+    else if (x instanceof Date) {
+      if (g == null) {
+        return mk_expr(`${this.prefix} eq ${x.toISOString()}`);
+      } else {
+        const o = this.dateToObject(x);
+        return mk_expr(`${g}(${this.prefix}) eq ${o[g]}`);
+      }
+    }
+
+    else {
+      return mk_expr(`${g}(${this.prefix}) eq ${g}(${x.getPropName()})`);
+    }
   }
 
-  isAfter = (d: Date|string) => {
+  isAfter = (d: string|Date|FilterBuilder) => {
     if (typeof d === 'string') return mk_expr(`${this.prefix} gt ${d}`);
-    else return mk_expr(`${this.prefix} gt ${d.toISOString()}`);
+    else if (d instanceof Date) return mk_expr(`${this.prefix} gt ${d.toISOString()}`);
+    else return mk_expr(`${this.prefix} gt ${d.getPropName()}`);
   };
 
-  isBefore = (d: Date|string) => {
+  isBefore = (d: string|Date|FilterBuilder) => {
     if (typeof d === 'string') return mk_expr(`${this.prefix} lt ${d}`);
-    else return mk_expr(`${this.prefix} lt ${d.toISOString()}`);
+    else if (d instanceof Date) return mk_expr(`${this.prefix} lt ${d.toISOString()}`);
+    else return mk_expr(`${this.prefix} gt ${d.getPropName()}`);
   };
+
+  protected dateToObject = (d: Date) => {
+    if (typeof d === 'string') {
+      d = new Date(d);
+    }
+
+    return {
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      day: d.getFullYear(),
+      hour: d.getFullYear(),
+      minute: d.getFullYear(),
+      second: d.getFullYear(),
+    }
+  }
 
   protected toMinRange = (d: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
     switch (g) {

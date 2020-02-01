@@ -60,18 +60,18 @@ export interface FilterBuilderDate {
   isBefore(d: string|Date|FilterBuilderDate): ComplexFilterExpresion;
 }
 
+export interface StringOptions {
+  /** @default false */
+  caseInsensitive?: boolean;
+}
+
 export interface FilterBuilderString {
-  equals(s: string | FilterBuilderString): ComplexFilterExpresion;
-  contains(s: string | FilterBuilderString): ComplexFilterExpresion;
   notNull(): ComplexFilterExpresion;
-  equalsCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
-  notEquals(s: string | FilterBuilderString): ComplexFilterExpresion;
-  notEqualsCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
-  containsCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
-  startsWith(s: string | FilterBuilderString): ComplexFilterExpresion;
-  startsWithCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
-  endsWith(s: string | FilterBuilderString): ComplexFilterExpresion;
-  endsWithCaseInsensitive(s: string | FilterBuilderString): ComplexFilterExpresion;
+  equals(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
+  contains(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
+  notEquals(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
+  startsWith(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
+  endsWith(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
 }
 
 export interface FilterBuilderNumber {
@@ -94,6 +94,7 @@ export class FilterBuilder {
 
   getPropName = () => this.prefix;
 
+  /////////////////////
   // FilterBuilderDate
 
   inTimeSpan = (y: number, m?: number, d?: number, h?: number, mm?: number) => {
@@ -179,46 +180,42 @@ export class FilterBuilder {
     return d;
   }
 
+  ///////////////////////
   // FilterBuilderString
-
-  contains = (s: string | FilterBuilder) => mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
 
   notNull = () => mk_expr(`${this.prefix} ne null`);
 
-  equalsCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`tolower(${this.prefix}) eq ${
-    typeof s == 'string'
-      ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.getPropName()})`
-    }`);
+  contains = (s: string | FilterBuilder, opt?: StringOptions) => {
+    if (opt && opt.caseInsensitive) {
+      return mk_expr(`contains(tolower(${this.prefix}), ${typeof s == 'string'
+        ? `'${s.toLocaleLowerCase()}'`
+        : `tolower(${s.getPropName()})`})`);
+    }
 
-  notEqualsCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`tolower(${this.prefix}) ne ${
-    typeof s == 'string'
-      ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.getPropName()})`
-    }`);
+    return mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
+  };
 
-  containsCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`contains(tolower(${this.prefix}), ${
-    typeof s == 'string'
-      ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.getPropName()})`
-    })`);
+  startsWith = (s: string | FilterBuilder, opt?: StringOptions) => {
+    if (opt && opt.caseInsensitive) {
+      return mk_expr(`startswith(tolower(${this.prefix}), ${typeof s == 'string'
+        ? `'${s.toLocaleLowerCase()}'`
+        : `tolower(${s.getPropName()})`})`);
+    }
 
-  startsWith = (s: string | FilterBuilder) => mk_expr(`startswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
+    return mk_expr(`startswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
+  };
 
-  startsWithCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`startswith(tolower(${this.prefix}), ${
-    typeof s == 'string'
-      ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.getPropName()})`
-    })`);
+  endsWith = (s: string | FilterBuilder, opt?: StringOptions) => {
+    if (opt && opt.caseInsensitive) {
+      return mk_expr(`endswith(tolower(${this.prefix}), ${typeof s == 'string'
+        ? `'${s.toLocaleLowerCase()}'`
+        : `tolower(${s.getPropName()})`})`);
+    }
 
-  endsWith = (s: string | FilterBuilder) => mk_expr(`endswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
+    return mk_expr(`endswith(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
+  };
 
-  endsWithCaseInsensitive = (s: string | FilterBuilder) => mk_expr(`endswith(tolower(${this.prefix}), ${
-    typeof s == 'string'
-      ? `'${s.toLocaleLowerCase()}'`
-      : `tolower(${s.getPropName()})`
-    })`);
-
+  ///////////////////////
   // FilterBuilderNumber
 
   biggerThan = (n: number | FilterBuilder) => mk_expr(`${this.prefix} gt ${
@@ -233,11 +230,16 @@ export class FilterBuilder {
       : n.getPropName()
     }`);
 
+  ////////////////////////////////
   // FilterBuilder Generic Methods
 
-  equals = (x: string|FilterBuilder | number|FilterBuilder | boolean|FilterBuilder) => {
+  equals = (x: string|number|boolean|FilterBuilder, o: any) => {
     switch (typeof x) {
       case 'string':
+      if (o && o.caseInsensitive) {
+        return mk_expr(`tolower(${this.prefix}) eq '${x.toLocaleLowerCase()}'`);
+      }
+
       return mk_expr(`${this.prefix} eq '${x}'`);
 
       case 'number':
@@ -247,13 +249,21 @@ export class FilterBuilder {
       return mk_expr(`${this.prefix} eq ${x}`);
 
       default:
+      if (o && o.caseInsensitive) {
+        return mk_expr(`tolower(${this.prefix}) eq tolower(${x.getPropName()})`);
+      }
+
       return mk_expr(`${this.prefix} eq ${x.getPropName()}`);
     }
   };
 
-  notEquals = (x: string|FilterBuilder | number|FilterBuilder | boolean|FilterBuilder) => {
+  notEquals = (x: string|number|boolean|FilterBuilder, o: any) => {
     switch (typeof x) {
       case 'string':
+      if (o && o.caseInsensitive) {
+        return mk_expr(`tolower(${this.prefix}) ne '${x.toLocaleLowerCase()}'`);
+      }
+
       return mk_expr(`${this.prefix} ne '${x}'`);
 
       case 'number':
@@ -263,6 +273,10 @@ export class FilterBuilder {
       return mk_expr(`${this.prefix} ne ${x}`);
 
       default:
+      if (o && o.caseInsensitive) {
+        return mk_expr(`tolower(${this.prefix}) ne tolower(${x.getPropName()})`);
+      }
+
       return mk_expr(`${this.prefix} ne ${x.getPropName()}`);
     }
   };

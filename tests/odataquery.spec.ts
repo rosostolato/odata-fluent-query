@@ -116,6 +116,13 @@ describe('testing ODataQuery paginate', () => {
 
 // string
 describe('testing ODataQuery filter by string', () => {
+  test('notNull', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.mail.notNull()).toString();
+    const expected = "$filter=mail ne null";
+    expect(actual).toBe(expected);
+  })
+
   test('contains', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.mail.contains('test')).toString();
@@ -125,7 +132,7 @@ describe('testing ODataQuery filter by string', () => {
 
   test('containsCaseInsensitive', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter(q => q.mail.containsCaseInsensitive('test')).toString();
+    const actual = query.filter(q => q.mail.contains('test', { caseInsensitive: true })).toString();
     const expected = "$filter=contains(tolower(mail), 'test')";
     expect(actual).toBe(expected);
   })
@@ -139,7 +146,7 @@ describe('testing ODataQuery filter by string', () => {
 
   test('endsWithCaseInsensitive', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter(q => q.mail.endsWithCaseInsensitive('test')).toString();
+    const actual = query.filter(q => q.mail.endsWith('test', { caseInsensitive: true })).toString();
     const expected = "$filter=endswith(tolower(mail), 'test')";
     expect(actual).toBe(expected);
   })
@@ -153,7 +160,7 @@ describe('testing ODataQuery filter by string', () => {
 
   test('equalsCaseInsensitive', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter(q => q.mail.equalsCaseInsensitive('test')).toString();
+    const actual = query.filter(q => q.mail.equals('test', { caseInsensitive: true })).toString();
     const expected = "$filter=tolower(mail) eq 'test'";
     expect(actual).toBe(expected);
   })
@@ -167,15 +174,8 @@ describe('testing ODataQuery filter by string', () => {
 
   test('notEqualsCaseInsensitive', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter(q => q.mail.notEqualsCaseInsensitive('test')).toString();
+    const actual = query.filter(q => q.mail.notEquals('test', { caseInsensitive: true })).toString();
     const expected = "$filter=tolower(mail) ne 'test'";
-    expect(actual).toBe(expected);
-  })
-
-  test('notNull', () => {
-    const query = new ODataQuery<User>();
-    const actual = query.filter(q => q.mail.notNull()).toString();
-    const expected = "$filter=mail ne null";
     expect(actual).toBe(expected);
   })
 
@@ -188,7 +188,7 @@ describe('testing ODataQuery filter by string', () => {
 
   test('startsWithCaseInsensitive', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter(q => q.mail.startsWithCaseInsensitive('test')).toString();
+    const actual = query.filter(q => q.mail.startsWith('test', { caseInsensitive: true })).toString();
     const expected = "$filter=startswith(tolower(mail), 'test')";
     expect(actual).toBe(expected);
   })

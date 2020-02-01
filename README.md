@@ -7,7 +7,7 @@ And there is no need to scaffold any pre build model, this one uses the function
 
 <!-- > **WARNING**: needs more testigs, still under development. Please be free to contribute on github. -->
 
-> **WARNING**: `ODataQuery` classs is deprecated and will be removed on future, use `ODataQuery` instead.
+> **WARNING**: `OQuery` classs is deprecated and will be removed in the future, use `ODataQuery` instead.
 
 **Clientside queries with extensive filtering and typesafe joins**
 
@@ -45,7 +45,7 @@ npm publish
 Every query exposes a method called `filter`. This method accepts a function as parameter that builds an expersion. For example:
 
 ```ts
-import { ODataQuery } as QueryContext from "odata-fluent-query";
+import { ODataQuery } from "odata-fluent-query";
 
 const query = new ODataQuery<User>()
   .filter(u => u.id.equals(1))
@@ -74,7 +74,7 @@ The `FilterExpersion` class exposes an API to alter and combine the existing exp
 Calling `filter` multiple times on a query will merge the experions in a bigger expersion via the `and` operator. In this example you will get the users where `the id is not equal to 1 AND the username start with 'harry'`.
 
 ```ts
-import { ODataQuery } as QueryContext from "odata-fluent-query";
+import { ODataQuery } from "odata-fluent-query";
 
 const query = new ODataQuery<User>()
   .filter(u => u.id.notEquals(1))
@@ -111,7 +111,7 @@ You can also select the key with a string at the first parameter:
 `expand` is used to load the relationships of the model within the current query. This query can be used to filter, expand and select on the relation you are including.
 
 ```ts
-import { ODataQuery } as QueryContext from "odata-fluent-query";
+import { ODataQuery } from "odata-fluent-query";
 
 const query = new ODataQuery<User>()
   .expand('blogs', q => q

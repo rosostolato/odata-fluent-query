@@ -14,12 +14,11 @@ type QueryDescriptor = {
   count?:   boolean;
 }
 
-type RelationsOf<Model extends object> = Pick<Model, {
+type RelationsOf<Model> = Pick<Model, {
   [P in keyof Model]: 
     Model[P] extends Date ? never : 
     Model[P] extends Uint8Array ? never : 
-    Model[P] extends object | List<any> ? P : 
-    never
+    Model[P] | Array<any> extends Object ? P : never
 }[keyof Model]>
 
 type ExpandQueryComplex<T> = T extends (infer U)[]
@@ -29,7 +28,7 @@ type ExpandQueryComplex<T> = T extends (infer U)[]
 /**
  * OData Query instance where T is the object that will be used on query
  */
-export class ODataQuery<T extends object> {
+export class ODataQuery<T> {
   protected queryDescriptor: QueryDescriptor;
 
   /**
@@ -294,9 +293,9 @@ export class ODataQuery<T extends object> {
  * OData Query instance where T is the object that will be used on query
  * @deprecated use 'ODataQuery' instead
  */
-export class OQuery<T extends Object> extends ODataQuery<T> {}
+export class OQuery<T> extends ODataQuery<T> {}
 
-export interface ExpandObjectQuery<T extends Object> {
+export interface ExpandObjectQuery<T> {
   /**
    * selects properties from the model.
    * @param keys the names of the properties.
@@ -321,7 +320,7 @@ export interface ExpandObjectQuery<T extends Object> {
   ): ExpandObjectQuery<T>;
 }
 
-export interface ExpandArrayQuery<T extends Object> {
+export interface ExpandArrayQuery<T> {
   /**
    * selects properties from the model.
    * @param keys the names of the properties.

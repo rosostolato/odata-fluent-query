@@ -114,8 +114,8 @@ describe('testing ODataQuery paginate', () => {
   })
 })
 
-describe('testing ODataQuery filter', () => {
-  // string
+// string
+describe('testing ODataQuery filter with string', () => {
   test('contains', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.mail.contains('test')).toString();
@@ -192,90 +192,96 @@ describe('testing ODataQuery filter', () => {
     const expected = "$filter=startswith(tolower(mail), 'test')";
     expect(actual).toBe(expected);
   })
+})
 
-  // number
+// number
+describe('testing ODataQuery filter with number', () => {
   test('biggerThan', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('id', q => q.biggerThan(5)).toString();
+    const actual = query.filter(q => q.id.biggerThan(5)).toString();
     const expected = "$filter=id gt 5";
     expect(actual).toBe(expected);
   })
 
   test('equals', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('id', q => q.equals(5)).toString();
+    const actual = query.filter(q => q.id.equals(5)).toString();
     const expected = "$filter=id eq 5";
     expect(actual).toBe(expected);
   })
 
   test('lessThan', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('id', q => q.lessThan(5)).toString();
+    const actual = query.filter(q => q.id.lessThan(5)).toString();
     const expected = "$filter=id lt 5";
     expect(actual).toBe(expected);
   })
 
   test('notEquals', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('id', q => q.notEquals(5)).toString();
+    const actual = query.filter(q => q.id.notEquals(5)).toString();
     const expected = "$filter=id ne 5";
     expect(actual).toBe(expected);
   })
+})
 
-  // boolean
+// boolean
+describe('testing ODataQuery filter with boolean', () => {
   test('equals', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('accountEnabled', q => q.equals(true)).toString();
+    const actual = query.filter(q => q.accountEnabled.equals(true)).toString();
     const expected = "$filter=accountEnabled eq true";
     expect(actual).toBe(expected);
   })
 
   test('notEquals', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('accountEnabled', q => q.notEquals(true)).toString();
+    const actual = query.filter(q => q.accountEnabled.notEquals(true)).toString();
     const expected = "$filter=accountEnabled ne true";
     expect(actual).toBe(expected);
   })
+})
 
-  // Date
+// Date
+describe('testing ODataQuery filter with Date', () => {
   test('inTimeSpan', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('createDate', q => q.inTimeSpan(2020)).toString();
+    const actual = query.filter(q => q.createDate.inTimeSpan(2020)).toString();
     const expected = "$filter=(year(createDate) eq 2020)";
     expect(actual).toBe(expected);
   })
 
   test('inTimeSpan full date', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('createDate', q => q.inTimeSpan(2020, 10, 14, 6, 30)).toString();
+    const actual = query.filter(q => q.createDate.inTimeSpan(2020, 10, 14, 6, 30)).toString();
     const expected = "$filter=(year(createDate) eq 2020) and (month(createDate) eq 10) and (day(createDate) eq 14) and (hour(createDate) eq 6) and (minute(createDate) eq 30)";
     expect(actual).toBe(expected);
   })
 
   test('isAfter', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('createDate', q => q.isAfter(new Date(2020, 0))).toString();
+    const actual = query.filter(q => q.createDate.isAfter(new Date(2020, 0))).toString();
     const expected = "$filter=createDate gt 2020-01-01T02:00:00.000Z";
     expect(actual).toBe(expected);
   })
 
   test('isBefore', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('createDate', q => q.isBefore(new Date(2020, 0))).toString();
+    const actual = query.filter(q => q.createDate.isBefore(new Date(2020, 0))).toString();
     const expected = "$filter=createDate lt 2020-01-01T02:00:00.000Z";
     expect(actual).toBe(expected);
   })
 
   test('isSame', () => {
     const query = new ODataQuery<User>();
-    const actual = query.filter('createDate', q => q.isSame(new Date(2020, 0))).toString();
+    const actual = query.filter(q => q.createDate.isSame(new Date(2020, 0))).toString();
     const expected = "$filter=createDate gt 2020-01-01T02:00:00.999Z and createDate lt 2020-01-01T02:00:00.999Z";
     expect(actual).toBe(expected);
   })
+});
   
-  /////////
-  // composed
-
+// composed
+describe('testing ODataQuery filter composed', () => {
   test('and [inline]', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q =>
@@ -352,10 +358,10 @@ describe('testing ODataQuery filter', () => {
     const expected = "$filter=not (startswith(mail, 'a') or startswith(mail, 'b'))";
     expect(actual).toBe(expected);
   })
+})
 
-  //////////////
-  // explicit
-
+// explicit
+describe('testing ODataQuery filter explicit', () => {
   test('explicit', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter('mail', q => q.startsWith('test')).toString();
@@ -477,8 +483,8 @@ describe('testing ODataQuery expand', () => {
     const query = new ODataQuery<User>();
     const actual = query
       .expand('posts', e => e.paginate({
-        pagesize: 10,
         page: 5,
+        pagesize: 10,
         count: false
       }))
       .toString();

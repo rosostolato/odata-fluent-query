@@ -48,6 +48,9 @@ describe('testing getPropertyKey function', () => {
 
   const func15 = x => x.id.biggerThan(5).and(x.mail.equals('mail@m.com'))
   test('get key in function call [15]', () => expect(getPropertyKey(func15)).toStrictEqual(['id', 'mail']))
+
+  const func16 = function(x) { return x.id.biggerThan(5).and(x.mail.equals('mail@m.com')); }
+  test('get key in function call [16]', () => expect(getPropertyKey(func16)).toStrictEqual(['id', 'mail']))
 });
 
 describe('testing querybuilding', () => {

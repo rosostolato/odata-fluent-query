@@ -57,7 +57,7 @@ const query = new ODataQuery<User>()
 Note that the parameter `u` is not of type `User`, but of the type `FilterBuiderComplex<User>`. The `FilterBuiderComplex` type is a very special and important type. It exposes for every property of the type `T` a `Filterbuilder` of that actual property. The FilterBuilders of the primitive types do expose the methods that return an instance of FilterExpersion.
 
 ```ts
-export type FilterBuiderComplex<T extends object> = {
+export type FilterBuiderComplex<T> = {
   [P in keyof T]: FilterBuider<T[P]>
 }
 ```

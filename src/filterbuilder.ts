@@ -1,16 +1,14 @@
-// import { List } from "immutable";
-
 export type FilterBuilderTyped<T> =
-  T extends Uint8Array ? FilterBuilderBinary :
   T extends string ? FilterBuilderString :
   T extends number ? FilterBuilderNumber :
   T extends boolean ? FilterBuilderBoolean :
   T extends Date ? FilterBuilderDate :
-  // T extends List<infer R> ? R extends object ? FilterBuilderCollection<R> : never :
-  T extends object ? () => FilterBuilderComplex<T> :
+  T extends Object ? FilterBuilderComplex<T> :
+  T extends Array<infer R> ? FilterBuilderCollection<R> :
+  // T extends List<infer R> ? R ? FilterBuilderCollection<R> : never :
   never;
 
-export type FilterBuilderComplex<T extends object> = {
+export type FilterBuilderComplex<T> = {
   [P in keyof T]: FilterBuilderTyped<T[P]>
 }
 
@@ -54,8 +52,6 @@ export interface IFilterExpresion {
 export const mk_expr_unit = () => new FilterExpresionUnit();
 const mk_expr = (exp: string) => new ComplexFilterExpresion(exp);
 
-export interface FilterBuilderBinary {}
-
 export interface FilterBuilderDate {
   inTimeSpan(y: number, m?: number, d?: number, h?: number, mm?: number): ComplexFilterExpresion;
   isSame(m: Date, g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ComplexFilterExpresion;
@@ -88,7 +84,7 @@ export interface FilterBuilderBoolean {
   equals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
   notEquals(b: boolean | FilterBuilderBoolean): ComplexFilterExpresion;
 }
-export interface FilterBuilderCollection<T extends object> {
+export interface FilterBuilderCollection<T> {
 }
 
 export class FilterBuilder {
@@ -237,7 +233,7 @@ export class FilterBuilder {
   };
 }
 
-// export class FilterBuilderCollection<T extends object> {
+// export class FilterBuilderCollection<T> {
 //   constructor(
 //     protected readonly prefix: string,
 //     protected readonly filterBuilder: (prefix: string) => FilterBuilderComplex<T>

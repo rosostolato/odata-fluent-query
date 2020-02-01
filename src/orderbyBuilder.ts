@@ -1,13 +1,10 @@
-import { List } from "immutable";
-
 export type OrderByBuilder<T> =
   T extends number | string | boolean | Date | Uint8Array ? OrderByProp :
-  T extends List<infer R> ? R extends object ? OrderByBuilderComplex<R> : never :
-  T extends Array<infer R> ? R extends object ? OrderByBuilderComplex<R> : never :
-  T extends object ? OrderByBuilderComplex<T>
+  T extends Array<infer R> ? R extends Object ? OrderByBuilderComplex<R> : never :
+  T extends Object ? OrderByBuilderComplex<T>
   : never;
 
-export type OrderByBuilderComplex<T extends object> = {
+export type OrderByBuilderComplex<T> = {
   [P in keyof T]: OrderByBuilder<T[P]>;
 }
 

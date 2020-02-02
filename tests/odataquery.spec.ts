@@ -304,6 +304,51 @@ describe('testing ODataQuery filter by object', () => {
   })
 })
 
+// object
+describe('testing ODataQuery filter by array', () => {
+  test('filter by empty array', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.phoneNumbers.notEmpty()).toString();
+    const expected = "$filter=phoneNumbers/any()";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by empty related array', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.posts.notEmpty()).toString();
+    const expected = "$filter=posts/any()";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by any', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.phoneNumbers.any(x => x.equals('test'))).toString();
+    const expected = "$filter=phoneNumbers/any(x:x eq 'test')";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by any deep', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.posts.any(x => x.id.biggerThan(5))).toString();
+    const expected = "$filter=posts/any(x:x/id gt 5)";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by all', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.phoneNumbers.all(x => x.equals('test'))).toString();
+    const expected = "$filter=phoneNumbers/all(x:x eq 'test')";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by all deep', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.posts.all(x => x.id.biggerThan(5))).toString();
+    const expected = "$filter=posts/all(x:x/id gt 5)";
+    expect(actual).toBe(expected);
+  })
+})
+
 // by another key
 describe('testing ODataQuery filter by another key', () => {
   test('string', () => {

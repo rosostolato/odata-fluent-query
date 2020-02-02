@@ -1,11 +1,12 @@
+import { get_property_keys, mk_builder } from "./odataquery";
+
 export type FilterBuilderTyped<T> =
+  T extends Array<infer R> ? FilterBuilderCollection<R> :
   T extends string ? FilterBuilderString :
   T extends number ? FilterBuilderNumber :
   T extends boolean ? FilterBuilderBoolean :
   T extends Date ? FilterBuilderDate :
   T extends Object ? FilterBuilderComplex<T> :
-  T extends Array<infer R> ? FilterBuilderCollection<R> :
-  // T extends List<infer R> ? R ? FilterBuilderCollection<R> : never :
   never;
 
 export type FilterBuilderComplex<T> = {
@@ -67,8 +68,8 @@ export interface StringOptions {
 
 export interface FilterBuilderString {
   notNull(): ComplexFilterExpresion;
-  equals(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
   contains(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
+  equals(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
   notEquals(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
   startsWith(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
   endsWith(s: string | FilterBuilderString, options?: StringOptions): ComplexFilterExpresion;
@@ -87,6 +88,9 @@ export interface FilterBuilderBoolean {
 }
 
 export interface FilterBuilderCollection<T> {
+  notEmpty(): ComplexFilterExpresion;
+  any(c: (_: FilterBuilderTyped<T>) => IFilterExpresion): ComplexFilterExpresion;
+  all(c: (_: FilterBuilderTyped<T>) => IFilterExpresion): ComplexFilterExpresion;
 }
 
 export class FilterBuilder {
@@ -155,44 +159,57 @@ export class FilterBuilder {
       second: d.getFullYear(),
     }
   }
+  
+  ////////////////
+  // FilterBuilderArray
+  
+  notEmpty = () => mk_expr(`${this.prefix}/any()`);
 
-  protected toMinRange = (d: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
-    switch (g) {
-      case 'year': d.setMonth(5);
-      case 'month': d.setDate(5);
-      case 'day': d.setHours(0);
-      case 'hour': d.setMinutes(0);
-      case 'minute': d.setSeconds(0);
-      case 'second': d.setMilliseconds(0);
+  any = (exp: (_: any) => IFilterExpresion) => {
+    const keys = get_property_keys(exp);
+    
+    if (keys.length) {
+      const builder = exp(mk_builder(keys, FilterBuilder));
+      const expr = builder._getFilterExpresion();
+      return mk_expr(`${this.prefix}/any(x:x/${expr})`);
+    } else {
+      const builder = exp(new FilterBuilder('x'));
+      const expr = builder._getFilterExpresion();
+      return mk_expr(`${this.prefix}/any(x:${expr})`);
     }
-    return d;
-  }
+  };
 
-  protected toMaxRange = (d: Date, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' = 'second') => {
-    switch (g) {
-      case 'year': d.setMonth(5);
-      case 'month': d.setDate(30); // get days in month
-      case 'day': d.setHours(23);
-      case 'hour': d.setMinutes(59);
-      case 'minute': d.setSeconds(59);
-      case 'second': d.setMilliseconds(999);
+  all = (exp: (_: any) => IFilterExpresion) => {
+    const keys = get_property_keys(exp);
+    
+    if (keys.length) {
+      const builder = exp(mk_builder(keys, FilterBuilder));
+      const expr = builder._getFilterExpresion();
+      return mk_expr(`${this.prefix}/all(x:x/${expr})`);
+    } else {
+      const builder = exp(new FilterBuilder('x'));
+      const expr = builder._getFilterExpresion();
+      return mk_expr(`${this.prefix}/all(x:${expr})`);
     }
-    return d;
-  }
+  };
 
   ///////////////////////
   // FilterBuilderString
 
   notNull = () => mk_expr(`${this.prefix} ne null`);
 
-  contains = (s: string | FilterBuilder, opt?: StringOptions) => {
+  contains = (s: any|FilterBuilder, opt?: StringOptions) => {
     if (opt && opt.caseInsensitive) {
       return mk_expr(`contains(tolower(${this.prefix}), ${typeof s == 'string'
         ? `'${s.toLocaleLowerCase()}'`
         : `tolower(${s.getPropName()})`})`);
     }
 
-    return mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s.getPropName()})`);
+    if (s.getPropName) {
+      return mk_expr(`contains(${this.prefix}, ${s.getPropName()})`);
+    }
+
+    return mk_expr(`contains(${this.prefix}, ${typeof s == 'string' ? `'${s}'` : s})`);
   };
 
   startsWith = (s: string | FilterBuilder, opt?: StringOptions) => {
@@ -281,16 +298,3 @@ export class FilterBuilder {
     }
   };
 }
-
-// export class FilterBuilderCollection<T> {
-//   constructor(
-//     protected readonly prefix: string,
-//     protected readonly filterBuilder: (prefix: string) => FilterBuilderComplex<T>
-//   ) { }
-
-//   NotEmpty = () => mk_expr(`${this.prefix}/any()`)
-
-//   Any = (c: (_: FilterBuilderComplex<T>) => IFilterExpresion) => mk_expr(`${this.prefix}/any(x:${c(this.filterBuilder('x')).GetFilterExpresion()})`)
-
-//   All = (c: (_: FilterBuilderComplex<T>) => IFilterExpresion) => mk_expr(`${this.prefix}/all(x:${c(this.filterBuilder('x')).GetFilterExpresion()})`)
-// }

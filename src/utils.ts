@@ -3,24 +3,24 @@ import { QueryDescriptor } from "./odataquery";
 export function mk_query_string(qd: QueryDescriptor): string {
   let params: string[] = [];
 
-  if (qd.filters.isEmpty() == false) {
-    if (qd.filters.count() > 1) {
+  if (qd.filters.length) {
+    if (qd.filters.length > 1) {
       params.push(`$filter=${qd.filters.map(mk_query_string_parentheses).join(' and ')}`);
     } else {
       params.push(`$filter=${qd.filters.join()}`);
     }
   }
 
-  if (qd.expands.isEmpty() == false) {
+  if (qd.expands.length) {
     params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
   }
 
-  if (qd.select.isEmpty() == false) {
+  if (qd.select.length) {
     params.push(`$select=${qd.select.join(',')}`);
   }
 
-  if (qd.orderby.isEmpty() == false) {
-    params.push(`$orderby=${qd.orderby.last()}`);
+  if (qd.orderby.length) {
+    params.push(`$orderby=${qd.orderby.pop()}`);
   }
 
   if (qd.skip != 'none') {
@@ -53,7 +53,7 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
     expand += '!';
   }
 
-  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none' || rqd.count != false) {
+  if (rqd.filters.length || rqd.orderby.length || rqd.select.length || rqd.expands.length || rqd.skip != 'none' || rqd.take != 'none' || rqd.count != false) {
     expand += `(`;
 
     let operators = [];
@@ -70,23 +70,23 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
       operators.push(`$count=true`);
     }
 
-    if (rqd.orderby.isEmpty() == false) {
+    if (rqd.orderby.length) {
       operators.push(`$orderby=${rqd.orderby.join(',')}`);
     }
 
-    if (rqd.select.isEmpty() == false) {
+    if (rqd.select.length) {
       operators.push(`$select=${rqd.select.join(',')}`);
     }
 
-    if (rqd.filters.isEmpty() == false) {
-      if (rqd.filters.count() > 1) {
+    if (rqd.filters.length) {
+      if (rqd.filters.length > 1) {
         operators.push(`$filter=${rqd.filters.map(mk_query_string_parentheses).join(' and ')}`);
       } else {
         operators.push(`$filter=${rqd.filters.join()}`);
       }
     }
 
-    if (rqd.expands.isEmpty() == false) {
+    if (rqd.expands.length) {
       operators.push(`$expand=${rqd.expands.map(mk_rel_query_string).join(',')}`);
     }
 
@@ -105,7 +105,6 @@ export function get_property_keys(exp: (...args: any[]) => any): string[] {
   let match: RegExpExecArray;
   const keys: string[] = [];
   const regex = new RegExp(key + '(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()');
-  // const regex = new RegExp(key + '\\.([a-zA-Z0-9_\\$]+)');
 
   // gets all properties of the used key
   while (match = regex.exec(funcStr)) {

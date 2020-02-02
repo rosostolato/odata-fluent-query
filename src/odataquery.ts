@@ -1,16 +1,15 @@
 import { IFilterBuilder, IFilterExpression, FilterBuilder, IFilterBuilderTyped } from "./filterbuilder";
 import { IOrderByBuilder, IOrderByExpression, OrderByBuilder, IOrderBy } from "./orderbyBuilder";
 import { get_property_keys, mk_builder, mk_query_string } from "./utils";
-import { List } from "immutable"
 
 export type QueryDescriptor = {
   key?:     string;
   skip:     number | 'none';
   take:     number | 'none';
-  orderby:  List<string>
-  select:   List<string>;
-  filters:  List<string>;
-  expands:  List<QueryDescriptor>;
+  orderby:  string[]
+  select:   string[];
+  filters:  string[];
+  expands:  QueryDescriptor[];
   strict?:  boolean;
   count?:   boolean;
 }
@@ -48,10 +47,10 @@ export class ODataQuery<T> {
       key,
       skip: 'none',
       take: 'none',
-      filters: List<string>(),
-      expands: List<QueryDescriptor>(),
-      orderby: List<string>(),
-      select: List<string>(),
+      filters: [],
+      expands: [],
+      orderby: [],
+      select: [],
       count: false
     }
   }
@@ -67,7 +66,7 @@ export class ODataQuery<T> {
   select<key extends keyof T>(...keys: key[]): ODataQuery<T> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      select: List(keys.map(String)),
+      select: keys.map(String),
       expands: this.queryDescriptor.expands.filter(e => keys.some(k => e.key == String(k)))
     };
 
@@ -118,10 +117,12 @@ export class ODataQuery<T> {
       return this;
     }
 
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
-    };
+    // this.queryDescriptor = {
+    //   ...this.queryDescriptor,
+    //   filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
+    // };
+
+    this.queryDescriptor.filters.push(expr.getFilterExpresion());
 
     return this;
   }
@@ -143,10 +144,12 @@ export class ODataQuery<T> {
     let expand: any = new ODataQuery(String(key));
     if (query) expand = query(expand);
 
-    this.queryDescriptor = {
-      ...this.queryDescriptor,
-      expands: this.queryDescriptor.expands.push(expand['queryDescriptor'])
-    };
+    // this.queryDescriptor = {
+    //   ...this.queryDescriptor,
+    //   expands: 
+    // };
+
+    this.queryDescriptor.expands.push(expand['queryDescriptor']);
 
     return this;
   }

@@ -1,11 +1,11 @@
-export type OrderByBuilder<T> =
-  T extends number | string | boolean | Date | Uint8Array ? OrderByProp :
+export type OrderByBuilderTyped<T> =
+  T extends number | string | boolean | Date | Uint8Array ? OrderByBuilder :
   T extends Array<infer R> ? R extends Object ? OrderByBuilderComplex<R> : never :
   T extends Object ? OrderByBuilderComplex<T>
   : never;
 
 export type OrderByBuilderComplex<T> = {
-  [P in keyof T]: OrderByBuilder<T[P]>;
+  [P in keyof T]: OrderByBuilderTyped<T[P]>;
 }
 
 export interface OrderBy {
@@ -18,7 +18,7 @@ export class OrderWithAscOrDesc implements OrderBy {
   _get = () => this.key;
 }
 
-export class OrderByProp implements OrderBy {
+export class OrderByBuilder implements OrderBy {
   constructor(private readonly key: string) { }
 
   _get() {

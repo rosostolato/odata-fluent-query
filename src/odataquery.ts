@@ -1,5 +1,5 @@
 import { FilterBuilderComplex, FilterExpresion, FilterBuilder, FilterBuilderTyped } from "./filterbuilder";
-import { OrderByBuilderComplex, OrderBy, OrderByProp } from "./orderbyBuilder";
+import { OrderByBuilderComplex, OrderBy, OrderByBuilder, OrderByBuilderTyped } from "./orderbyBuilder";
 import { List } from "immutable";
 
 type QueryDescriptor = {
@@ -107,17 +107,9 @@ export class ODataQuery<T> {
       if (!keys || !keys.length) {
         throw new Error('Could not find property key.');
       }
-
-      const builder: {
-        [TKey in keyof T]?: FilterBuilder
-      } = { };
-
-      keys.forEach(k => {
-        builder[k] = new FilterBuilder(k);
-      });
       
       // run expression
-      expr = exp(builder);
+      expr = exp(mk_builder(keys, FilterBuilder));
     }
 
     if (expr._kind == 'none') {
@@ -180,7 +172,7 @@ export class ODataQuery<T> {
     let orderby: any;
 
     if (typeof keyOrExp === 'string') {
-      orderby = new OrderByProp(keyOrExp);
+      orderby = new OrderByBuilder(keyOrExp);
 
       // run orderer
       if (order) {
@@ -197,10 +189,7 @@ export class ODataQuery<T> {
         throw new Error('Could not find property key. Use the second overload of orderBy instead');
       }
 
-      const builder: { [TKey in keyof T]?: OrderByProp } = { };
-      keys.forEach(k => builder[k] = new OrderByProp(k));
-
-      orderby = keyOrExp(builder)._get();
+      orderby = keyOrExp(mk_builder(keys, OrderByBuilder))._get();
     }
 
     this.queryDescriptor = {
@@ -511,16 +500,42 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
  */
 export function get_property_keys(exp: (...args: any[]) => any): string[] {
   let funcStr = exp.toString();
-  const arg = new RegExp(/(return *|=> *?)([a-zA-Z_0-9]+)/).exec(funcStr)[2];
+
+  // key name used in expression
+  const key = new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(funcStr)[2];
 
   let match: RegExpExecArray;
   const keys: string[] = [];
-  const reg = new RegExp(arg + '\\.([a-zA-Z_0-9]+)');
+  const regex = new RegExp(key + '(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()');
+  // const regex = new RegExp(key + '\\.([a-zA-Z0-9_\\$]+)');
 
-  while (match = reg.exec(funcStr)) {
-    funcStr = funcStr.replace(reg, '');
-    keys.push(match[1]);
+  // gets all properties of the used key
+  while (match = regex.exec(funcStr)) {
+    funcStr = funcStr.replace(regex, '');
+    keys.push(match[0].slice(key.length + 1));
   }
 
+  // return matched keys
   return keys;
+}
+
+export function mk_builder(keys: string[], builderType: any) {
+  const set = (obj, path, value) => {
+    if (Object(obj) !== obj) return obj;
+    if (!Array.isArray(path)) path = path.toString().match(/[^.[\]]+/g) || [];
+
+    path
+      .slice(0, -1)
+      .reduce((a, c, i) =>
+        Object(a[c]) === a[c]
+          ? a[c] : (a[c] = Math.abs(path[i + 1]) >> 0 === +path[i + 1] ? [] : {}),
+        obj
+      )[path[path.length - 1]] = value;
+  
+    return obj;
+  };
+
+  const builder: any = {};
+  keys.forEach(k => set(builder, k, new builderType(k.split('.').join('/'))));
+  return builder;
 }

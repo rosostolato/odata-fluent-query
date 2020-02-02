@@ -75,6 +75,13 @@ describe('testing ODataQuery orderby', () => {
     const expected = "$orderby=mail desc";
     expect(actual).toBe(expected);
   })
+
+  test('orderby nested', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy(q => q.address.street).toString();
+    const expected = "$orderby=address/street";
+    expect(actual).toBe(expected);
+  })
 })
 
 describe('testing ODataQuery paginate', () => {
@@ -282,12 +289,19 @@ describe('testing ODataQuery filter by Date', () => {
 
 // object
 describe('testing ODataQuery filter by object', () => {
-  // test('equals', () => {
-  //   const query = new ODataQuery<User>();
-  //   const actual = query.filter(q => q.address.code.biggerThan(5)).toString();
-  //   const expected = "$filter=accountEnabled eq true";
-  //   expect(actual).toBe(expected);
-  // })
+  test('filter by nested property', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.address.code.biggerThan(5)).toString();
+    const expected = "$filter=address/code gt 5";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by nested property deep', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.address.user.id.biggerThan(5)).toString();
+    const expected = "$filter=address/user/id gt 5";
+    expect(actual).toBe(expected);
+  })
 })
 
 // by another key

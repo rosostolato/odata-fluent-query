@@ -3,6 +3,7 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "declaration": true,
+        "sourceMap": true,
         "outDir": "build",
         "target": "es5",
         "lib": [

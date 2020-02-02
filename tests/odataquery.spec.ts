@@ -206,6 +206,13 @@ describe('testing ODataQuery filter by string', () => {
     const expected = "$filter=startswith(tolower(mail), 'test')";
     expect(actual).toBe(expected);
   })
+
+  test('in', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.givenName.in(['foo', 'bar'])).toString();
+    const expected = "$filter=givenName in ('foo', 'bar')";
+    expect(actual).toBe(expected);
+  })
 })
 
 // number
@@ -235,6 +242,13 @@ describe('testing ODataQuery filter by number', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.id.notEquals(5)).toString();
     const expected = "$filter=id ne 5";
+    expect(actual).toBe(expected);
+  })
+
+  test('in', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.id.in([5, 10])).toString();
+    const expected = "$filter=id in (5, 10)";
     expect(actual).toBe(expected);
   })
 })

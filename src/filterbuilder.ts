@@ -60,6 +60,7 @@ export interface IFilterString {
   notEquals(s: string | IFilterString, options?: IStringOptions): IFilterExpression;
   startsWith(s: string | IFilterString, options?: IStringOptions): IFilterExpression;
   endsWith(s: string | IFilterString, options?: IStringOptions): IFilterExpression;
+  in(list: string[]): IFilterExpression;
 }
 
 export interface IFilterNumber {
@@ -67,6 +68,7 @@ export interface IFilterNumber {
   notEquals(n: number | IFilterNumber): IFilterExpression;
   biggerThan(n: number | IFilterNumber): IFilterExpression;
   lessThan(n: number | IFilterNumber): IFilterExpression;
+  in(list: number[]): IFilterExpression;
 }
 
 export interface IFilterBoolean {
@@ -284,4 +286,12 @@ export class FilterBuilder {
       return mk_exp(`${this.prefix} ne ${x.getPropName()}`);
     }
   };
+
+  in = (arr: (number|string)[]) => {
+    const list = arr
+      .map(x => typeof x === 'string' ? `'${x}'` : x)
+      .join(', ');
+
+    return mk_exp(`${this.prefix} in (${list})`);
+  }
 }

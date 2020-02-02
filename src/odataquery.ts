@@ -1,8 +1,9 @@
-import { FilterBuilderComplex, FilterExpresion, FilterBuilder, FilterBuilderTyped } from "./filterbuilder";
-import { OrderByBuilderComplex, OrderBy, OrderByBuilder, OrderByBuilderTyped } from "./orderbyBuilder";
-import { List } from "immutable";
+import { IFilterBuilder, IFilterExpression, FilterBuilder, IFilterBuilderTyped } from "./filterbuilder";
+import { IOrderByBuilder, IOrderByExpression, OrderByBuilder, IOrderBy } from "./orderbyBuilder";
+import { get_property_keys, mk_builder, mk_query_string } from "./utils";
+import { List } from "immutable"
 
-type QueryDescriptor = {
+export type QueryDescriptor = {
   key?:     string;
   skip:     number | 'none';
   take:     number | 'none';
@@ -14,16 +15,17 @@ type QueryDescriptor = {
   count?:   boolean;
 }
 
-type RelationsOf<Model> = Pick<Model, {
+export type RelationsOf<Model> = Pick<Model, {
   [P in keyof Model]: 
     Model[P] extends Date ? never : 
     Model[P] extends Uint8Array ? never : 
     Model[P] | Array<any> extends Object ? P : never
 }[keyof Model]>
 
-type ExpandQueryComplex<T> = T extends (infer U)[]
+export type ExpandQueryComplex<T> = T extends Array<infer U>
   ? ExpandArrayQuery<U>
   : ExpandObjectQuery<T>
+
 
 /**
  * OData Query instance where T is the object that will be used on query
@@ -80,7 +82,7 @@ export class ODataQuery<T> {
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(exp: (x: FilterBuilderComplex<T>) => FilterExpresion): ODataQuery<T>;
+  filter(exp: (x: IFilterBuilder<T>) => IFilterExpression): ODataQuery<T>;
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
@@ -90,9 +92,9 @@ export class ODataQuery<T> {
    * 
    * @example q.filter('id', id => id.equals(1)).
    */
-  filter<TKey extends keyof T>(key: TKey, exp: (x: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ODataQuery<T>;
+  filter<TKey extends keyof T>(key: TKey, exp: (x: IFilterBuilderTyped<T[TKey]>) => IFilterExpression): ODataQuery<T>;
   filter(keyOrExp: any, exp?: (x: any) => any): ODataQuery<T> {
-    let expr: FilterExpresion;
+    let expr: any;
     
     if (typeof keyOrExp === 'string') {
       // run expression
@@ -112,13 +114,13 @@ export class ODataQuery<T> {
       expr = exp(mk_builder(keys, FilterBuilder));
     }
 
-    if (expr._kind == 'none') {
+    if (expr.kind == 'none') {
       return this;
     }
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
-      filters: this.queryDescriptor.filters.push(expr._getFilterExpresion())
+      filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
     };
 
     return this;
@@ -157,7 +159,7 @@ export class ODataQuery<T> {
    * 
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(exp: (ob: OrderByBuilderComplex<T>) => OrderBy): ODataQuery<T>;
+  orderBy(exp: (ob: IOrderByBuilder<T>) => IOrderBy|IOrderByExpression): ODataQuery<T>;
   /**
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
@@ -180,7 +182,7 @@ export class ODataQuery<T> {
       }
 
       // get string
-      orderby = orderby._get();
+      orderby = orderby.get();
     } else {
       // read funciton string
       const keys = get_property_keys(keyOrExp);
@@ -189,7 +191,7 @@ export class ODataQuery<T> {
         throw new Error('Could not find property key. Use the second overload of orderBy instead');
       }
 
-      orderby = keyOrExp(mk_builder(keys, OrderByBuilder))._get();
+      orderby = keyOrExp(mk_builder(keys, OrderByBuilder)).get();
     }
 
     this.queryDescriptor = {
@@ -323,7 +325,7 @@ export interface ExpandArrayQuery<T> {
    * 
    * @example q.filter(u => u.id.equals(1)).
    */
-  filter(exp: (x: FilterBuilderComplex<T>) => FilterExpresion): ExpandArrayQuery<T>;
+  filter(exp: (x: IFilterBuilder<T>) => IFilterExpression): ExpandArrayQuery<T>;
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
@@ -333,7 +335,7 @@ export interface ExpandArrayQuery<T> {
    * 
    * @example q.filter('id', id => id.equals(1)).
    */
-  filter<TKey extends keyof T>(key: TKey, exp: (x: FilterBuilderTyped<T[TKey]>) => FilterExpresion): ExpandArrayQuery<T>;
+  filter<TKey extends keyof T>(key: TKey, exp: (x: IFilterBuilderTyped<T[TKey]>) => IFilterExpression): ExpandArrayQuery<T>;
 
   /**
    * Adds a $orderby operator to the OData query.
@@ -343,7 +345,7 @@ export interface ExpandArrayQuery<T> {
    * 
    * @example q.orderBy(u => u.blogs().id.desc()).
    */
-  orderBy(exp: (ob: OrderByBuilderComplex<T>) => OrderBy): ExpandArrayQuery<T>;
+  orderBy(exp: (ob: IOrderByBuilder<T>) => IOrderBy|IOrderByExpression): ExpandArrayQuery<T>;
   /**
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
@@ -395,147 +397,4 @@ export interface ExpandArrayQuery<T> {
    * set $count=true
    */
   count(): ExpandArrayQuery<T>;
-}
-
-export function mk_query_string_parentheses(query: string) {
-  if (query.indexOf(' or ') > -1 || query.indexOf(' and ') > -1) {
-    return `(${query})`;
-  }
-
-  return query;
-}
-
-export function mk_query_string(qd: QueryDescriptor): string {
-  let params: string[] = [];
-
-  if (qd.filters.isEmpty() == false) {
-    if (qd.filters.count() > 1) {
-      params.push(`$filter=${qd.filters.map(mk_query_string_parentheses).join(' and ')}`);
-    } else {
-      params.push(`$filter=${qd.filters.join()}`);
-    }
-  }
-
-  if (qd.expands.isEmpty() == false) {
-    params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
-  }
-
-  if (qd.select.isEmpty() == false) {
-    params.push(`$select=${qd.select.join(',')}`);
-  }
-
-  if (qd.orderby.isEmpty() == false) {
-    params.push(`$orderby=${qd.orderby.last()}`);
-  }
-
-  if (qd.skip != 'none') {
-    params.push(`$skip=${qd.skip}`);
-  }
-
-  if (qd.take != 'none') {
-    params.push(`$top=${qd.take}`);
-  }
-
-  if (qd.count == true) {
-    params.push(`$count=true`);
-  }
-
-  return params.join('&');
-}
-
-export function mk_rel_query_string(rqd: QueryDescriptor): string {
-  let expand: string = rqd.key;
-
-  if (rqd.strict) {
-    expand += '!';
-  }
-
-  if (!rqd.filters.isEmpty() || !rqd.orderby.isEmpty() || !rqd.select.isEmpty() || !rqd.expands.isEmpty() || rqd.skip != 'none' || rqd.take != 'none' || rqd.count != false) {
-    expand += `(`;
-
-    let operators = [];
-
-    if (rqd.skip != 'none') {
-      operators.push(`$skip=${rqd.skip}`);
-    }
-
-    if (rqd.take != 'none') {
-      operators.push(`$top=${rqd.take}`);
-    }
-
-    if (rqd.count == true) {
-      operators.push(`$count=true`);
-    }
-
-    if (rqd.orderby.isEmpty() == false) {
-      operators.push(`$orderby=${rqd.orderby.join(',')}`);
-    }
-
-    if (rqd.select.isEmpty() == false) {
-      operators.push(`$select=${rqd.select.join(',')}`);
-    }
-
-    if (rqd.filters.isEmpty() == false) {
-      if (rqd.filters.count() > 1) {
-        operators.push(`$filter=${rqd.filters.map(mk_query_string_parentheses).join(' and ')}`);
-      } else {
-        operators.push(`$filter=${rqd.filters.join()}`);
-      }
-    }
-
-    if (rqd.expands.isEmpty() == false) {
-      operators.push(`$expand=${rqd.expands.map(mk_rel_query_string).join(',')}`);
-    }
-
-    expand += operators.join(';') + ')';
-  }
-
-  return expand
-}
-
-/**
- * get property key name used in the expression function
- * 
- * @param exp expression function
- */
-export function get_property_keys(exp: (...args: any[]) => any): string[] {
-  let funcStr = exp.toString();
-
-  // key name used in expression
-  const key = new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(funcStr)[2];
-
-  let match: RegExpExecArray;
-  const keys: string[] = [];
-  const regex = new RegExp(key + '(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()');
-  // const regex = new RegExp(key + '\\.([a-zA-Z0-9_\\$]+)');
-
-  // gets all properties of the used key
-  while (match = regex.exec(funcStr)) {
-    funcStr = funcStr.replace(regex, '');
-    keys.push(match[0].slice(key.length + 1));
-  }
-
-  // return matched keys
-  return keys;
-}
-
-export function mk_builder(keys: string[], builderType: any) {
-  const set = (obj, path, value) => {
-    if (Object(obj) !== obj) return obj;
-    if (!Array.isArray(path)) path = path.toString().match(/[^.[\]]+/g) || [];
-
-    path
-      .slice(0, -1)
-      .reduce((a, c, i) =>
-        Object(a[c]) === a[c]
-          ? a[c] : (a[c] = Math.abs(path[i + 1]) >> 0 === +path[i + 1] ? [] : {}),
-        obj
-      )[path[path.length - 1]] = value;
-  
-    return obj;
-  };
-
-  const builder: any = {};
-  keys.forEach(k => set(builder, k, new builderType(k.split('.').join('/'))));
-  return builder;
 }

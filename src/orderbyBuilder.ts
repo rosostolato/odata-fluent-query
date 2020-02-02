@@ -1,35 +1,32 @@
-export type OrderByBuilderTyped<T> =
-  T extends number | string | boolean | Date | Uint8Array ? OrderByBuilder :
-  T extends Array<infer R> ? R extends Object ? OrderByBuilderComplex<R> : never :
-  T extends Object ? OrderByBuilderComplex<T>
+export type IOrderByBuilderTyped<T> =
+  T extends Array<infer R> ? R extends Object ? IOrderByBuilder<R> : never :
+  T extends number | string | boolean | Date | Uint8Array ? IOrderBy :
+  T extends Object ? IOrderByBuilder<T>
   : never;
 
-export type OrderByBuilderComplex<T> = {
-  [P in keyof T]: OrderByBuilderTyped<T[P]>;
+export type IOrderByBuilder<T> = {
+  [P in keyof T]: IOrderByBuilderTyped<T[P]>;
 }
 
-export interface OrderBy {
-  _get: () => string;
+export interface IOrderBy {
+  asc(): IOrderByExpression;
+  desc(): IOrderByExpression;
 }
 
-export class OrderWithAscOrDesc implements OrderBy {
+export interface IOrderByExpression {
+  get: () => string;
+}
+
+export class OrderByBuilder implements IOrderBy, IOrderByExpression {
   constructor(private readonly key: string) { }
 
-  _get = () => this.key;
-}
-
-export class OrderByBuilder implements OrderBy {
-  constructor(private readonly key: string) { }
-
-  _get() {
-    return this.key;
-  }
+  get = () => this.key;
 
   asc() {
-    return new OrderWithAscOrDesc(this.key + ' asc');
+    return new OrderByBuilder(this.key + ' asc');
   }
   
   desc() {
-    return new OrderWithAscOrDesc(this.key + ' desc');
+    return new OrderByBuilder(this.key + ' desc');
   }
 }

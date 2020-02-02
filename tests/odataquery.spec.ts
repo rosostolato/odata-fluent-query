@@ -82,6 +82,13 @@ describe('testing ODataQuery orderby', () => {
     const expected = "$orderby=address/street";
     expect(actual).toBe(expected);
   })
+
+  test('orderby nested array', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.orderBy(q => q.posts.id).toString();
+    const expected = "$orderby=posts/id";
+    expect(actual).toBe(expected);
+  })
 })
 
 describe('testing ODataQuery paginate', () => {

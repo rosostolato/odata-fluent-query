@@ -82,6 +82,10 @@ export interface IFilterCollection<T> {
   all(c: (_: IFilterBuilderTyped<T>) => IFilterExpression): IFilterExpression;
 }
 
+const nullBuilder = {
+  getPropName: () => 'null'
+};
+
 export class FilterBuilder {
   constructor(protected readonly prefix: string) { }
 
@@ -255,11 +259,11 @@ export class FilterBuilder {
       return mk_exp(`${this.prefix} eq ${x}`);
 
       default:
-      if (o && o.caseInsensitive) {
+      if (o && x && o.caseInsensitive) {
         return mk_exp(`tolower(${this.prefix}) eq tolower(${x.getPropName()})`);
       }
 
-      return mk_exp(`${this.prefix} eq ${x.getPropName()}`);
+      return mk_exp(`${this.prefix} eq ${(x || nullBuilder).getPropName()}`);
     }
   };
 

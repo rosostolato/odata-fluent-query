@@ -137,6 +137,20 @@ describe('testing ODataQuery filter by string', () => {
     expect(actual).toBe(expected);
   })
 
+  test('eq null', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.mail.equals(null)).toString();
+    const expected = "$filter=mail eq null";
+    expect(actual).toBe(expected);
+  })
+
+  test('not eq null', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.mail.equals(null).not()).toString();
+    const expected = "$filter=not (mail eq null)";
+    expect(actual).toBe(expected);
+  })
+
   test('contains', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.mail.contains('test')).toString();
@@ -231,6 +245,20 @@ describe('testing ODataQuery filter by number', () => {
     expect(actual).toBe(expected);
   })
 
+  test('eq null', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.id.equals(null)).toString();
+    const expected = "$filter=id eq null";
+    expect(actual).toBe(expected);
+  })
+
+  test('not eq null', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.id.equals(null).not()).toString();
+    const expected = "$filter=not (id eq null)";
+    expect(actual).toBe(expected);
+  })
+
   test('lessThan', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.id.lessThan(5)).toString();
@@ -289,22 +317,22 @@ describe('testing ODataQuery filter by Date', () => {
   test('isAfter', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.createDate.isAfter(new Date(2020, 0))).toString();
-    const expected = "$filter=createDate gt 2020-01-01T02:00:00.000Z";
-    expect(actual).toBe(expected);
+    const expected = "$filter=createDate gt 2020-01-01T";
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1);
   })
 
   test('isBefore', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.createDate.isBefore(new Date(2020, 0))).toString();
-    const expected = "$filter=createDate lt 2020-01-01T02:00:00.000Z";
-    expect(actual).toBe(expected);
+    const expected = "$filter=createDate lt 2020-01-01T";
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1);
   })
 
   test('isSame', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.createDate.isSame(new Date(2020, 0))).toString();
-    const expected = "$filter=createDate eq 2020-01-01T02:00:00.000Z";
-    expect(actual).toBe(expected);
+    const expected = "$filter=createDate eq 2020-01-01T";
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1);
   })
 })
 
@@ -573,10 +601,10 @@ describe('testing ODataQuery expand', () => {
     const actual = query
       .expand('posts', e => e
         .filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
-        .filter(q => q.date.isAfter(new Date(2020, 0))))
+        .filter(q => q.id.lessThan(10)))
       .toString();
     
-    const expected = "$expand=posts($filter=(startswith(content, 'test') or id gt 5) and date gt 2020-01-01T02:00:00.000Z)";
+    const expected = "$expand=posts($filter=(startswith(content, 'test') or id gt 5) and id lt 10)";
     expect(actual).toBe(expected);
   })
   

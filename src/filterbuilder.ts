@@ -78,6 +78,7 @@ export interface IFilterBoolean {
 }
 
 export interface IFilterCollection<T> {
+  empty(): IFilterExpression;
   notEmpty(): IFilterExpression;
   any(c: (_: IFilterBuilderTyped<T>) => IFilterExpression): IFilterExpression;
   all(c: (_: IFilterBuilderTyped<T>) => IFilterExpression): IFilterExpression;
@@ -156,6 +157,8 @@ export class FilterBuilder {
   
   ////////////////
   // FilterBuilderArray
+
+  empty = () => mk_exp(`not ${this.prefix}/any()`);
   
   notEmpty = () => mk_exp(`${this.prefix}/any()`);
 

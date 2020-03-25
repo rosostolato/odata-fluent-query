@@ -358,12 +358,19 @@ describe('testing ODataQuery filter by object', () => {
 describe('testing ODataQuery filter by array', () => {
   test('filter by empty array', () => {
     const query = new ODataQuery<User>();
+    const actual = query.filter(q => q.phoneNumbers.empty()).toString();
+    const expected = "$filter=not phoneNumbers/any()";
+    expect(actual).toBe(expected);
+  })
+
+  test('filter by not empty array', () => {
+    const query = new ODataQuery<User>();
     const actual = query.filter(q => q.phoneNumbers.notEmpty()).toString();
     const expected = "$filter=phoneNumbers/any()";
     expect(actual).toBe(expected);
   })
 
-  test('filter by empty related array', () => {
+  test('filter by not empty related array', () => {
     const query = new ODataQuery<User>();
     const actual = query.filter(q => q.posts.notEmpty()).toString();
     const expected = "$filter=posts/any()";

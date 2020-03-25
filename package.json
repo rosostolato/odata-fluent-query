@@ -1,6 +1,6 @@
 {
   "name": "odata-fluent-query",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OData fluent query builder",
   "main": "src/index.ts",
   "repository": {
@@ -10,7 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "tsc && copyfiles package.json README.md build",
-    "publish": "cd build && npm publish",
+    "publish": "cd ./build && npm publish",
     "release": "npm run build && npm run publish"
   },
   "author": "",

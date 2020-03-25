@@ -1,4 +1,4 @@
-import { get_property_keys, mk_builder } from "./utils";
+import { get_property_keys, mk_builder, get_param_key } from "./utils";
 
 export type IFilterBuilderTyped<T> =
   T extends Array<infer R> ? IFilterCollection<R> :
@@ -160,30 +160,32 @@ export class FilterBuilder {
   notEmpty = () => mk_exp(`${this.prefix}/any()`);
 
   any = (exp: (_: any) => ComplexFilterExpresion) => {
-    const keys = get_property_keys(exp);
+    const key = get_param_key(exp);
+    const props = get_property_keys(exp);
     
-    if (keys.length) {
-      const builder = exp(mk_builder(keys, FilterBuilder));
+    if (props.length) {
+      const builder = exp(mk_builder(props, FilterBuilder));
       const expr = builder.getFilterExpresion();
-      return mk_exp(`${this.prefix}/any(x:x/${expr})`);
+      return mk_exp(`${this.prefix}/any(${key}:${key}/${expr})`);
     } else {
-      const builder = exp(new FilterBuilder('x'));
+      const builder = exp(new FilterBuilder(key));
       const expr = builder.getFilterExpresion();
-      return mk_exp(`${this.prefix}/any(x:${expr})`);
+      return mk_exp(`${this.prefix}/any(${key}:${expr})`);
     }
   };
 
   all = (exp: (_: any) => ComplexFilterExpresion) => {
+    const key = get_param_key(exp);
     const keys = get_property_keys(exp);
     
     if (keys.length) {
       const builder = exp(mk_builder(keys, FilterBuilder));
       const expr = builder.getFilterExpresion();
-      return mk_exp(`${this.prefix}/all(x:x/${expr})`);
+      return mk_exp(`${this.prefix}/all(${key}:${key}/${expr})`);
     } else {
-      const builder = exp(new FilterBuilder('x'));
+      const builder = exp(new FilterBuilder(key));
       const expr = builder.getFilterExpresion();
-      return mk_exp(`${this.prefix}/all(x:${expr})`);
+      return mk_exp(`${this.prefix}/all(${key}:${expr})`);
     }
   };
 

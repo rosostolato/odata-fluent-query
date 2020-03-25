@@ -96,11 +96,15 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
   return expand
 }
 
+export function get_param_key(exp: (...args: any[]) => any): string {
+  return new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(exp.toString())[2];
+}
+
 export function get_property_keys(exp: (...args: any[]) => any): string[] {
   let funcStr = exp.toString();
 
   // key name used in expression
-  const key = new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(funcStr)[2];
+  const key = get_param_key(exp);
 
   let match: RegExpExecArray;
   const keys: string[] = [];

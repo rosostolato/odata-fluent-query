@@ -24,6 +24,7 @@ export interface Address {
 
 export interface Post {
   id: number;
+  date: Date;
   content: string;
-  date: Date
+  comments: string[];
 }

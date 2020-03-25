@@ -54,6 +54,7 @@ export interface IStringOptions {
 }
 
 export interface IFilterString {
+  /** @deprecated use `notEquals(null)` instead */
   notNull(): IFilterExpression;
   contains(s: string | IFilterString, options?: IStringOptions): IFilterExpression;
   equals(s: string | IFilterString, options?: IStringOptions): IFilterExpression;
@@ -189,6 +190,7 @@ export class FilterBuilder {
   ///////////////////////
   // FilterBuilderString
 
+  /** @deprecated use `notEquals(null)` instead */
   notNull = () => mk_exp(`${this.prefix} ne null`);
 
   contains = (s: any|FilterBuilder, opt?: IStringOptions) => {
@@ -287,14 +289,14 @@ export class FilterBuilder {
         return mk_exp(`tolower(${this.prefix}) ne tolower(${x.getPropName()})`);
       }
 
-      return mk_exp(`${this.prefix} ne ${x.getPropName()}`);
+      return mk_exp(`${this.prefix} ne ${(x || nullBuilder).getPropName()}`);
     }
   };
 
   in = (arr: (number|string)[]) => {
     const list = arr
       .map(x => typeof x === 'string' ? `'${x}'` : x)
-      .join(', ');
+      .join(',');
 
     return mk_exp(`${this.prefix} in (${list})`);
   }

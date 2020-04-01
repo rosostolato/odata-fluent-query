@@ -7,6 +7,8 @@ export declare type QueryDescriptor = {
     orderby: string[];
     select: string[];
     filters: string[];
+    groupby: string[];
+    groupAgg: string;
     expands: QueryDescriptor[];
     strict?: boolean;
     count?: boolean;
@@ -116,6 +118,7 @@ export declare class ODataQuery<T> {
      * set $count=true
      */
     count(): this;
+    groupBy<key extends keyof T>(keys: key[], aggregate?: string): this;
     /**
      * exports query to string
      */

@@ -10,6 +10,13 @@ function mk_query_string(qd) {
             params.push("$filter=" + qd.filters.join());
         }
     }
+    if (qd.groupby.length) {
+        var group = "$apply=groupby((" + qd.groupby.join(',') + ")";
+        if (qd.groupAgg) {
+            group += ",aggregate(" + qd.groupAgg + ")";
+        }
+        params.push(group + ')');
+    }
     if (qd.expands.length) {
         params.push("$expand=" + qd.expands.map(mk_rel_query_string).join(','));
     }

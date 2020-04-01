@@ -40,6 +40,8 @@ var ODataQuery = /** @class */ (function () {
             expands: [],
             orderby: [],
             select: [],
+            groupby: [],
+            groupAgg: null,
             count: false
         };
     }
@@ -155,6 +157,10 @@ var ODataQuery = /** @class */ (function () {
      */
     ODataQuery.prototype.count = function () {
         this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { count: true });
+        return this;
+    };
+    ODataQuery.prototype.groupBy = function (keys, aggregate) {
+        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { groupby: keys.map(String), groupAgg: aggregate });
         return this;
     };
     /**

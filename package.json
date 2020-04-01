@@ -2,7 +2,7 @@
   "name": "odata-fluent-query",
   "version": "1.0.2",
   "description": "OData fluent query builder",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/rosostolato/odata-fluent-query"
   },

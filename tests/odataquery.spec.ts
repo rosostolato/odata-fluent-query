@@ -650,3 +650,26 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected);
   })
 })
+
+describe('testing ODataQuery groupBy', () => {
+  test('groupBy', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.groupBy(['mail']).toString();
+    const expected = "$apply=groupby((mail))";
+    expect(actual).toBe(expected);
+  })
+  
+  test('groupBy multiple', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.groupBy(['mail','surname']).toString();
+    const expected = "$apply=groupby((mail,surname))";
+    expect(actual).toBe(expected);
+  })
+  
+  test('groupBy aggregate', () => {
+    const query = new ODataQuery<User>();
+    const actual = query.groupBy(['mail','surname'], 'id with countdistinct as all').toString();
+    const expected = "$apply=groupby((mail,surname),aggregate(id with countdistinct as all))";
+    expect(actual).toBe(expected);
+  })
+})

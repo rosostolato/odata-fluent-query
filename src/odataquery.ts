@@ -6,9 +6,11 @@ export type QueryDescriptor = {
   key?:     string;
   skip:     number | 'none';
   take:     number | 'none';
-  orderby:  string[]
+  orderby:  string[];
   select:   string[];
   filters:  string[];
+  groupby:  string[];
+  groupAgg: string;
   expands:  QueryDescriptor[];
   strict?:  boolean;
   count?:   boolean;
@@ -51,6 +53,8 @@ export class ODataQuery<T> {
       expands: [],
       orderby: [],
       select: [],
+      groupby: [],
+      groupAgg: null,
       count: false
     }
   }
@@ -267,6 +271,16 @@ export class ODataQuery<T> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       count: true
+    };
+
+    return this;
+  }
+
+  groupBy<key extends keyof T>(keys: key[], aggregate?: string) {
+    this.queryDescriptor = {
+      ...this.queryDescriptor,
+      groupby: keys.map(String),
+      groupAgg: aggregate
     };
 
     return this;

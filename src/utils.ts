@@ -11,6 +11,16 @@ export function mk_query_string(qd: QueryDescriptor): string {
     }
   }
 
+  if (qd.groupby.length) {
+    let group = `$apply=groupby((${qd.groupby.join(',')})`;
+
+    if (qd.groupAgg) {
+      group += `,aggregate(${qd.groupAgg})`;
+    }
+
+    params.push(group + ')');
+  }
+
   if (qd.expands.length) {
     params.push(`$expand=${qd.expands.map(mk_rel_query_string).join(',')}`);
   }

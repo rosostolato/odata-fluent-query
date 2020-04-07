@@ -1,3 +1,3 @@
-export * from './odataquery';
-export * from './filterbuilder';
-export * from './orderbyBuilder';
+export * from './odata-query';
+export * from './filter-builder';
+export * from './orderby-Builder';

@@ -1,4 +1,4 @@
-import { QueryDescriptor } from "./odataquery";
+import { QueryDescriptor } from "./odata-query";
 
 export function mk_query_string(qd: QueryDescriptor): string {
   let params: string[] = [];

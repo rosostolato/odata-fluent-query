@@ -2,6 +2,7 @@ import { IFilterBuilder, IFilterExpression, FilterBuilder, IFilterBuilderTyped }
 import { IOrderByBuilder, IOrderByExpression, OrderByBuilder, IOrderBy } from "./orderby-Builder";
 import { get_property_keys, mk_builder, mk_query_string } from "./utils";
 import { ExpandQueryComplex } from "./expand-query";
+import { GroupbyBuilder } from "./groupby-builder";
 
 export type QueryDescriptor = {
   key?:     string;
@@ -272,11 +273,14 @@ export class ODataQuery<T> {
     return this;
   }
 
-  groupBy<key extends keyof T>(keys: key[], aggregate?: string) {
+  groupBy<key extends keyof T>(keys: key[], aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>) {
+    const agg = new GroupbyBuilder();
+    const result = aggregate ? aggregate(agg) : agg; 
+    
     this.queryDescriptor = {
       ...this.queryDescriptor,
       groupby: keys.map(String),
-      groupAgg: aggregate
+      groupAgg: result.groupAgg.join(',') || null
     };
 
     return this;

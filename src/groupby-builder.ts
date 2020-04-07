@@ -1,7 +1,29 @@
-export interface OrderbyBuilder<T> {
-  sum(prop: keyof T, as: string): OrderbyBuilder<T>;
-  min(prop: keyof T, as: string): OrderbyBuilder<T>;
-  max(prop: keyof T, as: string): OrderbyBuilder<T>;
-  average(prop: keyof T, as: string): OrderbyBuilder<T>;
-  countdistinct(prop: keyof T, as: string): OrderbyBuilder<T>;
+export class GroupbyBuilder<T> {
+  groupAgg: string[] = [];
+
+  sum(prop: keyof T, as: string): GroupbyBuilder<T> {
+    return this.custom(prop, 'sum', as);
+  }
+
+  min(prop: keyof T, as: string): GroupbyBuilder<T> {
+    return this.custom(prop, 'min', as);
+  }
+
+  max(prop: keyof T, as: string): GroupbyBuilder<T> {
+    return this.custom(prop, 'max', as);
+  }
+
+  average(prop: keyof T, as: string): GroupbyBuilder<T> {
+    return this.custom(prop, 'average', as);
+  }
+
+  countdistinct(prop: keyof T, as: string): GroupbyBuilder<T> {
+    return this.custom(prop, 'countdistinct', as);
+  }
+
+  custom(prop: keyof T, aggregator: string, as: string) {
+    const agg = `${prop} with ${aggregator} as ${as}`;
+    this.groupAgg.push(agg);
+    return this;
+  }
 }

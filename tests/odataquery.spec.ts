@@ -1,4 +1,4 @@
-import { ODataQuery } from '../src/odataquery';
+import { ODataQuery } from '../src/odata-query';
 import { User } from '../models';
 
 describe('testing ODataQuery select', () => {
@@ -668,8 +668,20 @@ describe('testing ODataQuery groupBy', () => {
   
   test('groupBy aggregate', () => {
     const query = new ODataQuery<User>();
-    const actual = query.groupBy(['mail','surname'], 'id with countdistinct as all').toString();
+    const actual = query.groupBy(['mail','surname'], a => a.countdistinct('id', 'all')).toString();
     const expected = "$apply=groupby((mail,surname),aggregate(id with countdistinct as all))";
+    expect(actual).toBe(expected);
+  })
+  
+  test('groupBy aggregate multiple', () => {
+    const query = new ODataQuery<User>();
+
+    const actual = query.groupBy(['mail','surname'], a => a
+      .countdistinct('id', 'all')
+      .max('phoneNumbers', 'test')
+    ).toString();
+
+    const expected = "$apply=groupby((mail,surname),aggregate(id with countdistinct as all,phoneNumbers with max as test))";
     expect(actual).toBe(expected);
   })
 })

@@ -1,4 +1,4 @@
-import { QueryDescriptor } from "./odataquery";
+import { QueryDescriptor } from "./odata-query";
 export declare function mk_query_string(qd: QueryDescriptor): string;
 export declare function mk_query_string_parentheses(query: string): string;
 export declare function mk_rel_query_string(rqd: QueryDescriptor): string;

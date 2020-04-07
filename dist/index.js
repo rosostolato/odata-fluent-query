@@ -3,7 +3,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(require("./odataquery"));
-__export(require("./filterbuilder"));
-__export(require("./orderbyBuilder"));
+__export(require("./odata-query"));
+__export(require("./filter-builder"));
+__export(require("./orderby-Builder"));
 //# sourceMappingURL=index.js.map

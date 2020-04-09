@@ -2,10 +2,13 @@ import { IFilterBuilder, IFilterExpression, IFilterBuilderTyped } from "./filter
 import { IOrderByBuilder, IOrderByExpression, IOrderBy } from "./orderby-Builder";
 import { ExpandQueryComplex } from "./expand-query";
 import { GroupbyBuilder } from "./groupby-builder";
-export declare type QueryDescriptor = {
+export declare type QueryObject = {
+    [key: string]: string;
+};
+export interface QueryDescriptor {
     key?: string;
-    skip: number | 'none';
-    take: number | 'none';
+    skip: number | "none";
+    take: number | "none";
     orderby: string[];
     select: string[];
     filters: string[];
@@ -14,7 +17,7 @@ export declare type QueryDescriptor = {
     expands: QueryDescriptor[];
     strict?: boolean;
     count?: boolean;
-};
+}
 export declare type RelationsOf<Model> = Pick<Model, {
     [P in keyof Model]: Model[P] extends Date ? never : Model[P] extends Uint8Array ? never : Model[P] | Array<any> extends Object ? P : never;
 }[keyof Model]>;
@@ -39,7 +42,9 @@ export declare class ODataQuery<T> {
      *
      * @param keys the names of the properties you want to select.
      *
-     * @example q.select('id', 'title').
+     * @example
+     *
+     * q.select('id', 'title')
      */
     select<key extends keyof T>(...keys: key[]): ODataQuery<T>;
     /**
@@ -48,7 +53,9 @@ export declare class ODataQuery<T> {
      *
      * @param exp a lambda expression that builds an expression from the builder.
      *
-     * @example q.filter(u => u.id.equals(1)).
+     * @example
+     *
+     * q.filter(u => u.id.equals(1))
      */
     filter(exp: (x: IFilterBuilder<T>) => IFilterExpression): ODataQuery<T>;
     /**
@@ -58,7 +65,9 @@ export declare class ODataQuery<T> {
      * @param key property key selector.
      * @param exp a lambda expression that builds an expression from the builder.
      *
-     * @example q.filter('id', id => id.equals(1)).
+     * @example
+     *
+     * q.filter('id', id => id.equals(1))
      */
     filter<TKey extends keyof T>(key: TKey, exp: (x: IFilterBuilderTyped<T[TKey]>) => IFilterExpression): ODataQuery<T>;
     /**
@@ -69,7 +78,9 @@ export declare class ODataQuery<T> {
      * @param key the name of the relation.
      * @param query a lambda expression that build the subquery from the querybuilder.
      *
-     * @example q.exand('blogs', q => q.select('id', 'title')).
+     * @example
+     *
+     * q.exand('blogs', q => q.select('id', 'title'))
      */
     expand<key extends keyof RelationsOf<T>, U = T[key]>(key: key, query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>): ODataQuery<T>;
     /**
@@ -78,7 +89,9 @@ export declare class ODataQuery<T> {
      *
      * @param exp a lambda expression that builds the orderby expression from the builder.
      *
-     * @example q.orderBy(u => u.blogs().id.desc()).
+     * @example
+     *
+     * q.orderBy(u => u.blogs().id.desc())
      */
     orderBy(exp: (ob: IOrderByBuilder<T>) => IOrderBy | IOrderByExpression): ODataQuery<T>;
     /**
@@ -88,9 +101,11 @@ export declare class ODataQuery<T> {
      * @param key key in T.
      * @param order the order of the sort.
      *
-     * @example q.orderBy('blogs', 'desc').
+     * @example
+     *
+     * q.orderBy('blogs', 'desc')
      */
-    orderBy<TKey extends keyof T>(key: TKey, order?: 'asc' | 'desc'): ODataQuery<T>;
+    orderBy<TKey extends keyof T>(key: TKey, order?: "asc" | "desc"): ODataQuery<T>;
     /**
      * Adds a $skip and $top to the OData query.
      * The pageindex in zero-based.
@@ -99,7 +114,9 @@ export declare class ODataQuery<T> {
      * @param pagesize page index ($skip).
      * @param page page size ($top)
      *
-     * @example q.paginate(50, 0).
+     * @example
+     *
+     * q.paginate(50, 0)
      */
     paginate(pagesize: number, page?: number): ODataQuery<T>;
     /**
@@ -108,7 +125,9 @@ export declare class ODataQuery<T> {
      *
      * @param options paginate query options
      *
-     * @example q.paginate({ pagesize: 50, page: 0, count: false }).
+     * @example
+     *
+     * q.paginate({ pagesize: 50, page: 0, count: false })
      */
     paginate(options: {
         pagesize: number;
@@ -119,9 +138,37 @@ export declare class ODataQuery<T> {
      * set $count=true
      */
     count(): this;
+    /**
+     * group by the selected keys
+     *
+     * @param keys keys to be grouped by
+     * @param aggregate aggregate builder [optional]
+     *
+     * @example
+     *
+     * q.groupBy(["mail", "surname"], (a) => a
+     *   .countdistinct("phoneNumbers", "count")
+     *   .max("id", "id")
+     * )
+     */
     groupBy<key extends keyof T>(keys: key[], aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>): this;
     /**
-     * exports query to string
+     * exports query to string joined with `&`
+     *
+     * @example
+     *
+     * '$filter=order gt 5&$select=id'
      */
     toString(): string;
+    /**
+     * exports query to object key/value
+     *
+     * @example
+     *
+     * {
+     *  '$filter': 'order gt 5',
+     *  '$select': 'id'
+     * }
+     */
+    toObject(): QueryObject;
 }

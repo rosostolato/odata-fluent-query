@@ -22,15 +22,15 @@ var ODataQuery = /** @class */ (function () {
     function ODataQuery(key) {
         this.queryDescriptor = {
             key: key,
-            skip: 'none',
-            take: 'none',
+            skip: "none",
+            take: "none",
             filters: [],
             expands: [],
             orderby: [],
             select: [],
             groupby: [],
             groupAgg: null,
-            count: false
+            count: false,
         };
     }
     /**
@@ -39,19 +39,23 @@ var ODataQuery = /** @class */ (function () {
      *
      * @param keys the names of the properties you want to select.
      *
-     * @example q.select('id', 'title').
+     * @example
+     *
+     * q.select('id', 'title')
      */
     ODataQuery.prototype.select = function () {
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             keys[_i] = arguments[_i];
         }
-        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { select: keys.map(String), expands: this.queryDescriptor.expands.filter(function (e) { return keys.some(function (k) { return e.key == String(k); }); }) });
+        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { select: keys.map(String), expands: this.queryDescriptor.expands.filter(function (e) {
+                return keys.some(function (k) { return e.key == String(k); });
+            }) });
         return this;
     };
     ODataQuery.prototype.filter = function (keyOrExp, exp) {
         var expr;
-        if (typeof keyOrExp === 'string') {
+        if (typeof keyOrExp === "string") {
             // run expression
             expr = exp(new filter_builder_1.FilterBuilder(keyOrExp));
         }
@@ -61,12 +65,12 @@ var ODataQuery = /** @class */ (function () {
             // read funciton string to retrieve keys
             var keys = utils_1.get_property_keys(exp);
             if (!keys || !keys.length) {
-                throw new Error('Could not find property key.');
+                throw new Error("Could not find property key.");
             }
             // run expression
             expr = exp(utils_1.mk_builder(keys, filter_builder_1.FilterBuilder));
         }
-        if (expr.kind == 'none') {
+        if (expr.kind == "none") {
             return this;
         }
         // this.queryDescriptor = {
@@ -84,22 +88,20 @@ var ODataQuery = /** @class */ (function () {
      * @param key the name of the relation.
      * @param query a lambda expression that build the subquery from the querybuilder.
      *
-     * @example q.exand('blogs', q => q.select('id', 'title')).
+     * @example
+     *
+     * q.exand('blogs', q => q.select('id', 'title'))
      */
     ODataQuery.prototype.expand = function (key, query) {
         var expand = new ODataQuery(String(key));
         if (query)
             expand = query(expand);
-        // this.queryDescriptor = {
-        //   ...this.queryDescriptor,
-        //   expands: 
-        // };
-        this.queryDescriptor.expands.push(expand['queryDescriptor']);
+        this.queryDescriptor.expands.push(expand["queryDescriptor"]);
         return this;
     };
     ODataQuery.prototype.orderBy = function (keyOrExp, order) {
         var orderby;
-        if (typeof keyOrExp === 'string') {
+        if (typeof keyOrExp === "string") {
             orderby = new orderby_Builder_1.OrderByBuilder(keyOrExp);
             // run orderer
             if (order) {
@@ -112,7 +114,7 @@ var ODataQuery = /** @class */ (function () {
             // read funciton string
             var keys = utils_1.get_property_keys(keyOrExp);
             if (!keys || !keys.length) {
-                throw new Error('Could not find property key. Use the second overload of orderBy instead');
+                throw new Error("Could not find property key. Use the second overload of orderBy instead");
             }
             orderby = keyOrExp(utils_1.mk_builder(keys, orderby_Builder_1.OrderByBuilder)).get();
         }
@@ -121,11 +123,11 @@ var ODataQuery = /** @class */ (function () {
     };
     ODataQuery.prototype.paginate = function (options, page) {
         var data;
-        if (typeof options === 'number') {
+        if (typeof options === "number") {
             data = {
                 pagesize: options,
                 page: page,
-                count: true
+                count: true,
             };
         }
         else {
@@ -136,7 +138,7 @@ var ODataQuery = /** @class */ (function () {
         }
         this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { take: data.pagesize, skip: data.pagesize * data.page, count: data.count });
         if (!this.queryDescriptor.skip) {
-            this.queryDescriptor.skip = 'none';
+            this.queryDescriptor.skip = "none";
         }
         return this;
     };
@@ -147,17 +149,52 @@ var ODataQuery = /** @class */ (function () {
         this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { count: true });
         return this;
     };
+    /**
+     * group by the selected keys
+     *
+     * @param keys keys to be grouped by
+     * @param aggregate aggregate builder [optional]
+     *
+     * @example
+     *
+     * q.groupBy(["mail", "surname"], (a) => a
+     *   .countdistinct("phoneNumbers", "count")
+     *   .max("id", "id")
+     * )
+     */
     ODataQuery.prototype.groupBy = function (keys, aggregate) {
         var agg = new groupby_builder_1.GroupbyBuilder();
         var result = aggregate ? aggregate(agg) : agg;
-        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { groupby: keys.map(String), groupAgg: result.groupAgg.join(',') || null });
+        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { groupby: keys.map(String), groupAgg: result.groupAgg.join(",") || null });
         return this;
     };
     /**
-     * exports query to string
+     * exports query to string joined with `&`
+     *
+     * @example
+     *
+     * '$filter=order gt 5&$select=id'
      */
     ODataQuery.prototype.toString = function () {
-        return utils_1.mk_query_string(this.queryDescriptor);
+        return utils_1.mk_query(this.queryDescriptor)
+            .map(function (p) { return p.key + "=" + p.value; })
+            .join("&");
+    };
+    /**
+     * exports query to object key/value
+     *
+     * @example
+     *
+     * {
+     *  '$filter': 'order gt 5',
+     *  '$select': 'id'
+     * }
+     */
+    ODataQuery.prototype.toObject = function () {
+        return utils_1.mk_query(this.queryDescriptor).reduce(function (obj, x) {
+            obj[x.key] = x.value;
+            return obj;
+        }, {});
     };
     return ODataQuery;
 }());

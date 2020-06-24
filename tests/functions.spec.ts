@@ -100,4 +100,15 @@ describe('testing get_property_keys function', () => {
     expected = get_property_keys(exp);
     return expect(expected).toStrictEqual(['id', 'mail']);
   });
+
+  test("get key in function call 17", () => {
+    exp = q => q
+      .givenName.startsWith('test')
+      .or(q.surname.startsWith('test'))
+      .or(q.mail.startsWith('test'));
+
+    expected = get_property_keys(exp);
+
+    return expect(expected).toStrictEqual(['givenName', 'surname', 'mail']);
+  });
 });

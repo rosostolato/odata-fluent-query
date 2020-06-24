@@ -792,3 +792,17 @@ describe('testing ODataQuery toObject', () => {
     expect(actual).toStrictEqual(expected);
   });
 });
+
+describe('extra testings', () => {
+  test('issue #2', () => {
+    const actual = new ODataQuery()
+      .filter(q => q
+        .givenName.startsWith('test')
+        .or(q.surname.startsWith('test'))
+        .or(q.mail.startsWith('test'))
+      ).toString();
+
+    const expected = "$filter=startswith(givenName, 'test') or startswith(surname, 'test') or startswith(mail, 'test')";
+    expect(actual).toBe(expected);
+  });
+});

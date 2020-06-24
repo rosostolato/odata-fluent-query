@@ -50,7 +50,7 @@ export type RelationsOf<Model> = Pick<
 /**
  * OData Query instance where T is the object that will be used on query
  */
-export class ODataQuery<T> {
+export class ODataQuery<T = any> {
   protected queryDescriptor: QueryDescriptor;
 
   /**

@@ -164,12 +164,12 @@ export function get_property_keys(exp: (...args: any[]) => any): string[] {
 
   let match: RegExpExecArray;
   const keys: string[] = [];
-  const regex = new RegExp(key + "(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()");
+  const regex = new RegExp(key + "\\s*(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()");
 
   // gets all properties of the used key
   while ((match = regex.exec(funcStr))) {
     funcStr = funcStr.replace(regex, "");
-    keys.push(match[0].slice(key.length + 1));
+    keys.push(match[0].slice(key.length).trim().slice(1));
   }
 
   // return matched keys

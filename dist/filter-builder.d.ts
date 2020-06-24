@@ -1,4 +1,4 @@
-export declare type IFilterBuilderTyped<T> = T extends Array<infer R> ? IFilterCollection<R> : T extends string ? IFilterString : T extends number ? IFilterNumber : T extends boolean ? IFilterBoolean : T extends Date ? IFilterDate : T extends Object ? IFilterBuilder<T> : never;
+export declare type IFilterBuilderTyped<T> = T extends Array<infer R> ? IFilterCollection<R> : T extends string ? IFilterString : T extends number ? IFilterNumber : T extends boolean ? IFilterBoolean : T extends Date ? IFilterDate : T extends Object ? IFilterBuilder<T> : any;
 export declare type IFilterBuilder<T> = {
     [P in keyof T]: IFilterBuilderTyped<T[P]>;
 };

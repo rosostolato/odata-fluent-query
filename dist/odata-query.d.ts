@@ -24,7 +24,7 @@ export declare type RelationsOf<Model> = Pick<Model, {
 /**
  * OData Query instance where T is the object that will be used on query
  */
-export declare class ODataQuery<T> {
+export declare class ODataQuery<T = any> {
     protected queryDescriptor: QueryDescriptor;
     /**
      * Create a new instance of ODataQuery

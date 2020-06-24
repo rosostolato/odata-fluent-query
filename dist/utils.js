@@ -129,11 +129,11 @@ function get_property_keys(exp) {
     var key = get_param_key(exp);
     var match;
     var keys = [];
-    var regex = new RegExp(key + "(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()");
+    var regex = new RegExp(key + "\\s*(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()");
     // gets all properties of the used key
     while ((match = regex.exec(funcStr))) {
         funcStr = funcStr.replace(regex, "");
-        keys.push(match[0].slice(key.length + 1));
+        keys.push(match[0].slice(key.length).trim().slice(1));
     }
     // return matched keys
     return keys;

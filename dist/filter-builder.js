@@ -170,6 +170,9 @@ var FilterBuilder = /** @class */ (function () {
         this.equals = function (x, o) {
             switch (typeof x) {
                 case 'string':
+                    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x)) { // is a Guid?
+                        return exports.mk_exp(_this.prefix + " eq " + x); // no quote around ${x}
+                    }
                     if (o && o.caseInsensitive) {
                         return exports.mk_exp("tolower(" + _this.prefix + ") eq '" + x.toLocaleLowerCase() + "'");
                     }
@@ -188,6 +191,9 @@ var FilterBuilder = /** @class */ (function () {
         this.notEquals = function (x, o) {
             switch (typeof x) {
                 case 'string':
+                    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x)) { // is a Guid?
+                        return exports.mk_exp(_this.prefix + " ne " + x); // no quote around ${x}
+                    }
                     if (o && o.caseInsensitive) {
                         return exports.mk_exp("tolower(" + _this.prefix + ") ne '" + x.toLocaleLowerCase() + "'");
                     }

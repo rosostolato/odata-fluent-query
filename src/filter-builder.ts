@@ -253,48 +253,56 @@ export class FilterBuilder {
   equals = (x: string|number|boolean|FilterBuilder, o: any) => {
     switch (typeof x) {
       case 'string':
-      if (o && o.caseInsensitive) {
-        return mk_exp(`tolower(${this.prefix}) eq '${x.toLocaleLowerCase()}'`);
-      }
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x)) { // is a Guid?
+          return mk_exp(`${this.prefix} eq ${x}`); // no quote around ${x}
+        }
 
-      return mk_exp(`${this.prefix} eq '${x}'`);
+        if (o && o.caseInsensitive) {
+          return mk_exp(`tolower(${this.prefix}) eq '${x.toLocaleLowerCase()}'`);
+        }
+
+        return mk_exp(`${this.prefix} eq '${x}'`);
 
       case 'number':
-      return mk_exp(`${this.prefix} eq ${x}`);
+        return mk_exp(`${this.prefix} eq ${x}`);
 
       case 'boolean':
-      return mk_exp(`${this.prefix} eq ${x}`);
+        return mk_exp(`${this.prefix} eq ${x}`);
 
       default:
-      if (o && x && o.caseInsensitive) {
-        return mk_exp(`tolower(${this.prefix}) eq tolower(${x.getPropName()})`);
-      }
+        if (o && x && o.caseInsensitive) {
+          return mk_exp(`tolower(${this.prefix}) eq tolower(${x.getPropName()})`);
+        }
 
-      return mk_exp(`${this.prefix} eq ${(x || nullBuilder).getPropName()}`);
+        return mk_exp(`${this.prefix} eq ${(x || nullBuilder).getPropName()}`);
     }
   };
 
   notEquals = (x: string|number|boolean|FilterBuilder, o: any) => {
     switch (typeof x) {
       case 'string':
-      if (o && o.caseInsensitive) {
-        return mk_exp(`tolower(${this.prefix}) ne '${x.toLocaleLowerCase()}'`);
-      }
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x)) { // is a Guid?
+          return mk_exp(`${this.prefix} ne ${x}`); // no quote around ${x}
+        }
 
-      return mk_exp(`${this.prefix} ne '${x}'`);
+        if (o && o.caseInsensitive) {
+          return mk_exp(`tolower(${this.prefix}) ne '${x.toLocaleLowerCase()}'`);
+        }
+
+        return mk_exp(`${this.prefix} ne '${x}'`);
 
       case 'number':
-      return mk_exp(`${this.prefix} ne ${x}`);
+        return mk_exp(`${this.prefix} ne ${x}`);
 
       case 'boolean':
-      return mk_exp(`${this.prefix} ne ${x}`);
+        return mk_exp(`${this.prefix} ne ${x}`);
 
       default:
-      if (o && o.caseInsensitive) {
-        return mk_exp(`tolower(${this.prefix}) ne tolower(${x.getPropName()})`);
-      }
+        if (o && o.caseInsensitive) {
+          return mk_exp(`tolower(${this.prefix}) ne tolower(${x.getPropName()})`);
+        }
 
-      return mk_exp(`${this.prefix} ne ${(x || nullBuilder).getPropName()}`);
+        return mk_exp(`${this.prefix} ne ${(x || nullBuilder).getPropName()}`);
     }
   };
 

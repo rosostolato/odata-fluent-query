@@ -70,6 +70,13 @@ function filterBuilder(key: string) {
     notEquals(x: any, options?: any) {
       return eqOrNe('ne', x, options)
     },
+    in(arr: (number | string)[]) {
+      const list = arr
+        .map((x) => (typeof x === 'string' ? `'${x}'` : x))
+        .join(',')
+
+      return mk_exp(`${key} in (${list})`)
+    },
   })
 }
 

@@ -2,7 +2,7 @@ import { StringOptions } from '../models/filter'
 import { QueryDescriptor } from '../models/query-descriptor'
 import { createQuery } from './create-query'
 
-function getFuncArgs(func: Function) {
+export function getFuncArgs(func: Function) {
   return (func + '')
     .replace(/[/][/].*$/gm, '') // strip single-line comments
     .replace(/\s+/g, '') // strip white space
@@ -14,8 +14,8 @@ function getFuncArgs(func: Function) {
     .filter(Boolean) // split & filter [""]
 }
 
-function mk_exp(exp: string): any {
-  const getFilterExpresion = (checkParetheses = false) => {
+export function makeExp(exp: string): any {
+  const $$get = (checkParetheses = false) => {
     if (!checkParetheses) return exp
 
     if (exp.indexOf(' or ') > -1 || exp.indexOf(' and ') > -1) {
@@ -26,12 +26,10 @@ function mk_exp(exp: string): any {
   }
 
   return {
-    not: () => mk_exp(`not (${exp})`),
-    and: (exp: any) =>
-      mk_exp(`${getFilterExpresion()} and ${exp.getFilterExpresion(true)}`),
-    or: (exp: any) =>
-      mk_exp(`${getFilterExpresion()} or ${exp.getFilterExpresion(true)}`),
-    getFilterExpresion,
+    $$get,
+    not: () => makeExp(`not (${exp})`),
+    and: (exp: any) => makeExp(`${$$get()} and ${exp.$$get(true)}`),
+    or: (exp: any) => makeExp(`${$$get()} or ${exp.$$get(true)}`),
   }
 }
 
@@ -41,13 +39,13 @@ function filterBuilder(key: string) {
   const arrFuncBuilder = (method: string, exp: Function) => {
     const [arg] = getFuncArgs(exp)
     const builder = exp(makeFilter(arg))
-    const expr = builder.getFilterExpresion()
-    return mk_exp(`${key}/${method}(${arg}: ${expr})`)
+    const expr = builder.$$get()
+    return makeExp(`${key}/${method}(${arg}: ${expr})`)
   }
 
   const strFuncBuilder = (method: string, s: any, opt?: StringOptions) => {
     if (opt?.caseInsensitive) {
-      return mk_exp(
+      return makeExp(
         `${method}(tolower(${key}), ${
           typeof s == 'string'
             ? `'${s.toLocaleLowerCase()}'`
@@ -57,37 +55,37 @@ function filterBuilder(key: string) {
     }
 
     if (s.getPropName) {
-      return mk_exp(`${method}(${key}, ${s.$$key})`)
+      return makeExp(`${method}(${key}, ${s.$$key})`)
     }
 
-    return mk_exp(`${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`)
+    return makeExp(`${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`)
   }
 
   const equalityBuilder = (t: 'eq' | 'ne', x: any, opt?: StringOptions) => {
     switch (typeof x) {
       case 'string':
         if (isGuid.test(x)) {
-          return mk_exp(`${key} ${t} ${x}`) // no quote around ${x}
+          return makeExp(`${key} ${t} ${x}`) // no quote around ${x}
         }
 
         if (opt?.caseInsensitive) {
-          return mk_exp(`tolower(${key}) ${t} '${x.toLocaleLowerCase()}'`)
+          return makeExp(`tolower(${key}) ${t} '${x.toLocaleLowerCase()}'`)
         }
 
-        return mk_exp(`${key} ${t} '${x}'`)
+        return makeExp(`${key} ${t} '${x}'`)
 
       case 'number':
-        return mk_exp(`${key} ${t} ${x}`)
+        return makeExp(`${key} ${t} ${x}`)
 
       case 'boolean':
-        return mk_exp(`${key} ${t} ${x}`)
+        return makeExp(`${key} ${t} ${x}`)
 
       default:
         if (x && opt?.caseInsensitive) {
-          return mk_exp(`tolower(${key}) ${t} tolower(${x.$$key})`)
+          return makeExp(`tolower(${key}) ${t} tolower(${x.$$key})`)
         }
 
-        return mk_exp(`${key} ${t} ${x?.$$key || key}`)
+        return makeExp(`${key} ${t} ${x?.$$key || null}`)
     }
   }
 
@@ -123,7 +121,7 @@ function filterBuilder(key: string) {
       if (d != undefined) exps.push(`day(${key}) eq ${d}`)
       if (h != undefined) exps.push(`hour(${key}) eq ${h}`)
       if (mm != undefined) exps.push(`minute(${key}) eq ${mm}`)
-      return mk_exp('(' + exps.join(') and (') + ')')
+      return makeExp('(' + exps.join(') and (') + ')')
     },
 
     isSame: (
@@ -131,43 +129,43 @@ function filterBuilder(key: string) {
       g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
     ) => {
       if (typeof x === 'string') {
-        return mk_exp(`${key} eq ${x}`)
+        return makeExp(`${key} eq ${x}`)
       } else if (typeof x === 'number') {
-        return mk_exp(`${g}(${key}) eq ${x}`)
+        return makeExp(`${g}(${key}) eq ${x}`)
       } else if (x instanceof Date) {
         if (g == null) {
-          return mk_exp(`${key} eq ${x.toISOString()}`)
+          return makeExp(`${key} eq ${x.toISOString()}`)
         } else {
           const o = dateToObject(x)
-          return mk_exp(`${g}(${key}) eq ${o[g]}`)
+          return makeExp(`${g}(${key}) eq ${o[g]}`)
         }
       } else {
-        return mk_exp(`${g}(${key}) eq ${g}(${x.$$key})`)
+        return makeExp(`${g}(${key}) eq ${g}(${x.$$key})`)
       }
     },
 
     isAfter: (d: any) => {
-      if (typeof d === 'string') return mk_exp(`${key} gt ${d}`)
-      else if (d instanceof Date) return mk_exp(`${key} gt ${d.toISOString()}`)
-      else return mk_exp(`${key} gt ${d.$$key}`)
+      if (typeof d === 'string') return makeExp(`${key} gt ${d}`)
+      else if (d instanceof Date) return makeExp(`${key} gt ${d.toISOString()}`)
+      else return makeExp(`${key} gt ${d.$$key}`)
     },
 
     isBefore: (d: any) => {
-      if (typeof d === 'string') return mk_exp(`${key} lt ${d}`)
-      else if (d instanceof Date) return mk_exp(`${key} lt ${d.toISOString()}`)
-      else return mk_exp(`${key} gt ${d.$$key}`)
+      if (typeof d === 'string') return makeExp(`${key} lt ${d}`)
+      else if (d instanceof Date) return makeExp(`${key} lt ${d.toISOString()}`)
+      else return makeExp(`${key} gt ${d.$$key}`)
     },
 
     ////////////////
     // FilterBuilderArray
-    empty: () => mk_exp(`not ${key}/any()`),
-    notEmpty: () => mk_exp(`${key}/any()`),
+    empty: () => makeExp(`not ${key}/any()`),
+    notEmpty: () => makeExp(`${key}/any()`),
     any: (exp: Function) => arrFuncBuilder('any', exp),
     all: (exp: Function) => arrFuncBuilder('all', exp),
 
     ///////////////////////
     // FilterBuilderString
-    notNull: () => mk_exp(`${key} ne null`),
+    notNull: () => makeExp(`${key} ne null`),
     contains: (s: any, opt?: StringOptions) =>
       strFuncBuilder('contains', s, opt),
     startsWith: (s: any, opt?: StringOptions) =>
@@ -178,9 +176,9 @@ function filterBuilder(key: string) {
     ///////////////////////
     // FilterBuilderNumber
     biggerThan: (n: any) =>
-      mk_exp(`${key} gt ${typeof n == 'number' ? n : n.$$key}`),
+      makeExp(`${key} gt ${typeof n == 'number' ? n : n.$$key}`),
     lessThan: (n: any) =>
-      mk_exp(`${key} lt ${typeof n == 'number' ? n : n.$$key}`),
+      makeExp(`${key} lt ${typeof n == 'number' ? n : n.$$key}`),
 
     ////////////////////////////////
     // FilterBuilder Generic Methods
@@ -192,7 +190,7 @@ function filterBuilder(key: string) {
         .map((x) => (typeof x === 'string' ? `'${x}'` : x))
         .join(',')
 
-      return mk_exp(`${key} in (${list})`)
+      return makeExp(`${key} in (${list})`)
     },
   }
 }
@@ -217,7 +215,7 @@ export function createFilter(descriptor: QueryDescriptor): any {
         ? exp(filterBuilder(keyOrExp))
         : keyOrExp(makeFilter())
 
-    const filters = [...descriptor.filters, expr.getFilterExpresion()]
+    const filters = [...descriptor.filters, expr.$$get()]
     return createQuery({ ...descriptor, filters })
   }
 }

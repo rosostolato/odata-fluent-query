@@ -1,20 +1,13 @@
 {
-    "compilerOptions": {
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "declaration": true,
-        "sourceMap": true,
-        "outDir": "dist",
-        "target": "es5",
-        "lib": [
-            "es2018",
-            "dom"
-        ]
-    },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "target": "es5",
+    "lib": ["es2018", "dom"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

@@ -1,5 +1,4 @@
 import { createQuery } from './create-query'
-import { SelectParams } from '../models/select'
 import { QueryDescriptor } from '../models/query-descriptor'
 
 function makeSelect(key = '') {
@@ -14,8 +13,8 @@ function makeSelect(key = '') {
   )
 }
 
-export function createSelect<T>(descriptor: QueryDescriptor): any {
-  return <key extends keyof T>(...keys: SelectParams<T, key>) => {
+export function createSelect(descriptor: QueryDescriptor): any {
+  return (...keys: any[]) => {
     const _keys = keys
       .map((keyOrExp) => {
         if (typeof keyOrExp === 'function') {

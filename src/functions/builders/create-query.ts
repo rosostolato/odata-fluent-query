@@ -1,5 +1,5 @@
 import { createFilter } from './create-filter'
-import { ODataQuery } from '../models/odata-query'
+import { ODataQuery, QueryObject } from '../models/odata-query'
 import { createSelect } from './create-select'
 import { QueryDescriptor } from '../models/query-descriptor'
 import { createOrderby } from './create-orderby'
@@ -160,10 +160,17 @@ export function createQuery<T>(descriptor: QueryDescriptor): ODataQuery<T> {
     select: createSelect(descriptor),
     orderBy: createOrderby(descriptor),
     filter: createFilter(descriptor),
+
     toString(): string {
       return makeQuery(descriptor)
         .map((p) => `${p.key}=${p.value}`)
         .join('&')
+    },
+    toObject(): QueryObject {
+      return makeQuery(descriptor).reduce((obj, x) => {
+        obj[x.key] = x.value
+        return obj
+      }, {})
     },
   }
 }

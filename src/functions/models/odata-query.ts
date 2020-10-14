@@ -83,4 +83,20 @@ export interface ODataQuery<T> {
    * '$filter=order gt 5&$select=id'
    */
   toString(): string
+
+  /**
+   * exports query to object key/value
+   *
+   * @example
+   *
+   * {
+   *  '$filter': 'order gt 5',
+   *  '$select': 'id'
+   * }
+   */
+  toObject(): QueryObject
+}
+
+export type QueryObject = {
+  [key: string]: string
 }

@@ -15,4 +15,29 @@ describe('testing odataQuery select', () => {
     const expected = '$select=id,mail,surname'
     expect(actual).toBe(expected)
   })
+
+  test('select with expression', () => {
+    const query = odataQuery<User>()
+
+    const actual = query
+      .select(
+        (x) => x.id,
+        (x) => x.address.street
+      )
+      .toString()
+
+    const expected = '$select=id,address/street'
+    expect(actual).toBe(expected)
+  })
+
+  test('select mixed', () => {
+    const query = odataQuery<User>()
+
+    const actual = query
+      .select('id', (x) => x.givenName, 'accountEnabled')
+      .toString()
+
+    const expected = '$select=id,givenName,accountEnabled'
+    expect(actual).toBe(expected)
+  })
 })

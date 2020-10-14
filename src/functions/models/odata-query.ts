@@ -1,5 +1,9 @@
-import { FilterBuilder, FilterBuilderType, FilterExpression } from './filter'
-import { SelectParams } from './select'
+import {
+  FilterBuilder,
+  FilterBuilderType,
+  FilterExpression,
+} from './query-filter'
+import { SelectParams } from './query-select'
 
 export interface ODataQuery<T> {
   /**
@@ -10,6 +14,7 @@ export interface ODataQuery<T> {
    *
    * @example
    * q.select('id', 'title')
+   * q.select(x => x.address.city)
    * q.select('id', x => x.title)
    */
   select<Tkey extends keyof T>(...keys: SelectParams<T, Tkey>): ODataQuery<T>

@@ -1,4 +1,4 @@
-import { FilterExpression, StringOptions } from '../models/filter'
+import { FilterExpression, StringOptions } from '../models/query-filter'
 
 // maker functions
 const nullBuilder = {

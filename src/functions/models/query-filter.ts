@@ -1,9 +1,3 @@
-export interface FilterExpression {
-  not(): FilterExpression
-  and(exp: FilterExpression): FilterExpression
-  or(exp: FilterExpression): FilterExpression
-}
-
 export type FilterBuilder<T> = {
   [P in keyof T]: FilterBuilderType<T[P]>
 }
@@ -21,6 +15,17 @@ export type FilterBuilderType<T> = T extends Array<infer R>
   : T extends Object
   ? FilterBuilder<T>
   : any
+
+export interface FilterExpression {
+  not(): FilterExpression
+  and(exp: FilterExpression): FilterExpression
+  or(exp: FilterExpression): FilterExpression
+}
+
+export interface StringOptions {
+  /** @default false */
+  caseInsensitive?: boolean
+}
 
 export interface FilterDate {
   inTimeSpan(
@@ -52,11 +57,6 @@ export interface FilterString {
   in(list: string[]): FilterExpression
 }
 
-export interface StringOptions {
-  /** @default false */
-  caseInsensitive?: boolean
-}
-
 export interface FilterNumber {
   equals(n: number | FilterNumber): FilterExpression
   notEquals(n: number | FilterNumber): FilterExpression
@@ -73,6 +73,6 @@ export interface FilterBoolean {
 export interface FilterCollection<T> {
   empty(): FilterExpression
   notEmpty(): FilterExpression
-  any(c: (_: FilterBuilderType<T>) => FilterExpression): FilterExpression
-  all(c: (_: FilterBuilderType<T>) => FilterExpression): FilterExpression
+  any(c: (arg: FilterBuilderType<T>) => FilterExpression): FilterExpression
+  all(c: (arg: FilterBuilderType<T>) => FilterExpression): FilterExpression
 }

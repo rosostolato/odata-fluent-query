@@ -1,4 +1,4 @@
-import { StringOptions } from '../models/filter'
+import { StringOptions } from '../models/query-filter'
 import { QueryDescriptor } from '../models/query-descriptor'
 import { createQuery } from './create-query'
 

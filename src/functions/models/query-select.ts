@@ -1,5 +1,3 @@
-export interface SelectExpression {}
-
 export type SelectParams<T, Tkey> = Array<
   Tkey | ((exp: SelectBuilder<T>) => SelectExpression)
 >
@@ -21,3 +19,5 @@ export type SelectBuilderType<T> = T extends Array<infer R>
   : T extends Object
   ? SelectBuilder<T>
   : SelectExpression
+
+export interface SelectExpression {}

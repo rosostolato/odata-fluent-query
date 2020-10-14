@@ -2,8 +2,14 @@ import { createFilter } from './create-filter'
 import { ODataQuery } from '../models/odata-query'
 import { createSelect } from './create-select'
 import { QueryDescriptor } from '../models/query-descriptor'
+import { createOrderby } from './create-orderby'
 
-export function mk_query(qd: QueryDescriptor) {
+export interface KeyValue<T> {
+  key: string
+  value: T
+}
+
+export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   let params: {
     key: string
     value: string
@@ -13,7 +19,7 @@ export function mk_query(qd: QueryDescriptor) {
     if (qd.filters.length > 1) {
       params.push({
         key: '$filter',
-        value: `${qd.filters.map(mk_query_string_parentheses).join(' and ')}`,
+        value: `${qd.filters.map(makeQueryParentheses).join(' and ')}`,
       })
     } else {
       params.push({
@@ -39,7 +45,7 @@ export function mk_query(qd: QueryDescriptor) {
   if (qd.expands.length) {
     params.push({
       key: '$expand',
-      value: `${qd.expands.map(mk_rel_query_string).join(',')}`,
+      value: `${qd.expands.map(makeRelationQuery).join(',')}`,
     })
   }
 
@@ -81,7 +87,7 @@ export function mk_query(qd: QueryDescriptor) {
   return params
 }
 
-export function mk_query_string_parentheses(query: string) {
+export function makeQueryParentheses(query: string): string {
   if (query.indexOf(' or ') > -1 || query.indexOf(' and ') > -1) {
     return `(${query})`
   }
@@ -89,7 +95,7 @@ export function mk_query_string_parentheses(query: string) {
   return query
 }
 
-export function mk_rel_query_string(rqd: QueryDescriptor): string {
+export function makeRelationQuery(rqd: QueryDescriptor): string {
   let expand: string = rqd.key
 
   if (rqd.strict) {
@@ -132,9 +138,7 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
     if (rqd.filters.length) {
       if (rqd.filters.length > 1) {
         operators.push(
-          `$filter=${rqd.filters
-            .map(mk_query_string_parentheses)
-            .join(' and ')}`
+          `$filter=${rqd.filters.map(makeQueryParentheses).join(' and ')}`
         )
       } else {
         operators.push(`$filter=${rqd.filters.join()}`)
@@ -142,9 +146,7 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
     }
 
     if (rqd.expands.length) {
-      operators.push(
-        `$expand=${rqd.expands.map(mk_rel_query_string).join(',')}`
-      )
+      operators.push(`$expand=${rqd.expands.map(makeRelationQuery).join(',')}`)
     }
 
     expand += operators.join(';') + ')'
@@ -156,9 +158,10 @@ export function mk_rel_query_string(rqd: QueryDescriptor): string {
 export function createQuery<T>(descriptor: QueryDescriptor): ODataQuery<T> {
   return {
     select: createSelect(descriptor),
+    orderBy: createOrderby(descriptor),
     filter: createFilter(descriptor),
     toString(): string {
-      return mk_query(descriptor)
+      return makeQuery(descriptor)
         .map((p) => `${p.key}=${p.value}`)
         .join('&')
     },

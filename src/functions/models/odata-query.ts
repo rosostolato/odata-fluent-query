@@ -3,6 +3,8 @@ import {
   FilterBuilderType,
   FilterExpression,
 } from './query-filter'
+import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
+
 import { SelectParams } from './query-select'
 
 export interface ODataQuery<T> {
@@ -18,6 +20,35 @@ export interface ODataQuery<T> {
    * q.select('id', x => x.title)
    */
   select<Tkey extends keyof T>(...keys: SelectParams<T, Tkey>): ODataQuery<T>
+
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check OData implementation for details).
+   *
+   * @param key key in T.
+   * @param order the order of the sort.
+   *
+   * @example
+   *
+   * q.orderBy('blogs', 'desc')
+   */
+  orderBy<TKey extends keyof T>(
+    key: TKey,
+    order?: 'asc' | 'desc'
+  ): ODataQuery<T>
+  /**
+   * Adds a $orderby operator to the OData query.
+   * Ordering over relations is supported (check OData implementation for details).
+   *
+   * @param exp a lambda expression that builds the orderby expression from the builder.
+   *
+   * @example
+   *
+   * q.orderBy(u => u.blogs().id.desc())
+   */
+  orderBy(
+    exp: (ob: OrderByBuilder<T>) => OrderBy | OrderByExpression
+  ): ODataQuery<T>
 
   /**
    * Adds a $filter operator to the OData query.

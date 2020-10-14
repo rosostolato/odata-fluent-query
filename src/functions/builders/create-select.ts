@@ -6,7 +6,7 @@ function makeSelect(key = '') {
     {},
     {
       get(_, prop) {
-        if (prop === '$key') return key.slice(1)
+        if (prop === '$$key') return key.slice(1)
         return makeSelect(`${key}/${String(prop)}`)
       },
     }
@@ -19,7 +19,7 @@ export function createSelect(descriptor: QueryDescriptor): any {
       .map((keyOrExp) => {
         if (typeof keyOrExp === 'function') {
           const exp: any = keyOrExp(makeSelect())
-          return exp.$key
+          return exp.$$key
         } else {
           return String(keyOrExp)
         }

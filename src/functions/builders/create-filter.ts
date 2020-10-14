@@ -215,7 +215,9 @@ export function createFilter(descriptor: QueryDescriptor): any {
         ? exp(filterBuilder(keyOrExp))
         : keyOrExp(makeFilter())
 
-    const filters = [...descriptor.filters, expr.$$get()]
-    return createQuery({ ...descriptor, filters })
+    return createQuery({
+      ...descriptor,
+      filters: descriptor.filters.concat(expr.$$get()),
+    })
   }
 }

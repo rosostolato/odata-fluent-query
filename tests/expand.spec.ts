@@ -77,27 +77,27 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  // test('expand and paginate', () => {
-  //   const query = odataQuery<User>()
-  //   const actual = query.expand('posts', (e) => e.paginate(0)).toString()
+  test('expand and paginate', () => {
+    const query = odataQuery<User>()
+    const actual = query.expand('posts', (e) => e.paginate(0)).toString()
 
-  //   const expected = '$expand=posts($top=0;$count=true)'
-  //   expect(actual).toBe(expected)
-  // })
+    const expected = '$expand=posts($top=0;$count=true)'
+    expect(actual).toBe(expected)
+  })
 
-  // test('expand and paginate object', () => {
-  //   const query = odataQuery<User>()
-  //   const actual = query
-  //     .expand('posts', (e) =>
-  //       e.paginate({
-  //         page: 5,
-  //         pagesize: 10,
-  //         count: false,
-  //       })
-  //     )
-  //     .toString()
+  test('expand and paginate object', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand('posts', (e) =>
+        e.paginate({
+          page: 5,
+          pagesize: 10,
+          count: false,
+        })
+      )
+      .toString()
 
-  //   const expected = '$expand=posts($skip=50;$top=10)'
-  //   expect(actual).toBe(expected)
-  // })
+    const expected = '$expand=posts($skip=50;$top=10)'
+    expect(actual).toBe(expected)
+  })
 })

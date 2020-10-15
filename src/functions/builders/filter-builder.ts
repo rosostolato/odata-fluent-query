@@ -49,7 +49,7 @@ export function mk_builder(keys: string[], builderType: any) {
   }
 
   const builder: any = {}
-  keys.forEach((k) => set(builder, k, new builderType(k.split('.').join('/'))))
+  keys.forEach(k => set(builder, k, new builderType(k.split('.').join('/'))))
   return builder
 }
 
@@ -318,9 +318,7 @@ export class FilterBuilder {
   };
 
   in = (arr: (number | string)[]) => {
-    const list = arr
-      .map((x) => (typeof x === 'string' ? `'${x}'` : x))
-      .join(',')
+    const list = arr.map(x => (typeof x === 'string' ? `'${x}'` : x)).join(',')
 
     return mk_exp(`${this.prefix} in (${list})`)
   }

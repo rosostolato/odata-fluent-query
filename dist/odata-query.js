@@ -29,7 +29,7 @@ var ODataQuery = /** @class */ (function () {
             orderby: [],
             select: [],
             groupby: [],
-            groupAgg: null,
+            aggregator: null,
             count: false,
         };
     }
@@ -165,7 +165,7 @@ var ODataQuery = /** @class */ (function () {
     ODataQuery.prototype.groupBy = function (keys, aggregate) {
         var agg = new groupby_builder_1.GroupbyBuilder();
         var result = aggregate ? aggregate(agg) : agg;
-        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { groupby: keys.map(String), groupAgg: result.groupAgg.join(",") || null });
+        this.queryDescriptor = __assign(__assign({}, this.queryDescriptor), { groupby: keys.map(String), aggregator: result.aggregator.join(",") || null });
         return this;
     };
     /**

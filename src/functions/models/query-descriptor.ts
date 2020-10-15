@@ -4,7 +4,7 @@ export interface QueryDescriptor {
   key: string | null
   skip: number | null
   take: number | null
-  groupAgg: string | null
+  aggregator: string | null
   select: string[]
   filters: string[]
   orderby: string[]

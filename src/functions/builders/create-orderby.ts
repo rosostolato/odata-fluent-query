@@ -7,7 +7,7 @@ function makeOrderby(key = '') {
   }
 
   const methods = {
-    $$key: key,
+    _key: key,
     asc: () => makeOrderby(`${key} asc`),
     desc: () => makeOrderby(`${key} desc`),
   }
@@ -22,7 +22,7 @@ function makeOrderby(key = '') {
   )
 }
 
-export function createOrderby(descriptor: QueryDescriptor): any {
+export function createOrderby(descriptor: QueryDescriptor) {
   return (keyOrExp: any, order?: 'asc' | 'desc') => {
     let expr =
       typeof keyOrExp === 'string'
@@ -35,7 +35,7 @@ export function createOrderby(descriptor: QueryDescriptor): any {
 
     return createQuery({
       ...descriptor,
-      orderby: descriptor.orderby.concat(expr['$$key']),
+      orderby: descriptor.orderby.concat(expr['_key']),
     })
   }
 }

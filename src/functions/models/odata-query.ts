@@ -5,6 +5,7 @@ import {
 } from './query-filter'
 import { SelectParams } from './query-select'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
+import { GroupbyBuilder } from './query-groupby'
 
 export interface ODataQuery<T> {
   /**
@@ -73,6 +74,11 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
+   * set $count=true
+   */
+  count(): ODataQuery<T>
+
+  /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
    * This method automatically adds $count=true to the query.
@@ -98,6 +104,23 @@ export interface ODataQuery<T> {
     page?: number
     count?: boolean
   }): ODataQuery<T>
+
+  /**
+   * group by the selected keys
+   *
+   * @param keys keys to be grouped by
+   * @param aggregate aggregate builder [optional]
+   *
+   * @example
+   * q.groupBy(["mail", "surname"], agg => agg
+   *   .countdistinct("phoneNumbers", "count")
+   *   .max("id", "id")
+   * )
+   */
+  groupBy<key extends keyof T>(
+    keys: key[],
+    aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>
+  ): ODataQuery<T>
 
   /**
    * Adds a $expand operator to the OData query.
@@ -135,6 +158,7 @@ export interface ODataQuery<T> {
   toObject(): QueryObject
 }
 
+// TODO: make available all odata functions
 export type QueryObject = {
   [key: string]: string
 }

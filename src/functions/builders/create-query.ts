@@ -4,6 +4,7 @@ import { createSelect } from './create-select'
 import { createOrderby } from './create-orderby'
 import { QueryDescriptor } from '../models/query-descriptor'
 import { makeQuery } from './query-builder'
+import { createGroupby } from './create-groupby'
 
 export function createQueryDescriptor(key: string = null): QueryDescriptor {
   return {
@@ -12,7 +13,7 @@ export function createQueryDescriptor(key: string = null): QueryDescriptor {
     take: null,
     count: false,
     strict: false,
-    groupAgg: null,
+    aggregator: null,
     filters: [],
     expands: [],
     orderby: [],
@@ -23,10 +24,18 @@ export function createQueryDescriptor(key: string = null): QueryDescriptor {
 
 export function createQuery(descriptor: QueryDescriptor): any {
   return {
-    $$descriptor: descriptor,
+    _descriptor: descriptor,
     select: createSelect(descriptor),
     orderBy: createOrderby(descriptor),
     filter: createFilter(descriptor),
+    groupBy: createGroupby(descriptor),
+
+    count() {
+      return createQuery({
+        ...descriptor,
+        count: true,
+      })
+    },
 
     paginate(sizeOrOptions: any, page?: number) {
       let data: {
@@ -64,15 +73,12 @@ export function createQuery(descriptor: QueryDescriptor): any {
     },
 
     expand(key: string, query?: Function) {
-      let expand = createQuery(createQueryDescriptor(key))
-
-      if (query) {
-        expand = query(expand)
-      }
+      const expand = createQuery(createQueryDescriptor(key))
+      const result = query?.(expand) || expand
 
       const newDescriptor: QueryDescriptor = {
         ...descriptor,
-        expands: descriptor.expands.concat(expand.$$descriptor),
+        expands: descriptor.expands.concat(result._descriptor),
       }
 
       return createQuery(newDescriptor)
@@ -80,7 +86,7 @@ export function createQuery(descriptor: QueryDescriptor): any {
 
     toString(): string {
       return makeQuery(descriptor)
-        .map((p) => `${p.key}=${p.value}`)
+        .map(p => `${p.key}=${p.value}`)
         .join('&')
     },
 

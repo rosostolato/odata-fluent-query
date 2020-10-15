@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var GroupbyBuilder = /** @class */ (function () {
     function GroupbyBuilder() {
-        this.groupAgg = [];
+        this.aggregator = [];
     }
     GroupbyBuilder.prototype.sum = function (prop, as) {
         return this.custom(prop, 'sum', as);
@@ -21,7 +21,7 @@ var GroupbyBuilder = /** @class */ (function () {
     };
     GroupbyBuilder.prototype.custom = function (prop, aggregator, as) {
         var agg = prop + " with " + aggregator + " as " + as;
-        this.groupAgg.push(agg);
+        this.aggregator.push(agg);
         return this;
     };
     return GroupbyBuilder;

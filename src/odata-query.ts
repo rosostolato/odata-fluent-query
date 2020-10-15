@@ -3,35 +3,35 @@ import {
   IFilterExpression,
   FilterBuilder,
   IFilterBuilderTyped,
-} from "./filter-builder";
+} from './filter-builder'
 
 import {
   IOrderByBuilder,
   IOrderByExpression,
   OrderByBuilder,
   IOrderBy,
-} from "./orderby-Builder";
+} from './orderby-Builder'
 
-import { get_property_keys, mk_builder, mk_query } from "./utils";
-import { ExpandQueryComplex } from "./expand-query";
-import { GroupbyBuilder } from "./groupby-builder";
+import { get_property_keys, mk_builder, mk_query } from './utils'
+import { ExpandQueryComplex } from './expand-query'
+import { GroupbyBuilder } from './groupby-builder'
 
 export type QueryObject = {
-  [key: string]: string;
-};
+  [key: string]: string
+}
 
 export interface QueryDescriptor {
-  key?: string;
-  skip: number | "none";
-  take: number | "none";
-  orderby: string[];
-  select: string[];
-  filters: string[];
-  groupby: string[];
-  groupAgg: string;
-  expands: QueryDescriptor[];
-  strict?: boolean;
-  count?: boolean;
+  key?: string
+  skip: number | 'none'
+  take: number | 'none'
+  orderby: string[]
+  select: string[]
+  filters: string[]
+  groupby: string[]
+  aggregator: string
+  expands: QueryDescriptor[]
+  strict?: boolean
+  count?: boolean
 }
 
 export type RelationsOf<Model> = Pick<
@@ -43,39 +43,39 @@ export type RelationsOf<Model> = Pick<
       ? never
       : Model[P] | Array<any> extends Object
       ? P
-      : never;
+      : never
   }[keyof Model]
->;
+>
 
 /**
  * OData Query instance where T is the object that will be used on query
  */
 export class ODataQuery<T = any> {
-  protected queryDescriptor: QueryDescriptor;
+  protected queryDescriptor: QueryDescriptor
 
   /**
    * Create a new instance of ODataQuery
    */
-  constructor(key: string);
+  constructor(key: string)
   /**
    * @param key internal key selector
    *
    * @internal
    */
-  constructor();
+  constructor()
   constructor(key?: string) {
     this.queryDescriptor = {
       key,
-      skip: "none",
-      take: "none",
+      skip: 'none',
+      take: 'none',
       filters: [],
       expands: [],
       orderby: [],
       select: [],
       groupby: [],
-      groupAgg: null,
+      aggregator: null,
       count: false,
-    };
+    }
   }
 
   /**
@@ -85,19 +85,19 @@ export class ODataQuery<T = any> {
    * @param keys the names of the properties you want to select.
    *
    * @example
-   * 
+   *
    * q.select('id', 'title')
    */
   select<key extends keyof T>(...keys: key[]): ODataQuery<T> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       select: keys.map(String),
-      expands: this.queryDescriptor.expands.filter((e) =>
-        keys.some((k) => e.key == String(k))
+      expands: this.queryDescriptor.expands.filter(e =>
+        keys.some(k => e.key == String(k))
       ),
-    };
+    }
 
-    return this;
+    return this
   }
 
   /**
@@ -107,10 +107,10 @@ export class ODataQuery<T = any> {
    * @param exp a lambda expression that builds an expression from the builder.
    *
    * @example
-   * 
+   *
    * q.filter(u => u.id.equals(1))
    */
-  filter(exp: (x: IFilterBuilder<T>) => IFilterExpression): ODataQuery<T>;
+  filter(exp: (x: IFilterBuilder<T>) => IFilterExpression): ODataQuery<T>
   /**
    * Adds a $filter operator to the OData query.
    * Multiple calls to Filter will be merged with `and`.
@@ -119,36 +119,36 @@ export class ODataQuery<T = any> {
    * @param exp a lambda expression that builds an expression from the builder.
    *
    * @example
-   * 
+   *
    * q.filter('id', id => id.equals(1))
    */
   filter<TKey extends keyof T>(
     key: TKey,
     exp: (x: IFilterBuilderTyped<T[TKey]>) => IFilterExpression
-  ): ODataQuery<T>;
+  ): ODataQuery<T>
   filter(keyOrExp: any, exp?: (x: any) => any): ODataQuery<T> {
-    let expr: any;
+    let expr: any
 
-    if (typeof keyOrExp === "string") {
+    if (typeof keyOrExp === 'string') {
       // run expression
-      expr = exp(new FilterBuilder(keyOrExp));
+      expr = exp(new FilterBuilder(keyOrExp))
     } else {
       // set expression
-      exp = keyOrExp;
+      exp = keyOrExp
 
       // read funciton string to retrieve keys
-      const keys = get_property_keys(exp);
+      const keys = get_property_keys(exp)
 
       if (!keys || !keys.length) {
-        throw new Error("Could not find property key.");
+        throw new Error('Could not find property key.')
       }
 
       // run expression
-      expr = exp(mk_builder(keys, FilterBuilder));
+      expr = exp(mk_builder(keys, FilterBuilder))
     }
 
-    if (expr.kind == "none") {
-      return this;
+    if (expr.kind == 'none') {
+      return this
     }
 
     // this.queryDescriptor = {
@@ -156,9 +156,9 @@ export class ODataQuery<T = any> {
     //   filters: this.queryDescriptor.filters.push(expr.getFilterExpresion())
     // };
 
-    this.queryDescriptor.filters.push(expr.getFilterExpresion());
+    this.queryDescriptor.filters.push(expr.getFilterExpresion())
 
-    return this;
+    return this
   }
 
   /**
@@ -170,19 +170,19 @@ export class ODataQuery<T = any> {
    * @param query a lambda expression that build the subquery from the querybuilder.
    *
    * @example
-   * 
+   *
    * q.exand('blogs', q => q.select('id', 'title'))
    */
   expand<key extends keyof RelationsOf<T>, U = T[key]>(
     key: key,
     query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ODataQuery<T> {
-    let expand: any = new ODataQuery(String(key));
-    if (query) expand = query(expand);
+    let expand: any = new ODataQuery(String(key))
+    if (query) expand = query(expand)
 
-    this.queryDescriptor.expands.push(expand["queryDescriptor"]);
+    this.queryDescriptor.expands.push(expand['queryDescriptor'])
 
-    return this;
+    return this
   }
 
   /**
@@ -192,12 +192,12 @@ export class ODataQuery<T = any> {
    * @param exp a lambda expression that builds the orderby expression from the builder.
    *
    * @example
-   * 
+   *
    * q.orderBy(u => u.blogs().id.desc())
    */
   orderBy(
     exp: (ob: IOrderByBuilder<T>) => IOrderBy | IOrderByExpression
-  ): ODataQuery<T>;
+  ): ODataQuery<T>
   /**
    * Adds a $orderby operator to the OData query.
    * Ordering over relations is supported (check you OData implementation for details).
@@ -211,40 +211,40 @@ export class ODataQuery<T = any> {
    */
   orderBy<TKey extends keyof T>(
     key: TKey,
-    order?: "asc" | "desc"
-  ): ODataQuery<T>;
-  orderBy(keyOrExp: any, order?: "asc" | "desc") {
-    let orderby: any;
+    order?: 'asc' | 'desc'
+  ): ODataQuery<T>
+  orderBy(keyOrExp: any, order?: 'asc' | 'desc') {
+    let orderby: any
 
-    if (typeof keyOrExp === "string") {
-      orderby = new OrderByBuilder(keyOrExp);
+    if (typeof keyOrExp === 'string') {
+      orderby = new OrderByBuilder(keyOrExp)
 
       // run orderer
       if (order) {
-        orderby = orderby[order]();
+        orderby = orderby[order]()
       }
 
       // get string
-      orderby = orderby.get();
+      orderby = orderby.get()
     } else {
       // read funciton string
-      const keys = get_property_keys(keyOrExp);
+      const keys = get_property_keys(keyOrExp)
 
       if (!keys || !keys.length) {
         throw new Error(
-          "Could not find property key. Use the second overload of orderBy instead"
-        );
+          'Could not find property key. Use the second overload of orderBy instead'
+        )
       }
 
-      orderby = keyOrExp(mk_builder(keys, OrderByBuilder)).get();
+      orderby = keyOrExp(mk_builder(keys, OrderByBuilder)).get()
     }
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
       orderby: this.queryDescriptor.orderby.concat(orderby),
-    };
+    }
 
-    return this;
+    return this
   }
 
   /**
@@ -259,7 +259,7 @@ export class ODataQuery<T = any> {
    *
    * q.paginate(50, 0)
    */
-  paginate(pagesize: number, page?: number): ODataQuery<T>;
+  paginate(pagesize: number, page?: number): ODataQuery<T>
   /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
@@ -271,28 +271,28 @@ export class ODataQuery<T = any> {
    * q.paginate({ pagesize: 50, page: 0, count: false })
    */
   paginate(options: {
-    pagesize: number;
-    page?: number;
-    count?: boolean;
-  }): ODataQuery<T>;
+    pagesize: number
+    page?: number
+    count?: boolean
+  }): ODataQuery<T>
   paginate(options: any, page?: number): ODataQuery<T> {
     let data: {
-      pagesize: number;
-      page?: number;
-      count?: boolean;
-    };
+      pagesize: number
+      page?: number
+      count?: boolean
+    }
 
-    if (typeof options === "number") {
+    if (typeof options === 'number') {
       data = {
         pagesize: options,
         page: page,
         count: true,
-      };
+      }
     } else {
-      data = options;
+      data = options
 
       if (data.count === undefined) {
-        data.count = true;
+        data.count = true
       }
     }
 
@@ -301,13 +301,13 @@ export class ODataQuery<T = any> {
       take: data.pagesize,
       skip: data.pagesize * data.page,
       count: data.count,
-    };
-
-    if (!this.queryDescriptor.skip) {
-      this.queryDescriptor.skip = "none";
     }
 
-    return this;
+    if (!this.queryDescriptor.skip) {
+      this.queryDescriptor.skip = 'none'
+    }
+
+    return this
   }
 
   /**
@@ -317,9 +317,9 @@ export class ODataQuery<T = any> {
     this.queryDescriptor = {
       ...this.queryDescriptor,
       count: true,
-    };
+    }
 
-    return this;
+    return this
   }
 
   /**
@@ -327,9 +327,9 @@ export class ODataQuery<T = any> {
    *
    * @param keys keys to be grouped by
    * @param aggregate aggregate builder [optional]
-   * 
+   *
    * @example
-   * 
+   *
    * q.groupBy(["mail", "surname"], (a) => a
    *   .countdistinct("phoneNumbers", "count")
    *   .max("id", "id")
@@ -339,16 +339,16 @@ export class ODataQuery<T = any> {
     keys: key[],
     aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>
   ) {
-    const agg = new GroupbyBuilder();
-    const result = aggregate ? aggregate(agg) : agg;
+    const agg = new GroupbyBuilder()
+    const result = aggregate ? aggregate(agg) : agg
 
     this.queryDescriptor = {
       ...this.queryDescriptor,
       groupby: keys.map(String),
-      groupAgg: result.groupAgg.join(",") || null,
-    };
+      aggregator: result.aggregator.join(',') || null,
+    }
 
-    return this;
+    return this
   }
 
   /**
@@ -360,8 +360,8 @@ export class ODataQuery<T = any> {
    */
   toString(): string {
     return mk_query(this.queryDescriptor)
-      .map((p) => `${p.key}=${p.value}`)
-      .join("&");
+      .map(p => `${p.key}=${p.value}`)
+      .join('&')
   }
 
   /**
@@ -376,8 +376,8 @@ export class ODataQuery<T = any> {
    */
   toObject(): QueryObject {
     return mk_query(this.queryDescriptor).reduce((obj, x) => {
-      obj[x.key] = x.value;
-      return obj;
-    }, {});
+      obj[x.key] = x.value
+      return obj
+    }, {})
   }
 }

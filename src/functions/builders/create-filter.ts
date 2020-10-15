@@ -15,7 +15,7 @@ export function getFuncArgs(func: Function) {
 }
 
 export function makeExp(exp: string): any {
-  const $$get = (checkParetheses = false) => {
+  const _get = (checkParetheses = false) => {
     if (!checkParetheses) return exp
 
     if (exp.indexOf(' or ') > -1 || exp.indexOf(' and ') > -1) {
@@ -26,10 +26,10 @@ export function makeExp(exp: string): any {
   }
 
   return {
-    $$get,
+    _get,
     not: () => makeExp(`not (${exp})`),
-    and: (exp: any) => makeExp(`${$$get()} and ${exp.$$get(true)}`),
-    or: (exp: any) => makeExp(`${$$get()} or ${exp.$$get(true)}`),
+    and: (exp: any) => makeExp(`${_get()} and ${exp._get(true)}`),
+    or: (exp: any) => makeExp(`${_get()} or ${exp._get(true)}`),
   }
 }
 
@@ -39,7 +39,7 @@ function filterBuilder(key: string) {
   const arrFuncBuilder = (method: string, exp: Function) => {
     const [arg] = getFuncArgs(exp)
     const builder = exp(makeFilter(arg))
-    const expr = builder.$$get()
+    const expr = builder._get()
     return makeExp(`${key}/${method}(${arg}: ${expr})`)
   }
 
@@ -49,13 +49,13 @@ function filterBuilder(key: string) {
         `${method}(tolower(${key}), ${
           typeof s == 'string'
             ? `'${s.toLocaleLowerCase()}'`
-            : `tolower(${s.$$key})`
+            : `tolower(${s._key})`
         })`
       )
     }
 
     if (s.getPropName) {
-      return makeExp(`${method}(${key}, ${s.$$key})`)
+      return makeExp(`${method}(${key}, ${s._key})`)
     }
 
     return makeExp(`${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`)
@@ -82,10 +82,10 @@ function filterBuilder(key: string) {
 
       default:
         if (x && opt?.caseInsensitive) {
-          return makeExp(`tolower(${key}) ${t} tolower(${x.$$key})`)
+          return makeExp(`tolower(${key}) ${t} tolower(${x._key})`)
         }
 
-        return makeExp(`${key} ${t} ${x?.$$key || null}`)
+        return makeExp(`${key} ${t} ${x?._key || null}`)
     }
   }
 
@@ -105,7 +105,7 @@ function filterBuilder(key: string) {
   }
 
   return {
-    $$key: key,
+    _key: key,
 
     /////////////////////
     // FilterBuilderDate
@@ -140,20 +140,20 @@ function filterBuilder(key: string) {
           return makeExp(`${g}(${key}) eq ${o[g]}`)
         }
       } else {
-        return makeExp(`${g}(${key}) eq ${g}(${x.$$key})`)
+        return makeExp(`${g}(${key}) eq ${g}(${x._key})`)
       }
     },
 
     isAfter: (d: any) => {
       if (typeof d === 'string') return makeExp(`${key} gt ${d}`)
       else if (d instanceof Date) return makeExp(`${key} gt ${d.toISOString()}`)
-      else return makeExp(`${key} gt ${d.$$key}`)
+      else return makeExp(`${key} gt ${d._key}`)
     },
 
     isBefore: (d: any) => {
       if (typeof d === 'string') return makeExp(`${key} lt ${d}`)
       else if (d instanceof Date) return makeExp(`${key} lt ${d.toISOString()}`)
-      else return makeExp(`${key} gt ${d.$$key}`)
+      else return makeExp(`${key} gt ${d._key}`)
     },
 
     ////////////////
@@ -176,9 +176,9 @@ function filterBuilder(key: string) {
     ///////////////////////
     // FilterBuilderNumber
     biggerThan: (n: any) =>
-      makeExp(`${key} gt ${typeof n == 'number' ? n : n.$$key}`),
+      makeExp(`${key} gt ${typeof n == 'number' ? n : n._key}`),
     lessThan: (n: any) =>
-      makeExp(`${key} lt ${typeof n == 'number' ? n : n.$$key}`),
+      makeExp(`${key} lt ${typeof n == 'number' ? n : n._key}`),
 
     ////////////////////////////////
     // FilterBuilder Generic Methods
@@ -187,7 +187,7 @@ function filterBuilder(key: string) {
 
     in(arr: (number | string)[]) {
       const list = arr
-        .map((x) => (typeof x === 'string' ? `'${x}'` : x))
+        .map(x => (typeof x === 'string' ? `'${x}'` : x))
         .join(',')
 
       return makeExp(`${key} in (${list})`)
@@ -208,7 +208,7 @@ function makeFilter(prefix = '') {
   )
 }
 
-export function createFilter(descriptor: QueryDescriptor): any {
+export function createFilter(descriptor: QueryDescriptor) {
   return (keyOrExp: any, exp?: any) => {
     const expr =
       typeof keyOrExp === 'string'
@@ -217,7 +217,7 @@ export function createFilter(descriptor: QueryDescriptor): any {
 
     return createQuery({
       ...descriptor,
-      filters: descriptor.filters.concat(expr.$$get()),
+      filters: descriptor.filters.concat(expr._get()),
     })
   }
 }

@@ -23,8 +23,8 @@ export function mk_query(qd: QueryDescriptor) {
   if (qd.groupby.length) {
     let group = `groupby((${qd.groupby.join(',')})`
 
-    if (qd.groupAgg) {
-      group += `,aggregate(${qd.groupAgg})`
+    if (qd.aggregator) {
+      group += `,aggregate(${qd.aggregator})`
     }
 
     params.push({
@@ -193,6 +193,6 @@ export function mk_builder(keys: string[], builderType: any) {
   }
 
   const builder: any = {}
-  keys.forEach((k) => set(builder, k, new builderType(k.split('.').join('/'))))
+  keys.forEach(k => set(builder, k, new builderType(k.split('.').join('/'))))
   return builder
 }

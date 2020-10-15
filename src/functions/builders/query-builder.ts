@@ -28,8 +28,8 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   if (qd.groupby.length) {
     let group = `groupby((${qd.groupby.join(',')})`
 
-    if (qd.groupAgg) {
-      group += `,aggregate(${qd.groupAgg})`
+    if (qd.aggregator) {
+      group += `,aggregate(${qd.aggregator})`
     }
 
     params.push({

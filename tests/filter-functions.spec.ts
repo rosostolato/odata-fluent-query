@@ -1,5 +1,5 @@
 // import { ComplexFilterExpresion } from "../src/filter-builder"
-import { makeExp } from '../src/functions/builders/create-filter'
+import { makeExp } from '../src/builders/create-filter'
 
 describe('test filter expressions', () => {
   test('parentheses', () => {

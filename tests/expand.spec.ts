@@ -1,4 +1,4 @@
-import { odataQuery } from '../src/functions'
+import { odataQuery } from '../src'
 import { User } from '../models'
 
 describe('testing ODataQuery expand', () => {
@@ -12,7 +12,7 @@ describe('testing ODataQuery expand', () => {
 
   test('expand and select', () => {
     const query = odataQuery<User>()
-    const actual = query.expand('address', (q) => q.select('code')).toString()
+    const actual = query.expand('address', q => q.select('code')).toString()
 
     const expected = '$expand=address($select=code)'
     expect(actual).toBe(expected)
@@ -21,7 +21,7 @@ describe('testing ODataQuery expand', () => {
   test('expand twice', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('address', (q) => q.expand('user', (q) => q.select('id')))
+      .expand('address', q => q.expand('user', q => q.select('id')))
       .toString()
 
     const expected = '$expand=address($expand=user($select=id))'
@@ -32,7 +32,7 @@ describe('testing ODataQuery expand', () => {
   test('expand and filter', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('posts', (e) => e.filter((q) => q.content.startsWith('test')))
+      .expand('posts', e => e.filter(q => q.content.startsWith('test')))
       .toString()
 
     const expected = "$expand=posts($filter=startswith(content, 'test'))"
@@ -42,8 +42,8 @@ describe('testing ODataQuery expand', () => {
   test('expand and filter composed', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('posts', (e) =>
-        e.filter((q) => q.content.startsWith('test').or(q.id.biggerThan(5)))
+      .expand('posts', e =>
+        e.filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
       )
       .toString()
 
@@ -55,10 +55,10 @@ describe('testing ODataQuery expand', () => {
   test('expand and filter composed multiline', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('posts', (e) =>
+      .expand('posts', e =>
         e
-          .filter((q) => q.content.startsWith('test').or(q.id.biggerThan(5)))
-          .filter((q) => q.id.lessThan(10))
+          .filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
+          .filter(q => q.id.lessThan(10))
       )
       .toString()
 
@@ -70,7 +70,7 @@ describe('testing ODataQuery expand', () => {
   test('expand and orderby', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('posts', (e) => e.orderBy((q) => q.id.desc()))
+      .expand('posts', e => e.orderBy(q => q.id.desc()))
       .toString()
 
     const expected = '$expand=posts($orderby=id desc)'
@@ -79,7 +79,7 @@ describe('testing ODataQuery expand', () => {
 
   test('expand and paginate', () => {
     const query = odataQuery<User>()
-    const actual = query.expand('posts', (e) => e.paginate(0)).toString()
+    const actual = query.expand('posts', e => e.paginate(0)).toString()
 
     const expected = '$expand=posts($top=0;$count=true)'
     expect(actual).toBe(expected)
@@ -88,7 +88,7 @@ describe('testing ODataQuery expand', () => {
   test('expand and paginate object', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('posts', (e) =>
+      .expand('posts', e =>
         e.paginate({
           page: 5,
           pagesize: 10,

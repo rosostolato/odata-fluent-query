@@ -1,4 +1,4 @@
-import { odataQuery } from '../src/functions'
+import { odataQuery } from '../src'
 import { User } from '../models'
 
 describe('testing odataQuery select', () => {
@@ -21,8 +21,8 @@ describe('testing odataQuery select', () => {
 
     const actual = query
       .select(
-        (x) => x.id,
-        (x) => x.address.street
+        x => x.id,
+        x => x.address.street
       )
       .toString()
 
@@ -34,7 +34,7 @@ describe('testing odataQuery select', () => {
     const query = odataQuery<User>()
 
     const actual = query
-      .select('id', (x) => x.givenName, 'accountEnabled')
+      .select('id', x => x.givenName, 'accountEnabled')
       .toString()
 
     const expected = '$select=id,givenName,accountEnabled'

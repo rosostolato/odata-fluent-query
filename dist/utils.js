@@ -18,8 +18,8 @@ function mk_query(qd) {
     }
     if (qd.groupby.length) {
         var group = "groupby((" + qd.groupby.join(",") + ")";
-        if (qd.groupAgg) {
-            group += ",aggregate(" + qd.groupAgg + ")";
+        if (qd.aggregator) {
+            group += ",aggregate(" + qd.aggregator + ")";
         }
         params.push({
             key: "$apply",

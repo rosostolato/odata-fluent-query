@@ -10,13 +10,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.odataQuery = void 0;
-var create_query_1 = require("./builders/create-query");
-function odataQuery() {
-    var defaultDescriptor = create_query_1.createQueryDescriptor();
-    return create_query_1.createQuery(defaultDescriptor);
-}
-exports.odataQuery = odataQuery;
-__exportStar(require("./models"), exports);
-exports.default = odataQuery;
+__exportStar(require("./odata-query"), exports);
+__exportStar(require("./query-descriptor"), exports);
+__exportStar(require("./query-filter"), exports);
+__exportStar(require("./query-groupby"), exports);
+__exportStar(require("./query-orderby"), exports);
+__exportStar(require("./query-select"), exports);
 //# sourceMappingURL=index.js.map

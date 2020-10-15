@@ -3,9 +3,8 @@ import {
   FilterBuilderType,
   FilterExpression,
 } from './query-filter'
-import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
-
 import { SelectParams } from './query-select'
+import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
 
 export interface ODataQuery<T> {
   /**
@@ -76,6 +75,23 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
+   * Adds a $expand operator to the OData query.
+   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
+   * The lambda in the second parameter allows you to build a complex inner query.
+   *
+   * @param key the name of the relation.
+   * @param query a lambda expression that build the subquery from the querybuilder.
+   *
+   * @example
+   *
+   * q.exand('blogs', q => q.select('id', 'title'))
+   */
+  expand<key extends keyof RelationsOf<T>, U = T[key]>(
+    key: key,
+    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+  ): ODataQuery<T>
+
+  /**
    * exports query to string joined with `&`
    *
    * @example
@@ -100,3 +116,24 @@ export interface ODataQuery<T> {
 export type QueryObject = {
   [key: string]: string
 }
+
+export type ExpandQueryComplex<T> = T extends Array<infer U>
+  ? ExpandArrayQuery<U>
+  : ExpandObjectQuery<T>
+
+export type RelationsOf<Model> = Pick<
+  Model,
+  {
+    [K in keyof Model]: Model[K] extends
+      | number
+      | string
+      | Boolean
+      | Date
+      | Uint8Array
+      ? never
+      : K
+  }[keyof Model]
+>
+
+export type ExpandObjectQuery<T> = Pick<ODataQuery<T>, 'select' | 'expand'>
+export type ExpandArrayQuery<T> = Omit<ODataQuery<T>, 'toString' | 'toObject'>

@@ -1,8 +1,8 @@
+import { QueryObject } from '../models/odata-query'
 import { createFilter } from './create-filter'
-import { ODataQuery, QueryObject } from '../models/odata-query'
 import { createSelect } from './create-select'
-import { QueryDescriptor } from '../models/query-descriptor'
 import { createOrderby } from './create-orderby'
+import { QueryDescriptor } from '../models/query-descriptor'
 
 export interface KeyValue<T> {
   key: string
@@ -155,12 +155,42 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
   return expand
 }
 
-export function createQuery<T>(descriptor: QueryDescriptor): ODataQuery<T> {
+export function createQueryDescriptor(key: string = null): QueryDescriptor {
   return {
+    key: key,
+    skip: null,
+    take: null,
+    count: false,
+    strict: false,
+    groupAgg: null,
+    filters: [],
+    expands: [],
+    orderby: [],
+    groupby: [],
+    select: [],
+  }
+}
+
+export function createQuery(descriptor: QueryDescriptor): any {
+  return {
+    $$descriptor: descriptor,
     select: createSelect(descriptor),
     orderBy: createOrderby(descriptor),
     filter: createFilter(descriptor),
+    expand(key: string, query?: Function) {
+      let expand = createQuery(createQueryDescriptor(key))
 
+      if (query) {
+        expand = query(expand)
+      }
+
+      const newDescriptor: QueryDescriptor = {
+        ...descriptor,
+        expands: descriptor.expands.concat(expand.$$descriptor),
+      }
+
+      return createQuery(newDescriptor)
+    },
     toString(): string {
       return makeQuery(descriptor)
         .map((p) => `${p.key}=${p.value}`)

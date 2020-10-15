@@ -9,6 +9,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:debug": "node --nolazy --inspect-brk ./node_modules/.bin/jest --runInBand --no-cache --watch",
     "build": "tsc && copyfiles package.json README.md dist",
     "publish": "cd ./dist && npm publish",
     "release": "npm run build && npm run publish"

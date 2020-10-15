@@ -1,3 +1,4 @@
-export * from './odata-query';
-export * from './filter-builder';
-export * from './orderby-Builder';
+import { ODataQuery } from './models/odata-query';
+export declare function odataQuery<T>(): ODataQuery<T>;
+export * from './models';
+export default odataQuery;

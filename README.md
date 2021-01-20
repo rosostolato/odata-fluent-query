@@ -4,7 +4,7 @@
 
 ## Version 2.0.0 is out!
 
-`ODataQuery` class now is a function written in lowercanse `odataQuery` and it's not necessary to instantiate it anymore. This is basically the changes but it is a break change and might break your code if you don't refactor. Another change is that now queries are imutable, so every method will return a new instance.
+`ODataQuery` class now is a function written in lowercase `odataQuery` and it's not necessary to instantiate it anymore. This is basically the changes but it is a break change and might break your code if you don't refactor. Another change is that now queries are imutable, so every method will return a new instance.
 
 ```ts
 new ODataQuery<T>() => odataQuery<T>()

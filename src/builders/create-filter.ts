@@ -1,5 +1,5 @@
-import { StringOptions } from '../models/query-filter'
 import { QueryDescriptor } from '../models/query-descriptor'
+import { StringOptions } from '../models/query-filter'
 import { createQuery } from './create-query'
 
 export function getFuncArgs(func: Function) {
@@ -195,12 +195,12 @@ function filterBuilder(key: string) {
   }
 }
 
-function makeFilter(prefix = '') {
+function makeFilter(prefix = ''): any {
   return new Proxy(
     {},
     {
       get(_, prop) {
-        const methods = filterBuilder(prefix)
+        const methods: any = filterBuilder(prefix)
         const key = prefix ? `${prefix}/${String(prop)}` : String(prop)
         return methods?.[prop] ? methods[prop] : makeFilter(String(key))
       },

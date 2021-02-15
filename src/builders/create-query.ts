@@ -1,19 +1,19 @@
+import { QueryDescriptor } from '../models/query-descriptor'
 import { QueryObject } from '../models/odata-query'
 import { createFilter } from './create-filter'
-import { createSelect } from './create-select'
-import { createOrderby } from './create-orderby'
-import { QueryDescriptor } from '../models/query-descriptor'
-import { makeQuery } from './query-builder'
 import { createGroupby } from './create-groupby'
+import { createOrderby } from './create-orderby'
+import { createSelect } from './create-select'
+import { makeQuery } from './query-builder'
 
-export function createQueryDescriptor(key: string = null): QueryDescriptor {
+export function createQueryDescriptor(key?: string): QueryDescriptor {
   return {
     key: key,
-    skip: null,
-    take: null,
+    skip: undefined,
+    take: undefined,
     count: false,
     strict: false,
-    aggregator: null,
+    aggregator: undefined,
     filters: [],
     expands: [],
     orderby: [],
@@ -37,11 +37,11 @@ export function createQuery(descriptor: QueryDescriptor): any {
       })
     },
 
-    paginate(sizeOrOptions: any, page?: number) {
+    paginate(sizeOrOptions: any, page: number) {
       let data: {
-        page?: number
+        page: number
         count?: boolean
-        pagesize?: number
+        pagesize: number
       }
 
       if (typeof sizeOrOptions === 'number') {
@@ -66,7 +66,7 @@ export function createQuery(descriptor: QueryDescriptor): any {
       }
 
       if (!queryDescriptor.skip) {
-        queryDescriptor.skip = null
+        queryDescriptor.skip = undefined
       }
 
       return createQuery(queryDescriptor)
@@ -94,7 +94,7 @@ export function createQuery(descriptor: QueryDescriptor): any {
       return makeQuery(descriptor).reduce((obj, x) => {
         obj[x.key] = x.value
         return obj
-      }, {})
+      }, {} as QueryObject)
     },
   }
 }

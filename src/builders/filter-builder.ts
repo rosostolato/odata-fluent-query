@@ -8,7 +8,7 @@ const nullBuilder = {
 const mk_exp = (exp: string) => new ComplexFilterExpresion(exp)
 
 const get_param_key = (exp: (...args: any[]) => any) =>
-  new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(exp.toString())[2]
+  new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(exp.toString())?.[2]
 
 const get_property_keys = (exp: (...args: any[]) => any) => {
   let funcStr = exp.toString()
@@ -16,14 +16,14 @@ const get_property_keys = (exp: (...args: any[]) => any) => {
   // key name used in expression
   const key = get_param_key(exp)
 
-  let match: RegExpExecArray
+  let match: RegExpExecArray | null
   const keys: string[] = []
   const regex = new RegExp(key + '\\s*(\\.[a-zA-Z_0-9\\$]+)+\\b(?!\\()')
 
   // gets all properties of the used key
   while ((match = regex.exec(funcStr))) {
     funcStr = funcStr.replace(regex, '')
-    keys.push(match[0].slice(key.length).trim().slice(1))
+    keys.push(match[0].slice(key?.length).trim().slice(1))
   }
 
   // return matched keys
@@ -31,14 +31,14 @@ const get_property_keys = (exp: (...args: any[]) => any) => {
 }
 
 export function mk_builder(keys: string[], builderType: any) {
-  const set = (obj, path, value) => {
+  const set = (obj: any, path: any, value: any) => {
     if (Object(obj) !== obj) return obj
     if (!Array.isArray(path)) path = path.toString().match(/[^.[\]]+/g) || []
 
     path
       .slice(0, -1)
       .reduce(
-        (a, c, i) =>
+        (a: any, c: any, i: any) =>
           Object(a[c]) === a[c]
             ? a[c]
             : (a[c] = Math.abs(path[i + 1]) >> 0 === +path[i + 1] ? [] : {}),
@@ -150,6 +150,10 @@ export class FilterBuilder {
     const key = get_param_key(exp)
     const props = get_property_keys(exp)
 
+    if (!key) {
+      throw new Error('lambda key was not found!')
+    }
+
     if (props.length) {
       const builder = exp(mk_builder(props, FilterBuilder))
       const expr = builder.getFilterExpresion()
@@ -164,6 +168,10 @@ export class FilterBuilder {
   all = (exp: (_: any) => ComplexFilterExpresion) => {
     const key = get_param_key(exp)
     const keys = get_property_keys(exp)
+
+    if (!key) {
+      throw new Error('lambda key was not found!')
+    }
 
     if (keys.length) {
       const builder = exp(mk_builder(keys, FilterBuilder))

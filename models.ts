@@ -1,30 +1,30 @@
 export interface User {
-  id: number;
-  mail: string;
-  surname: string;
-  givenName: string;
-  createDate: Date;
-  accountEnabled: boolean;
+  id: number
+  mail: string
+  surname: string
+  givenName: string
+  createDate: Date
+  accountEnabled: boolean
 
   // simple array
-  phoneNumbers: string[];
+  phoneNumbers: string[]
 
   // one2one
-  address: Address;
+  address: Address
 
   // one2many
-  posts: Post[];
+  posts: Post[]
 }
 
 export interface Address {
-  code: number;
-  street: string;
-  user: User;
+  code: number
+  street: string
+  user: User
 }
 
 export interface Post {
-  id: number;
-  date: Date;
-  content: string;
-  comments: string[];
+  id: number
+  date: Date
+  content: string
+  comments: string[]
 }

@@ -4,6 +4,7 @@
     "experimentalDecorators": true,
     "declaration": true,
     "sourceMap": true,
+    "strict": true,
     "outDir": "dist",
     "target": "es5",
     "lib": ["es2018", "dom"]

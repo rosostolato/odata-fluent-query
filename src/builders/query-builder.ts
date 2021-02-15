@@ -92,7 +92,7 @@ export function makeQueryParentheses(query: string): string {
 }
 
 export function makeRelationQuery(rqd: QueryDescriptor): string {
-  let expand: string = rqd.key
+  let expand: string = rqd.key || ''
 
   if (rqd.strict) {
     expand += '!'

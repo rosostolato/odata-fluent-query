@@ -1,7 +1,7 @@
-import { createQuery } from './create-query'
 import { QueryDescriptor } from '../models/query-descriptor'
+import { createQuery } from './create-query'
 
-function makeSelect(key = '') {
+function makeSelect(key = ''): any {
   return new Proxy(
     {},
     {

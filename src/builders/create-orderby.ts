@@ -1,12 +1,12 @@
-import { createQuery } from './create-query'
 import { QueryDescriptor } from '../models/query-descriptor'
+import { createQuery } from './create-query'
 
-function makeOrderby(key = '') {
+function makeOrderby(key = ''): any {
   if (key[0] === '/') {
     key = key.slice(1)
   }
 
-  const methods = {
+  const methods: any = {
     _key: key,
     asc: () => makeOrderby(`${key} asc`),
     desc: () => makeOrderby(`${key} desc`),

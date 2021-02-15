@@ -12,7 +12,7 @@ describe('testing ODataQuery groupBy', () => {
   test('groupBy multiple', () => {
     const query = odataQuery<User>()
     const actual = query.groupBy(['mail', 'surname']).toString()
-    const expected = '$apply=groupby((mail,surname))'
+    const expected = '$apply=groupby((mail, surname))'
     expect(actual).toBe(expected)
   })
 
@@ -22,7 +22,7 @@ describe('testing ODataQuery groupBy', () => {
       .groupBy(['mail', 'surname'], a => a.countdistinct('id', 'all'))
       .toString()
     const expected =
-      '$apply=groupby((mail,surname),aggregate(id with countdistinct as all))'
+      '$apply=groupby((mail, surname), aggregate(id with countdistinct as all))'
     expect(actual).toBe(expected)
   })
 
@@ -36,7 +36,7 @@ describe('testing ODataQuery groupBy', () => {
       .toString()
 
     const expected =
-      '$apply=groupby((mail,surname),aggregate(id with countdistinct as all,phoneNumbers with max as test))'
+      '$apply=groupby((mail, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))'
     expect(actual).toBe(expected)
   })
 })

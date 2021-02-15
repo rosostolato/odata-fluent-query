@@ -26,10 +26,10 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   }
 
   if (qd.groupby.length) {
-    let group = `groupby((${qd.groupby.join(',')})`
+    let group = `groupby((${qd.groupby.join(', ')})`
 
     if (qd.aggregator) {
-      group += `,aggregate(${qd.aggregator})`
+      group += `, aggregate(${qd.aggregator})`
     }
 
     params.push({
@@ -55,7 +55,7 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   if (qd.orderby.length) {
     params.push({
       key: '$orderby',
-      value: `${qd.orderby.join(',')}`,
+      value: `${qd.orderby.join(', ')}`,
     })
   }
 

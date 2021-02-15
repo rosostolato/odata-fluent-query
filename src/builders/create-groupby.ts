@@ -34,7 +34,7 @@ export function createGroupby(descriptor: QueryDescriptor) {
     return createQuery({
       ...descriptor,
       groupby: keys.map(String),
-      aggregator: result.aggregator.join(',') || null,
+      aggregator: result.aggregator.join(', ') || null,
     })
   }
 }

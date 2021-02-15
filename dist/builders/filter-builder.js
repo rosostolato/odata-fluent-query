@@ -6,9 +6,7 @@ var nullBuilder = {
     getPropName: function () { return 'null'; },
 };
 var mk_exp = function (exp) { return new ComplexFilterExpresion(exp); };
-var get_param_key = function (exp) {
-    return new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(exp.toString())[2];
-};
+var get_param_key = function (exp) { var _a; return (_a = new RegExp(/(return *|=> *?)([a-zA-Z0-9_\$]+)/).exec(exp.toString())) === null || _a === void 0 ? void 0 : _a[2]; };
 var get_property_keys = function (exp) {
     var funcStr = exp.toString();
     // key name used in expression
@@ -19,7 +17,7 @@ var get_property_keys = function (exp) {
     // gets all properties of the used key
     while ((match = regex.exec(funcStr))) {
         funcStr = funcStr.replace(regex, '');
-        keys.push(match[0].slice(key.length).trim().slice(1));
+        keys.push(match[0].slice(key === null || key === void 0 ? void 0 : key.length).trim().slice(1));
     }
     // return matched keys
     return keys;
@@ -145,6 +143,9 @@ var FilterBuilder = /** @class */ (function () {
         this.any = function (exp) {
             var key = get_param_key(exp);
             var props = get_property_keys(exp);
+            if (!key) {
+                throw new Error('lambda key was not found!');
+            }
             if (props.length) {
                 var builder = exp(mk_builder(props, FilterBuilder));
                 var expr = builder.getFilterExpresion();
@@ -159,6 +160,9 @@ var FilterBuilder = /** @class */ (function () {
         this.all = function (exp) {
             var key = get_param_key(exp);
             var keys = get_property_keys(exp);
+            if (!key) {
+                throw new Error('lambda key was not found!');
+            }
             if (keys.length) {
                 var builder = exp(mk_builder(keys, FilterBuilder));
                 var expr = builder.getFilterExpresion();

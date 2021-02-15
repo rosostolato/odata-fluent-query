@@ -1,2 +1,2 @@
-import { QueryDescriptor } from '../models/query-descriptor';
-export declare function createOrderby(descriptor: QueryDescriptor): (keyOrExp: any, order?: 'asc' | 'desc') => any;
+import { QueryDescriptor } from '../models';
+export declare function createOrderby(descriptor: QueryDescriptor): (keyOrExp: any, order?: "desc" | "asc" | undefined) => any;

@@ -43,7 +43,7 @@ function createGroupby(descriptor) {
     return function (keys, aggregate) {
         var agg = groupbyBuilder();
         var result = (aggregate === null || aggregate === void 0 ? void 0 : aggregate(agg)) || agg;
-        return create_query_1.createQuery(__assign(__assign({}, descriptor), { groupby: keys.map(String), aggregator: result.aggregator.join(',') || null }));
+        return create_query_1.createQuery(__assign(__assign({}, descriptor), { groupby: keys.map(String), aggregator: result.aggregator.join(', ') || null }));
     };
 }
 exports.createGroupby = createGroupby;

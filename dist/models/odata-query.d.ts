@@ -1,7 +1,7 @@
 import { FilterBuilder, FilterBuilderType, FilterExpression } from './query-filter';
-import { SelectParams } from './query-select';
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby';
 import { GroupbyBuilder } from './query-groupby';
+import { SelectParams } from './query-select';
 export interface ODataQuery<T> {
     /**
      * Adds a $select operator to the OData query.
@@ -111,7 +111,7 @@ export interface ODataQuery<T> {
      * @example
      * q.exand('blogs', q => q.select('id', 'title'))
      */
-    expand<key extends keyof RelationsOf<T>, U = T[key]>(key: key, query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>): ODataQuery<T>;
+    expand<key extends keyof RelationsOf<Required<T>>, U = Required<T>[key]>(key: key, query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>): ODataQuery<T>;
     /**
      * exports query to string joined with `&`
      *

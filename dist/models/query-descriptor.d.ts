@@ -1,10 +1,10 @@
 export interface QueryDescriptor {
-    count: boolean;
-    strict: boolean;
-    key: string | null;
-    skip: number | null;
-    take: number | null;
-    aggregator: string | null;
+    count?: boolean;
+    strict?: boolean;
+    key?: string;
+    skip?: number;
+    take?: number;
+    aggregator?: string;
     select: string[];
     filters: string[];
     orderby: string[];

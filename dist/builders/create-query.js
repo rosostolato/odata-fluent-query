@@ -13,19 +13,18 @@ var __assign = (this && this.__assign) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createQuery = exports.createQueryDescriptor = void 0;
 var create_filter_1 = require("./create-filter");
-var create_select_1 = require("./create-select");
-var create_orderby_1 = require("./create-orderby");
-var query_builder_1 = require("./query-builder");
 var create_groupby_1 = require("./create-groupby");
+var create_orderby_1 = require("./create-orderby");
+var create_select_1 = require("./create-select");
+var query_builder_1 = require("./query-builder");
 function createQueryDescriptor(key) {
-    if (key === void 0) { key = null; }
     return {
         key: key,
-        skip: null,
-        take: null,
+        skip: undefined,
+        take: undefined,
         count: false,
         strict: false,
-        aggregator: null,
+        aggregator: undefined,
         filters: [],
         expands: [],
         orderby: [],
@@ -61,7 +60,7 @@ function createQuery(descriptor) {
             }
             var queryDescriptor = __assign(__assign({}, descriptor), { take: data.pagesize, skip: data.pagesize * data.page, count: data.count });
             if (!queryDescriptor.skip) {
-                queryDescriptor.skip = null;
+                queryDescriptor.skip = undefined;
             }
             return createQuery(queryDescriptor);
         },

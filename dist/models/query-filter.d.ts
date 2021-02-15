@@ -1,5 +1,5 @@
 export declare type FilterBuilder<T> = {
-    [P in keyof T]: FilterBuilderType<T[P]>;
+    [P in keyof T]-?: FilterBuilderType<T[P]>;
 };
 export declare type FilterBuilderType<T> = T extends Array<infer R> ? FilterCollection<R> : T extends string ? FilterString : T extends number ? FilterNumber : T extends boolean ? FilterBoolean : T extends Date ? FilterDate : T extends Object ? FilterBuilder<T> : any;
 export interface FilterExpression {

@@ -1,2 +1,2 @@
-import { QueryDescriptor } from '../models/query-descriptor';
+import { QueryDescriptor } from '../models';
 export declare function createSelect(descriptor: QueryDescriptor): (...keys: any[]) => any;

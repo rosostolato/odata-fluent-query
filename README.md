@@ -2,7 +2,7 @@
 
 **Clientside queries with extensive filtering and typesafe joins**
 
-## Version 2.0.0 is out!
+## Version 2.1.0 is out!
 
 `ODataQuery` class now is a function written in lowercase `odataQuery` and it's not necessary to instantiate it anymore. This is basically the changes but it is a break change and might break your code if you don't refactor. Another change is that now queries are imutable, so every method will return a new instance.
 
@@ -12,10 +12,11 @@ new ODataQuery<T>() => odataQuery<T>()
 
 This lib only generates the query string, so you need to use it with your own implementation of http request. There is no need to scaffold any pre build model.
 
-- [Filtering with `Filter`](#filtering-with-filter)
+- [Filtering with `filter`](#filtering-with-filter)
 - [Ordering with `orderBy`](#ordering-with-orderby)
 - [Selecting with `select`](#selecting-properties-with-select)
 - [Expanding with `expand`](#expanding-with-expand)
+- [Expanding with `groupBy`](#grouping-with-groupBy)
 - [Development](#development)
 
 ## Filtering with `filter`
@@ -170,6 +171,34 @@ const query = odataQuery<User>()
   .toString();
 
 //$expand=blogs($select=id,title;$expand=reactions($select=id,title))
+```
+
+## Grouping with `groupBy`
+
+`groupBy` uses odata `$apply` method to gruop data by property with optional aggregations.
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+const query = odataQuery<User>()
+  .groupBy(['mail'])
+  .toString()
+
+//$apply=groupby((mail))
+```
+
+_it is posible to apply custom aggregations_
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+const query = odataQuery<User>()
+  .groupBy(['mail', 'surname'], a =>
+    a.countdistinct('id', 'all').max('phoneNumbers', 'test')
+  )
+  .toString()
+
+//$apply=groupby((mail, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))
 ```
 
 ## Development

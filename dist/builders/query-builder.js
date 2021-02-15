@@ -18,9 +18,9 @@ function makeQuery(qd) {
         }
     }
     if (qd.groupby.length) {
-        var group = "groupby((" + qd.groupby.join(',') + ")";
+        var group = "groupby((" + qd.groupby.join(', ') + ")";
         if (qd.aggregator) {
-            group += ",aggregate(" + qd.aggregator + ")";
+            group += ", aggregate(" + qd.aggregator + ")";
         }
         params.push({
             key: '$apply',
@@ -42,7 +42,7 @@ function makeQuery(qd) {
     if (qd.orderby.length) {
         params.push({
             key: '$orderby',
-            value: "" + qd.orderby.pop(),
+            value: "" + qd.orderby.join(', '),
         });
     }
     if (qd.skip != null) {
@@ -74,7 +74,7 @@ function makeQueryParentheses(query) {
 }
 exports.makeQueryParentheses = makeQueryParentheses;
 function makeRelationQuery(rqd) {
-    var expand = rqd.key;
+    var expand = rqd.key || '';
     if (rqd.strict) {
         expand += '!';
     }

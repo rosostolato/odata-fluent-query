@@ -1,5 +1,5 @@
-import { odataQuery } from '../src'
 import { User } from '../models'
+import { odataQuery } from '../src'
 
 // string
 describe('testodataQuery filter by string', () => {
@@ -9,8 +9,10 @@ describe('testodataQuery filter by string', () => {
     const expected = "$filter=contains(mail, 'test')"
     expect(actual).toBe(expected)
 
-    const q = query.filter(q => q.mail.contains('gmail')).select('id', 'mail').toString()
-    console.log(q)
+    const q = query
+      .filter(q => q.mail.contains('gmail'))
+      .select('id', 'mail')
+      .toString()
   })
 
   test('contains caseInsensitive', () => {

@@ -1,6 +1,6 @@
 export interface User {
-  id: number
-  mail: string
+  id: number | null
+  mail: string | null
   surname: string
   givenName: string
   createDate: Date
@@ -26,5 +26,5 @@ export interface Post {
   id: number
   date: Date
   content: string
-  comments: string[]
+  comments: (string | null)[]
 }

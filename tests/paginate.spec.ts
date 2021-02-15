@@ -1,5 +1,5 @@
-import { odataQuery } from '../src'
 import { User } from '../models'
+import { odataQuery } from '../src'
 
 describe('testing ODataQuery paginate', () => {
   test('paginate', () => {

@@ -1,4 +1,3 @@
-// import { ComplexFilterExpresion } from "../src/filter-builder"
 import { makeExp } from '../src/builders/create-filter'
 
 describe('test filter expressions', () => {

@@ -3,9 +3,10 @@ import {
   FilterBuilderType,
   FilterExpression,
 } from './query-filter'
-import { SelectParams } from './query-select'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
+
 import { GroupbyBuilder } from './query-groupby'
+import { SelectParams } from './query-select'
 
 export interface ODataQuery<T> {
   /**

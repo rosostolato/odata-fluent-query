@@ -55,7 +55,7 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   if (qd.orderby.length) {
     params.push({
       key: '$orderby',
-      value: `${qd.orderby.pop()}`,
+      value: `${qd.orderby.join(',')}`,
     })
   }
 

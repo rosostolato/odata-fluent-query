@@ -1,5 +1,5 @@
 export type OrderByBuilder<T> = {
-  [P in keyof T]: OrderByBuilderTyped<T[P]>
+  [P in keyof T]-?: OrderByBuilderTyped<T[P]>
 }
 
 export type OrderByBuilderTyped<T> = T extends Array<infer R>

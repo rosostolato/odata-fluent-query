@@ -3,7 +3,7 @@ export type SelectParams<T, Tkey> = Array<
 >
 
 export type SelectBuilder<T> = {
-  [P in keyof T]: SelectBuilderType<T[P]>
+  [P in keyof T]-?: SelectBuilderType<T[P]>
 }
 
 export type SelectBuilderType<T> = T extends Array<infer R>

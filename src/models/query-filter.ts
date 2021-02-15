@@ -1,5 +1,5 @@
 export type FilterBuilder<T> = {
-  [P in keyof T]: FilterBuilderType<T[P]>
+  [P in keyof T]-?: FilterBuilderType<T[P]>
 }
 
 export type FilterBuilderType<T> = T extends Array<infer R>

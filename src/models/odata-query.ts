@@ -134,7 +134,7 @@ export interface ODataQuery<T> {
    * @example
    * q.exand('blogs', q => q.select('id', 'title'))
    */
-  expand<key extends keyof RelationsOf<T>, U = T[key]>(
+  expand<key extends keyof RelationsOf<Required<T>>, U = Required<T>[key]>(
     key: key,
     query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
   ): ODataQuery<T>

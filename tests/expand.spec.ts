@@ -18,6 +18,14 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
+  test('expand and select optional', () => {
+    const query = odataQuery<User>()
+    const actual = query.expand('address2', q => q.select('code')).toString()
+
+    const expected = '$expand=address2($select=code)'
+    expect(actual).toBe(expected)
+  })
+
   test('expand twice', () => {
     const query = odataQuery<User>()
     const actual = query

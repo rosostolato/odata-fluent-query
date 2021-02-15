@@ -1,7 +1,7 @@
 export interface User {
   id: number | null
   mail: string | null
-  surname: string
+  surname?: string
   givenName: string
   createDate: Date
   accountEnabled: boolean
@@ -11,6 +11,7 @@ export interface User {
 
   // one2one
   address: Address
+  address2?: Address
 
   // one2many
   posts: Post[]

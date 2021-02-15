@@ -40,4 +40,18 @@ describe('testing odataQuery select', () => {
     const expected = '$select=id,givenName,accountEnabled'
     expect(actual).toBe(expected)
   })
+
+  test('select optional', () => {
+    const query = odataQuery<User>()
+
+    const actual = query
+      .select(
+        x => x.givenName,
+        x => x.surname
+      )
+      .toString()
+
+    const expected = '$select=givenName,surname'
+    expect(actual).toBe(expected)
+  })
 })

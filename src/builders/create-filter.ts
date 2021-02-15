@@ -1,5 +1,5 @@
-import { QueryDescriptor } from '../models/query-descriptor'
-import { StringOptions } from '../models/query-filter'
+import { QueryDescriptor, StringOptions } from '../models'
+
 import { createQuery } from './create-query'
 
 export function getFuncArgs(func: Function) {

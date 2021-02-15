@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models/query-descriptor'
+import { QueryDescriptor } from '../models'
 
 export interface KeyValue<T> {
   key: string

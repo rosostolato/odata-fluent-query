@@ -1,6 +1,6 @@
-import { createQuery, createQueryDescriptor } from './builders/create-query'
+import { createQuery, createQueryDescriptor } from './builders'
 
-import { ODataQuery } from './models/odata-query'
+import { ODataQuery } from './models'
 
 export function odataQuery<T>(): ODataQuery<T> {
   const defaultDescriptor = createQueryDescriptor()

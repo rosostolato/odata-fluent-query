@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models/query-descriptor'
+import { QueryDescriptor } from '../models'
 import { createQuery } from './create-query'
 
 function makeOrderby(key = ''): any {

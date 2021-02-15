@@ -1,4 +1,4 @@
-import { makeExp } from '../src/builders/create-filter'
+import { makeExp } from '../src/builders'
 
 describe('test filter expressions', () => {
   test('parentheses', () => {

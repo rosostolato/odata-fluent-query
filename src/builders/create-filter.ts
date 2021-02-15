@@ -153,7 +153,7 @@ function filterBuilder(key: string) {
     isBefore: (d: any) => {
       if (typeof d === 'string') return makeExp(`${key} lt ${d}`)
       else if (d instanceof Date) return makeExp(`${key} lt ${d.toISOString()}`)
-      else return makeExp(`${key} gt ${d._key}`)
+      else return makeExp(`${key} lt ${d._key}`)
     },
 
     ////////////////

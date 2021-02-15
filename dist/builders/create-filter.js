@@ -146,7 +146,7 @@ function filterBuilder(key) {
             else if (d instanceof Date)
                 return makeExp(key + " lt " + d.toISOString());
             else
-                return makeExp(key + " gt " + d._key);
+                return makeExp(key + " lt " + d._key);
         },
         ////////////////
         // FilterBuilderArray

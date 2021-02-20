@@ -145,6 +145,20 @@ describe('testodataQuery filter by number', () => {
     expect(actual).toBe(expected)
   })
 
+  test('biggerOrEqualThan', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.id.biggerOrEqualThan(5)).toString()
+    const expected = '$filter=id ge 5'
+    expect(actual).toBe(expected)
+  })
+
+  test('lessOrEqualThan', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.id.lessOrEqualThan(5)).toString()
+    const expected = '$filter=id le 5'
+    expect(actual).toBe(expected)
+  })
+
   test('equals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.equals(5)).toString()
@@ -234,6 +248,24 @@ describe('testodataQuery filter by Date', () => {
       .filter(q => q.createDate.isBefore(new Date(2020, 0)))
       .toString()
     const expected = '$filter=createDate lt 2020-01-01T'
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1)
+  })
+
+  test('isAfterOrEqual', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isAfterOrEqual(new Date(2020, 0)))
+      .toString()
+    const expected = '$filter=createDate ge 2020-01-01T'
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1)
+  })
+
+  test('isBeforeOrEqual', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isBeforeOrEqual(new Date(2020, 0)))
+      .toString()
+    const expected = '$filter=createDate le 2020-01-01T'
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 

@@ -41,7 +41,9 @@ export interface FilterDate {
     g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
   ): FilterExpression
   isAfter(d: string | Date | FilterDate): FilterExpression
+  isAfterOrEqual(d: string | Date | FilterDate): FilterExpression
   isBefore(d: string | Date | FilterDate): FilterExpression
+  isBeforeOrEqual(d: string | Date | FilterDate): FilterExpression
 }
 
 export interface FilterString {
@@ -61,7 +63,9 @@ export interface FilterNumber {
   equals(n: number | FilterNumber): FilterExpression
   notEquals(n: number | FilterNumber): FilterExpression
   biggerThan(n: number | FilterNumber): FilterExpression
+  biggerOrEqualThan(n: number | FilterNumber): FilterExpression
   lessThan(n: number | FilterNumber): FilterExpression
+  lessOrEqualThan(n: number | FilterNumber): FilterExpression
   in(list: number[]): FilterExpression
 }
 

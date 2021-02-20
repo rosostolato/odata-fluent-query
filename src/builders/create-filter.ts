@@ -14,6 +14,21 @@ export function getFuncArgs(func: Function) {
     .filter(Boolean) // split & filter [""]
 }
 
+export function dateToObject(d: Date) {
+  if (typeof d === 'string') {
+    d = new Date(d)
+  }
+
+  return {
+    year: d.getFullYear(),
+    month: d.getMonth(),
+    day: d.getFullYear(),
+    hour: d.getFullYear(),
+    minute: d.getFullYear(),
+    second: d.getFullYear(),
+  }
+}
+
 export function makeExp(exp: string): any {
   const _get = (checkParetheses = false) => {
     if (!checkParetheses) return exp
@@ -36,14 +51,17 @@ export function makeExp(exp: string): any {
 function filterBuilder(key: string) {
   const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-  const arrFuncBuilder = (method: string, exp: Function) => {
+  const arrFuncBuilder = (method: 'any' | 'all') => (exp: Function) => {
     const [arg] = getFuncArgs(exp)
     const builder = exp(makeFilter(arg))
     const expr = builder._get()
     return makeExp(`${key}/${method}(${arg}: ${expr})`)
   }
 
-  const strFuncBuilder = (method: string, s: any, opt?: StringOptions) => {
+  const strFuncBuilder = (method: 'contains' | 'startswith' | 'endswith') => (
+    s: any,
+    opt?: StringOptions
+  ) => {
     if (opt?.caseInsensitive) {
       return makeExp(
         `${method}(tolower(${key}), ${
@@ -61,7 +79,7 @@ function filterBuilder(key: string) {
     return makeExp(`${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`)
   }
 
-  const equalityBuilder = (t: 'eq' | 'ne', x: any, opt?: StringOptions) => {
+  const equalityBuilder = (t: 'eq' | 'ne') => (x: any, opt?: StringOptions) => {
     switch (typeof x) {
       case 'string':
         if (isGuid.test(x)) {
@@ -89,20 +107,15 @@ function filterBuilder(key: string) {
     }
   }
 
-  const dateToObject = (d: Date) => {
-    if (typeof d === 'string') {
-      d = new Date(d)
-    }
-
-    return {
-      year: d.getFullYear(),
-      month: d.getMonth(),
-      day: d.getFullYear(),
-      hour: d.getFullYear(),
-      minute: d.getFullYear(),
-      second: d.getFullYear(),
-    }
+  const dateComparison = (compare: 'ge' | 'gt' | 'le' | 'lt') => (d: any) => {
+    if (typeof d === 'string') return makeExp(`${key} ${compare} ${d}`)
+    else if (d instanceof Date)
+      return makeExp(`${key} ${compare} ${d.toISOString()}`)
+    else return makeExp(`${key} ${compare} ${d._key}`)
   }
+
+  const numberComparison = (compare: 'ge' | 'gt' | 'le' | 'lt') => (n: any) =>
+    makeExp(`${key} ${compare} ${typeof n == 'number' ? n : n._key}`)
 
   return {
     _key: key,
@@ -144,46 +157,36 @@ function filterBuilder(key: string) {
       }
     },
 
-    isAfter: (d: any) => {
-      if (typeof d === 'string') return makeExp(`${key} gt ${d}`)
-      else if (d instanceof Date) return makeExp(`${key} gt ${d.toISOString()}`)
-      else return makeExp(`${key} gt ${d._key}`)
-    },
-
-    isBefore: (d: any) => {
-      if (typeof d === 'string') return makeExp(`${key} lt ${d}`)
-      else if (d instanceof Date) return makeExp(`${key} lt ${d.toISOString()}`)
-      else return makeExp(`${key} lt ${d._key}`)
-    },
+    isAfter: dateComparison('gt'),
+    isBefore: dateComparison('lt'),
+    isAfterOrEqual: dateComparison('ge'),
+    isBeforeOrEqual: dateComparison('le'),
 
     ////////////////
     // FilterBuilderArray
     empty: () => makeExp(`not ${key}/any()`),
     notEmpty: () => makeExp(`${key}/any()`),
-    any: (exp: Function) => arrFuncBuilder('any', exp),
-    all: (exp: Function) => arrFuncBuilder('all', exp),
+    any: arrFuncBuilder('any'),
+    all: arrFuncBuilder('all'),
 
     ///////////////////////
     // FilterBuilderString
     notNull: () => makeExp(`${key} ne null`),
-    contains: (s: any, opt?: StringOptions) =>
-      strFuncBuilder('contains', s, opt),
-    startsWith: (s: any, opt?: StringOptions) =>
-      strFuncBuilder('startswith', s, opt),
-    endsWith: (s: any, opt?: StringOptions) =>
-      strFuncBuilder('endswith', s, opt),
+    contains: strFuncBuilder('contains'),
+    startsWith: strFuncBuilder('startswith'),
+    endsWith: strFuncBuilder('endswith'),
 
     ///////////////////////
     // FilterBuilderNumber
-    biggerThan: (n: any) =>
-      makeExp(`${key} gt ${typeof n == 'number' ? n : n._key}`),
-    lessThan: (n: any) =>
-      makeExp(`${key} lt ${typeof n == 'number' ? n : n._key}`),
+    biggerThan: numberComparison('gt'),
+    lessThan: numberComparison('lt'),
+    biggerOrEqualThan: numberComparison('ge'),
+    lessOrEqualThan: numberComparison('le'),
 
     ////////////////////////////////
     // FilterBuilder Generic Methods
-    equals: (x: any, opt?: StringOptions) => equalityBuilder('eq', x, opt),
-    notEquals: (x: any, opt?: StringOptions) => equalityBuilder('ne', x, opt),
+    equals: equalityBuilder('eq'),
+    notEquals: equalityBuilder('ne'),
 
     in(arr: (number | string)[]) {
       const list = arr

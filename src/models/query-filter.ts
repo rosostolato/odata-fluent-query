@@ -23,8 +23,10 @@ export interface FilterExpression {
 }
 
 export interface StringOptions {
-  /** @default false */
+  /** Applies `tolower` method to the property */
   caseInsensitive?: boolean
+  /** Ignores Guid type casting */
+  ignoreGuid?: boolean
 }
 
 export interface FilterDate {

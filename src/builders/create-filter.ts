@@ -31,13 +31,13 @@ export function dateToObject(d: Date) {
 
 export function makeExp(exp: string): any {
   const _get = (checkParetheses = false) => {
-    if (!checkParetheses) return exp
-
-    if (exp.indexOf(' or ') > -1 || exp.indexOf(' and ') > -1) {
+    if (!checkParetheses) {
+      return exp
+    } else if (exp.indexOf(' or ') > -1 || exp.indexOf(' and ') > -1) {
       return `(${exp})`
+    } else {
+      return exp
     }
-
-    return exp
   }
 
   return {
@@ -70,27 +70,25 @@ function filterBuilder(key: string) {
             : `tolower(${s._key})`
         })`
       )
-    }
-
-    if (s.getPropName) {
+    } else if (s.getPropName) {
       return makeExp(`${method}(${key}, ${s._key})`)
+    } else {
+      return makeExp(
+        `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
+      )
     }
-
-    return makeExp(`${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`)
   }
 
   const equalityBuilder = (t: 'eq' | 'ne') => (x: any, opt?: StringOptions) => {
     switch (typeof x) {
       case 'string':
-        if (isGuid.test(x)) {
+        if (isGuid.test(x) && !opt?.ignoreGuid) {
           return makeExp(`${key} ${t} ${x}`) // no quote around ${x}
-        }
-
-        if (opt?.caseInsensitive) {
+        } else if (opt?.caseInsensitive) {
           return makeExp(`tolower(${key}) ${t} '${x.toLocaleLowerCase()}'`)
+        } else {
+          return makeExp(`${key} ${t} '${x}'`)
         }
-
-        return makeExp(`${key} ${t} '${x}'`)
 
       case 'number':
         return makeExp(`${key} ${t} ${x}`)
@@ -101,9 +99,9 @@ function filterBuilder(key: string) {
       default:
         if (x && opt?.caseInsensitive) {
           return makeExp(`tolower(${key}) ${t} tolower(${x._key})`)
+        } else {
+          return makeExp(`${key} ${t} ${x?._key || null}`)
         }
-
-        return makeExp(`${key} ${t} ${x?._key || null}`)
     }
   }
 
@@ -192,7 +190,6 @@ function filterBuilder(key: string) {
       const list = arr
         .map(x => (typeof x === 'string' ? `'${x}'` : x))
         .join(',')
-
       return makeExp(`${key} in (${list})`)
     },
   }

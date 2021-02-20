@@ -127,6 +127,16 @@ describe('testodataQuery filter by guid', () => {
     const expected = '$filter=mail ne ' + guid
     expect(actual).toBe(expected)
   })
+
+  test('guid as string', () => {
+    const query = odataQuery<User>()
+    const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
+    const actual = query
+      .filter(q => q.mail.equals(guid, { ignoreGuid: true }))
+      .toString()
+    const expected = `$filter=mail eq '${guid}'`
+    expect(actual).toBe(expected)
+  })
 })
 
 // number

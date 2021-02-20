@@ -8,15 +8,19 @@ export interface FilterExpression {
     or(exp: FilterExpression): FilterExpression;
 }
 export interface StringOptions {
-    /** @default false */
+    /** Applies `tolower` method to the property */
     caseInsensitive?: boolean;
+    /** Ignores Guid type casting */
+    ignoreGuid?: boolean;
 }
 export interface FilterDate {
     inTimeSpan(y: number, m?: number, d?: number, h?: number, mm?: number): FilterExpression;
     isSame(d: string | Date | FilterDate): FilterExpression;
     isSame(d: number | Date | FilterDate, g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): FilterExpression;
     isAfter(d: string | Date | FilterDate): FilterExpression;
+    isAfterOrEqual(d: string | Date | FilterDate): FilterExpression;
     isBefore(d: string | Date | FilterDate): FilterExpression;
+    isBeforeOrEqual(d: string | Date | FilterDate): FilterExpression;
 }
 export interface FilterString {
     notNull(): FilterExpression;
@@ -31,7 +35,9 @@ export interface FilterNumber {
     equals(n: number | FilterNumber): FilterExpression;
     notEquals(n: number | FilterNumber): FilterExpression;
     biggerThan(n: number | FilterNumber): FilterExpression;
+    biggerOrEqualThan(n: number | FilterNumber): FilterExpression;
     lessThan(n: number | FilterNumber): FilterExpression;
+    lessOrEqualThan(n: number | FilterNumber): FilterExpression;
     in(list: number[]): FilterExpression;
 }
 export interface FilterBoolean {

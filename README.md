@@ -2,7 +2,7 @@
 
 **Clientside queries with extensive filtering and typesafe joins**
 
-## Version 2.1.0 is out!
+## Version 2.2.0 is out!
 
 `ODataQuery` class now is a function written in lowercase `odataQuery` and it's not necessary to instantiate it anymore. This is basically the changes but it is a break change and might break your code if you don't refactor. Another change is that now queries are imutable, so every method will return a new instance.
 

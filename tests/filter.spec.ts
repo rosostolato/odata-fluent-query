@@ -8,11 +8,6 @@ describe('testodataQuery filter by string', () => {
     const actual = query.filter(q => q.mail.contains('test')).toString()
     const expected = "$filter=contains(mail, 'test')"
     expect(actual).toBe(expected)
-
-    const q = query
-      .filter(q => q.mail.contains('gmail'))
-      .select('id', 'mail')
-      .toString()
   })
 
   test('contains caseInsensitive', () => {

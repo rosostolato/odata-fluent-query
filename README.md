@@ -2,14 +2,6 @@
 
 **Clientside queries with extensive filtering and typesafe joins**
 
-## Version 2.2.0 is out!
-
-`ODataQuery` class now is a function written in lowercase `odataQuery` and it's not necessary to instantiate it anymore. This is basically the changes but it is a break change and might break your code if you don't refactor. Another change is that now queries are imutable, so every method will return a new instance.
-
-```ts
-new ODataQuery<T>() => odataQuery<T>()
-```
-
 This lib only generates the query string, so you need to use it with your own implementation of http request. There is no need to scaffold any pre build model.
 
 - [Filtering with `filter`](#filtering-with-filter)
@@ -17,33 +9,40 @@ This lib only generates the query string, so you need to use it with your own im
 - [Selecting with `select`](#selecting-properties-with-select)
 - [Expanding with `expand`](#expanding-with-expand)
 - [Expanding with `groupBy`](#grouping-with-groupBy)
+- [Paginating with `paginate`](#paginating-with-paginate)
 - [Development](#development)
 
 ## Filtering with `filter`
 
-Every query exposes a method called `filter`. This method accepts a function as parameter that builds an expersion. For example:
+Every query exposes a method called `filter`. This method accepts a function as parameter that builds an expersion.
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-const query = odataQuery<User>()
+odataQuery<User>()
   .filter(u => u.id.equals(1))
   .toString()
 
-//$filter=id eq 1
+// result: $filter=id eq 1
 ```
 
-Note that the parameter `u` is not of type `User`, but of the type `FilterBuider<User>`. The `FilterBuider` type is a very special and important type. It exposes for every property of the type `T` a `Filterbuilder` of that actual property. The FilterBuilders of the primitive types do expose the methods that return an instance of IFilterExpression.
+Note that the parameter `u` is not a `User` type but `FilterBuider<User>`. The `FilterBuider` will exposes all properties from `T` as `FilterBuilderType` to provide all filter functions based on its property type which can be:
+- `FilterCollection`
+- `FilterString`
+- `FilterNumber`
+- `FilterBoolean`
+- `FilterDate`
+- `FilterBuilder`
+
+Check out all the available methods [here](https://github.com/rosostolato/odata-fluent-query/blob/master/src/models/query-filter.ts).
 
 ```ts
 export type FilterBuider<T> = {
-  [P in keyof T]: FilterBuilderTyped<T[P]>
+  [P in keyof T]: FilterBuilderType<T[P]>
 }
 ```
 
-_The FilterBuider type from the sourcecode_
-
-The `IFilterExpression` class exposes an API to alter and combine the existing expresion. Those are `not()`, `and()` and `or()`. For example:
+You can modify/combine expresions using `not()`, `and()` and `or()`.
 
 ```ts
 .filter(u => u.username.contains('dave').not()) //where the username doest not contain dave
@@ -51,41 +50,49 @@ The `IFilterExpression` class exposes an API to alter and combine the existing e
 .filter(u => u.emailActivaed.equals(true).and(u.username.contains('dave')))
 ```
 
-Calling `filter` multiple times on a query will merge the experions in a bigger expersion via the `and` operator. In this example you will get the users where `the id is not equal to 1 AND the username start with 'harry'`.
+Calling `filter` multiple times will merge the experions in a bigger expersion using the `and` operator. In this example you will get the users where "the id is not equal to 1 AND the username start with 'harry'".
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-const query = odataQuery<User>()
+odataQuery<User>()
   .filter(u => u.id.notEquals(1))
   .filter(u => u.username.startsWith('Harry'))
   .toString()
 
-//$filter=id eq 1 and startswith(username, 'Harry')
+// result: $filter=id eq 1 and startswith(username, 'Harry')
 ```
 
-<!-- See [FILTER_BUILDER_API.md](./FILTER_BUILDER_API.md) for a complete list of all filteroperators -->
-
-More examples:
+More filter examples:
 
 ```ts
-.filter(u => not(u.id.equals(1))) //where the id is not 1
+odataQuery<User>().filter(u => not(u.id.equals(1))) //where the id is not 1
 
-.filter(u => u.id.equals(1).and(
+// result: $filter=id ne 1
+
+odataQuery<User>().filter(u => u.id.equals(1).and(
   u.username.startsWith('Harry') //where the id is 1 AND the username starts with 'harry'
 )))
 
-.filter(u => u.id.equals(1).and(
+// result: $filter=id eq 1 and startswith(username, 'harry')
+
+odataQuery<User>().filter(u => u.id.equals(1).or(
   u.username.startsWith('Harry') //where the id is 1 OR the username starts with 'harry'
 )))
 
-.filter(u => u.email.startswith(u.name)) //You can also use properties of the same type instead of just values
+// result: $filter=id eq 1 or startswith(username, 'harry')
+
+odataQuery<User>().filter(u => u.email.startswith(u.name)) //You can also use properties of the same type instead of just values
+
+// result: $filter=startswith(email, name)
 ```
 
-You can also use key selector passing the property key at the first parameter:
+You can also use "key selector" passing the property key at the first parameter.
 
 ```ts
-.filter('id', id => id.equals(1))
+odataQuery<User>().filter('id', id => id.equals(1))
+
+// result: $filter=id eq 1
 ```
 
 ## Selecting properties with `select`
@@ -96,6 +103,8 @@ You can also use key selector passing the property key at the first parameter:
 import { odataQuery } from 'odata-fluent-query'
 
 odataQuery<User>().select('id', 'username')
+
+// result: $select=id,username
 ```
 
 ## Ordering with `orderBy`
@@ -103,25 +112,33 @@ odataQuery<User>().select('id', 'username')
 `orderby` is used to order the result of your query. This method accepts a lamda to that return the property on witch you want to order.
 
 ```ts
-new OQueryData<User>().orderBy(u => u.id)
+odataQuery<User>().orderBy(u => u.id)
+
+// result: $orderby=id
 ```
 
 It is posible to order on relations:
 
 ```ts
-new OQueryData<User>().select('username').orderBy(u => u.address.city)
+odataQuery<User>().select('username').orderBy(u => u.address.city)
+
+// result: $select=username;$orderby=address/city
 ```
 
 You can set the order mode by calling `Desc` or `Asc`.
 
 ```ts
-new OQueryData<User>().orderBy(u => u.id.desc())
+odataQuery<User>().orderBy(u => u.id.desc())
+
+// result: $orderby=id desc
 ```
 
 You can also `orderBy` with key string.
 
 ```ts
-new OQueryData<User>().orderBy('id', 'desc')
+odataQuery<User>().orderBy('id', 'desc')
+
+// result: $orderby=id desc
 ```
 
 ## Expanding with `expand`
@@ -131,21 +148,19 @@ new OQueryData<User>().orderBy('id', 'desc')
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-const query = odataQuery<User>()
-  .expand('blogs', q =>
-    q.select('id', 'title').filter(b => b.public.equals(true))
-  )
+odataQuery<User>()
+  .expand('blogs')
   .toString()
 
-//$expand=blogs($select=id,title;$filter=public eq true)
+// result: $expand=blogs
 ```
 
-_all the query methods are available inside an Expand call_
+All the query methods are available inside an "expand" call.
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-const query = odataQuery<User>()
+odataQuery<User>()
   .expand('blogs', q =>
     q
       .select('id', 'title')
@@ -155,22 +170,22 @@ const query = odataQuery<User>()
   )
   .toString()
 
-//$expand=blogs($skip=0;$top=10;$orderby=id;$select=id,title;$filter=public eq true)
+// result: $expand=blogs($skip=0;$top=10;$orderby=id;$select=id,title;$filter=public eq true)
 ```
 
-_it is posible to nest Expand calls inside each other_
+It's possible to nest "expand" calls inside each other.
 
 ```ts
 import { odataQuery } from "odata-fluent-query";
 
-const query = odataQuery<User>()
+odataQuery<User>()
   .expand('blogs', q => q
     .select('id', 'title')
     .expand('reactions' q => q.select('id', 'title')
   ))
   .toString();
 
-//$expand=blogs($select=id,title;$expand=reactions($select=id,title))
+// result: $expand=blogs($select=id,title;$expand=reactions($select=id,title))
 ```
 
 ## Grouping with `groupBy`
@@ -180,25 +195,63 @@ const query = odataQuery<User>()
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-const query = odataQuery<User>()
+odataQuery<User>()
   .groupBy(['mail'])
   .toString()
 
-//$apply=groupby((mail))
+// result: $apply=groupby((mail))
 ```
 
-_it is posible to apply custom aggregations_
+It's posible to apply custom aggregations.
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-const query = odataQuery<User>()
+odataQuery<User>()
   .groupBy(['mail', 'surname'], a =>
     a.countdistinct('id', 'all').max('phoneNumbers', 'test')
   )
   .toString()
 
-//$apply=groupby((mail, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))
+// result: $apply=groupby((mail, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))
+```
+
+## Paginating with `paginate`
+
+`paginate` applies `$top`, `$skip` and `$count` automatically.
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+odataQuery<User>()
+  .paginate(10)
+  .toString()
+
+// result: $top=10&$count=true
+```
+
+Skip and top.
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+odataQuery<User>()
+  .paginate(25, 5)
+  .toString()
+
+// result: $skip=125&$top=25&$count=true
+```
+
+Using object and setting `count` to false.
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+odataQuery<User>()
+  .paginate({ page: 5, pagesize: 25, count: false })
+  .toString()
+
+// result: $skip=125&$top=25
 ```
 
 ## Development

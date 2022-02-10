@@ -19,7 +19,7 @@ function makeSelect(key) {
         get: function (_, prop) {
             if (prop === '_key')
                 return key.slice(1);
-            return makeSelect(key + "/" + String(prop));
+            return makeSelect("".concat(key, "/").concat(String(prop)));
         },
     });
 }
@@ -40,7 +40,7 @@ function createSelect(descriptor) {
             }
         })
             .filter(function (k, i, arr) { return arr.indexOf(k) === i; }); // unique
-        return create_query_1.createQuery(__assign(__assign({}, descriptor), { select: _keys, expands: descriptor.expands.filter(function (e) {
+        return (0, create_query_1.createQuery)(__assign(__assign({}, descriptor), { select: _keys, expands: descriptor.expands.filter(function (e) {
                 return _keys.some(function (k) { return e.key == String(k); });
             }) }));
     };

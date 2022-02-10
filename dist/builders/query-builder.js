@@ -7,20 +7,20 @@ function makeQuery(qd) {
         if (qd.filters.length > 1) {
             params.push({
                 key: '$filter',
-                value: "" + qd.filters.map(makeQueryParentheses).join(' and '),
+                value: "".concat(qd.filters.map(makeQueryParentheses).join(' and ')),
             });
         }
         else {
             params.push({
                 key: '$filter',
-                value: "" + qd.filters.join(),
+                value: "".concat(qd.filters.join()),
             });
         }
     }
     if (qd.groupby.length) {
-        var group = "groupby((" + qd.groupby.join(', ') + ")";
+        var group = "groupby((".concat(qd.groupby.join(', '), ")");
         if (qd.aggregator) {
-            group += ", aggregate(" + qd.aggregator + ")";
+            group += ", aggregate(".concat(qd.aggregator, ")");
         }
         params.push({
             key: '$apply',
@@ -30,31 +30,31 @@ function makeQuery(qd) {
     if (qd.expands.length) {
         params.push({
             key: '$expand',
-            value: "" + qd.expands.map(makeRelationQuery).join(','),
+            value: "".concat(qd.expands.map(makeRelationQuery).join(',')),
         });
     }
     if (qd.select.length) {
         params.push({
             key: '$select',
-            value: "" + qd.select.join(','),
+            value: "".concat(qd.select.join(',')),
         });
     }
     if (qd.orderby.length) {
         params.push({
             key: '$orderby',
-            value: "" + qd.orderby.join(', '),
+            value: "".concat(qd.orderby.join(', ')),
         });
     }
     if (qd.skip != null) {
         params.push({
             key: '$skip',
-            value: "" + qd.skip,
+            value: "".concat(qd.skip),
         });
     }
     if (qd.take != null) {
         params.push({
             key: '$top',
-            value: "" + qd.take,
+            value: "".concat(qd.take),
         });
     }
     if (qd.count == true) {
@@ -68,7 +68,7 @@ function makeQuery(qd) {
 exports.makeQuery = makeQuery;
 function makeQueryParentheses(query) {
     if (query.indexOf(' or ') > -1 || query.indexOf(' and ') > -1) {
-        return "(" + query + ")";
+        return "(".concat(query, ")");
     }
     return query;
 }
@@ -88,30 +88,30 @@ function makeRelationQuery(rqd) {
         expand += "(";
         var operators = [];
         if (rqd.skip != null) {
-            operators.push("$skip=" + rqd.skip);
+            operators.push("$skip=".concat(rqd.skip));
         }
         if (rqd.take != null) {
-            operators.push("$top=" + rqd.take);
+            operators.push("$top=".concat(rqd.take));
         }
         if (rqd.count == true) {
             operators.push("$count=true");
         }
         if (rqd.orderby.length) {
-            operators.push("$orderby=" + rqd.orderby.join(','));
+            operators.push("$orderby=".concat(rqd.orderby.join(',')));
         }
         if (rqd.select.length) {
-            operators.push("$select=" + rqd.select.join(','));
+            operators.push("$select=".concat(rqd.select.join(',')));
         }
         if (rqd.filters.length) {
             if (rqd.filters.length > 1) {
-                operators.push("$filter=" + rqd.filters.map(makeQueryParentheses).join(' and '));
+                operators.push("$filter=".concat(rqd.filters.map(makeQueryParentheses).join(' and ')));
             }
             else {
-                operators.push("$filter=" + rqd.filters.join());
+                operators.push("$filter=".concat(rqd.filters.join()));
             }
         }
         if (rqd.expands.length) {
-            operators.push("$expand=" + rqd.expands.map(makeRelationQuery).join(','));
+            operators.push("$expand=".concat(rqd.expands.map(makeRelationQuery).join(',')));
         }
         expand += operators.join(';') + ')';
     }

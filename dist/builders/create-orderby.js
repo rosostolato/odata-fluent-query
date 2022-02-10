@@ -20,12 +20,12 @@ function makeOrderby(key) {
     }
     var methods = {
         _key: key,
-        asc: function () { return makeOrderby(key + " asc"); },
-        desc: function () { return makeOrderby(key + " desc"); },
+        asc: function () { return makeOrderby("".concat(key, " asc")); },
+        desc: function () { return makeOrderby("".concat(key, " desc")); },
     };
     return new Proxy({}, {
         get: function (_, prop) {
-            return methods[prop] || makeOrderby(key + "/" + String(prop));
+            return methods[prop] || makeOrderby("".concat(key, "/").concat(String(prop)));
         },
     });
 }
@@ -37,7 +37,7 @@ function createOrderby(descriptor) {
         if (order) {
             expr = expr[order]();
         }
-        return create_query_1.createQuery(__assign(__assign({}, descriptor), { orderby: descriptor.orderby.concat(expr['_key']) }));
+        return (0, create_query_1.createQuery)(__assign(__assign({}, descriptor), { orderby: descriptor.orderby.concat(expr['_key']) }));
     };
 }
 exports.createOrderby = createOrderby;

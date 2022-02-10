@@ -46,7 +46,7 @@ function makeExp(exp) {
             return exp;
         }
         else if (exp.indexOf(' or ') > -1 || exp.indexOf(' and ') > -1) {
-            return "(" + exp + ")";
+            return "(".concat(exp, ")");
         }
         else {
             return exp;
@@ -54,9 +54,9 @@ function makeExp(exp) {
     };
     return {
         _get: _get,
-        not: function () { return makeExp("not (" + exp + ")"); },
-        and: function (exp) { return makeExp(_get() + " and " + exp._get(true)); },
-        or: function (exp) { return makeExp(_get() + " or " + exp._get(true)); },
+        not: function () { return makeExp("not (".concat(exp, ")")); },
+        and: function (exp) { return makeExp("".concat(_get(), " and ").concat(exp._get(true))); },
+        or: function (exp) { return makeExp("".concat(_get(), " or ").concat(exp._get(true))); },
     };
 }
 exports.makeExp = makeExp;
@@ -66,91 +66,91 @@ function filterBuilder(key) {
         var arg = getFuncArgs(exp)[0];
         var builder = exp(makeFilter(arg));
         var expr = builder._get();
-        return makeExp(key + "/" + method + "(" + arg + ": " + expr + ")");
+        return makeExp("".concat(key, "/").concat(method, "(").concat(arg, ": ").concat(expr, ")"));
     }; };
     var strFuncBuilder = function (method) { return function (s, opt) {
         if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
-            return makeExp(method + "(tolower(" + key + "), " + (typeof s == 'string'
-                ? "'" + s.toLocaleLowerCase() + "'"
-                : "tolower(" + s._key + ")") + ")");
+            return makeExp("".concat(method, "(tolower(").concat(key, "), ").concat(typeof s == 'string'
+                ? "'".concat(s.toLocaleLowerCase(), "'")
+                : "tolower(".concat(s._key, ")"), ")"));
         }
         else if (s.getPropName) {
-            return makeExp(method + "(" + key + ", " + s._key + ")");
+            return makeExp("".concat(method, "(").concat(key, ", ").concat(s._key, ")"));
         }
         else {
-            return makeExp(method + "(" + key + ", " + (typeof s == 'string' ? "'" + s + "'" : s) + ")");
+            return makeExp("".concat(method, "(").concat(key, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s, ")"));
         }
     }; };
     var equalityBuilder = function (t) { return function (x, opt) {
         switch (typeof x) {
             case 'string':
                 if (isGuid.test(x) && !(opt === null || opt === void 0 ? void 0 : opt.ignoreGuid)) {
-                    return makeExp(key + " " + t + " " + x); // no quote around ${x}
+                    return makeExp("".concat(key, " ").concat(t, " ").concat(x)); // no quote around ${x}
                 }
                 else if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
-                    return makeExp("tolower(" + key + ") " + t + " '" + x.toLocaleLowerCase() + "'");
+                    return makeExp("tolower(".concat(key, ") ").concat(t, " '").concat(x.toLocaleLowerCase(), "'"));
                 }
                 else {
-                    return makeExp(key + " " + t + " '" + x + "'");
+                    return makeExp("".concat(key, " ").concat(t, " '").concat(x, "'"));
                 }
             case 'number':
-                return makeExp(key + " " + t + " " + x);
+                return makeExp("".concat(key, " ").concat(t, " ").concat(x));
             case 'boolean':
-                return makeExp(key + " " + t + " " + x);
+                return makeExp("".concat(key, " ").concat(t, " ").concat(x));
             default:
                 if (x && (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive)) {
-                    return makeExp("tolower(" + key + ") " + t + " tolower(" + x._key + ")");
+                    return makeExp("tolower(".concat(key, ") ").concat(t, " tolower(").concat(x._key, ")"));
                 }
                 else {
-                    return makeExp(key + " " + t + " " + ((x === null || x === void 0 ? void 0 : x._key) || null));
+                    return makeExp("".concat(key, " ").concat(t, " ").concat((x === null || x === void 0 ? void 0 : x._key) || null));
                 }
         }
     }; };
     var dateComparison = function (compare) { return function (d) {
         if (typeof d === 'string')
-            return makeExp(key + " " + compare + " " + d);
+            return makeExp("".concat(key, " ").concat(compare, " ").concat(d));
         else if (d instanceof Date)
-            return makeExp(key + " " + compare + " " + d.toISOString());
+            return makeExp("".concat(key, " ").concat(compare, " ").concat(d.toISOString()));
         else
-            return makeExp(key + " " + compare + " " + d._key);
+            return makeExp("".concat(key, " ").concat(compare, " ").concat(d._key));
     }; };
     var numberComparison = function (compare) { return function (n) {
-        return makeExp(key + " " + compare + " " + (typeof n == 'number' ? n : n._key));
+        return makeExp("".concat(key, " ").concat(compare, " ").concat(typeof n == 'number' ? n : n._key));
     }; };
     return {
         _key: key,
         /////////////////////
         // FilterBuilderDate
         inTimeSpan: function (y, m, d, h, mm) {
-            var exps = ["year(" + key + ") eq " + y];
+            var exps = ["year(".concat(key, ") eq ").concat(y)];
             if (m != undefined)
-                exps.push("month(" + key + ") eq " + m);
+                exps.push("month(".concat(key, ") eq ").concat(m));
             if (d != undefined)
-                exps.push("day(" + key + ") eq " + d);
+                exps.push("day(".concat(key, ") eq ").concat(d));
             if (h != undefined)
-                exps.push("hour(" + key + ") eq " + h);
+                exps.push("hour(".concat(key, ") eq ").concat(h));
             if (mm != undefined)
-                exps.push("minute(" + key + ") eq " + mm);
+                exps.push("minute(".concat(key, ") eq ").concat(mm));
             return makeExp('(' + exps.join(') and (') + ')');
         },
         isSame: function (x, g) {
             if (typeof x === 'string') {
-                return makeExp(key + " eq " + x);
+                return makeExp("".concat(key, " eq ").concat(x));
             }
             else if (typeof x === 'number') {
-                return makeExp(g + "(" + key + ") eq " + x);
+                return makeExp("".concat(g, "(").concat(key, ") eq ").concat(x));
             }
             else if (x instanceof Date) {
                 if (g == null) {
-                    return makeExp(key + " eq " + x.toISOString());
+                    return makeExp("".concat(key, " eq ").concat(x.toISOString()));
                 }
                 else {
                     var o = dateToObject(x);
-                    return makeExp(g + "(" + key + ") eq " + o[g]);
+                    return makeExp("".concat(g, "(").concat(key, ") eq ").concat(o[g]));
                 }
             }
             else {
-                return makeExp(g + "(" + key + ") eq " + g + "(" + x._key + ")");
+                return makeExp("".concat(g, "(").concat(key, ") eq ").concat(g, "(").concat(x._key, ")"));
             }
         },
         isAfter: dateComparison('gt'),
@@ -159,13 +159,13 @@ function filterBuilder(key) {
         isBeforeOrEqual: dateComparison('le'),
         ////////////////
         // FilterBuilderArray
-        empty: function () { return makeExp("not " + key + "/any()"); },
-        notEmpty: function () { return makeExp(key + "/any()"); },
+        empty: function () { return makeExp("not ".concat(key, "/any()")); },
+        notEmpty: function () { return makeExp("".concat(key, "/any()")); },
         any: arrFuncBuilder('any'),
         all: arrFuncBuilder('all'),
         ///////////////////////
         // FilterBuilderString
-        notNull: function () { return makeExp(key + " ne null"); },
+        notNull: function () { return makeExp("".concat(key, " ne null")); },
         contains: strFuncBuilder('contains'),
         startsWith: strFuncBuilder('startswith'),
         endsWith: strFuncBuilder('endswith'),
@@ -181,9 +181,9 @@ function filterBuilder(key) {
         notEquals: equalityBuilder('ne'),
         in: function (arr) {
             var list = arr
-                .map(function (x) { return (typeof x === 'string' ? "'" + x + "'" : x); })
+                .map(function (x) { return (typeof x === 'string' ? "'".concat(x, "'") : x); })
                 .join(',');
-            return makeExp(key + " in (" + list + ")");
+            return makeExp("".concat(key, " in (").concat(list, ")"));
         },
     };
 }
@@ -192,7 +192,7 @@ function makeFilter(prefix) {
     return new Proxy({}, {
         get: function (_, prop) {
             var methods = filterBuilder(prefix);
-            var key = prefix ? prefix + "/" + String(prop) : String(prop);
+            var key = prefix ? "".concat(prefix, "/").concat(String(prop)) : String(prop);
             return (methods === null || methods === void 0 ? void 0 : methods[prop]) ? methods[prop] : makeFilter(String(key));
         },
     });
@@ -202,7 +202,7 @@ function createFilter(descriptor) {
         var expr = typeof keyOrExp === 'string'
             ? exp(filterBuilder(keyOrExp))
             : keyOrExp(makeFilter());
-        return create_query_1.createQuery(__assign(__assign({}, descriptor), { filters: descriptor.filters.concat(expr._get()) }));
+        return (0, create_query_1.createQuery)(__assign(__assign({}, descriptor), { filters: descriptor.filters.concat(expr._get()) }));
     };
 }
 exports.createFilter = createFilter;

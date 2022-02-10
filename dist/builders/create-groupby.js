@@ -16,7 +16,7 @@ var create_query_1 = require("./create-query");
 function groupbyBuilder(aggregator) {
     if (aggregator === void 0) { aggregator = []; }
     var custom = function (prop, aggreg, as) {
-        return groupbyBuilder(aggregator.concat(prop + " with " + aggreg + " as " + as));
+        return groupbyBuilder(aggregator.concat("".concat(prop, " with ").concat(aggreg, " as ").concat(as)));
     };
     return {
         aggregator: aggregator,
@@ -43,7 +43,7 @@ function createGroupby(descriptor) {
     return function (keys, aggregate) {
         var agg = groupbyBuilder();
         var result = (aggregate === null || aggregate === void 0 ? void 0 : aggregate(agg)) || agg;
-        return create_query_1.createQuery(__assign(__assign({}, descriptor), { groupby: keys.map(String), aggregator: result.aggregator.join(', ') || null }));
+        return (0, create_query_1.createQuery)(__assign(__assign({}, descriptor), { groupby: keys.map(String), aggregator: result.aggregator.join(', ') || null }));
     };
 }
 exports.createGroupby = createGroupby;

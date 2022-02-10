@@ -48,12 +48,12 @@ var ComplexFilterExpresion = /** @class */ (function () {
         var _this = this;
         this.exp = exp;
         this.kind = 'expr';
-        this.not = function () { return mk_exp("not (" + _this.exp + ")"); };
+        this.not = function () { return mk_exp("not (".concat(_this.exp, ")")); };
         this.and = function (exp) {
-            return mk_exp(_this.getFilterExpresion() + " and " + exp.getFilterExpresion(true));
+            return mk_exp("".concat(_this.getFilterExpresion(), " and ").concat(exp.getFilterExpresion(true)));
         };
         this.or = function (exp) {
-            return mk_exp(_this.getFilterExpresion() + " or " + exp.getFilterExpresion(true));
+            return mk_exp("".concat(_this.getFilterExpresion(), " or ").concat(exp.getFilterExpresion(true)));
         };
     }
     ComplexFilterExpresion.prototype.getFilterExpresion = function (checkParetheses) {
@@ -61,7 +61,7 @@ var ComplexFilterExpresion = /** @class */ (function () {
         if (!checkParetheses)
             return this.exp;
         if (this.exp.indexOf(' or ') > -1 || this.exp.indexOf(' and ') > -1) {
-            return "(" + this.exp + ")";
+            return "(".concat(this.exp, ")");
         }
         return this.exp;
     };
@@ -76,52 +76,52 @@ var FilterBuilder = /** @class */ (function () {
         /////////////////////
         // FilterBuilderDate
         this.inTimeSpan = function (y, m, d, h, mm) {
-            var exps = ["year(" + _this.prefix + ") eq " + y];
+            var exps = ["year(".concat(_this.prefix, ") eq ").concat(y)];
             if (m != undefined)
-                exps.push("month(" + _this.prefix + ") eq " + m);
+                exps.push("month(".concat(_this.prefix, ") eq ").concat(m));
             if (d != undefined)
-                exps.push("day(" + _this.prefix + ") eq " + d);
+                exps.push("day(".concat(_this.prefix, ") eq ").concat(d));
             if (h != undefined)
-                exps.push("hour(" + _this.prefix + ") eq " + h);
+                exps.push("hour(".concat(_this.prefix, ") eq ").concat(h));
             if (mm != undefined)
-                exps.push("minute(" + _this.prefix + ") eq " + mm);
+                exps.push("minute(".concat(_this.prefix, ") eq ").concat(mm));
             return mk_exp('(' + exps.join(') and (') + ')');
         };
         this.isSame = function (x, g) {
             if (typeof x === 'string') {
-                return mk_exp(_this.prefix + " eq " + x);
+                return mk_exp("".concat(_this.prefix, " eq ").concat(x));
             }
             else if (typeof x === 'number') {
-                return mk_exp(g + "(" + _this.prefix + ") eq " + x);
+                return mk_exp("".concat(g, "(").concat(_this.prefix, ") eq ").concat(x));
             }
             else if (x instanceof Date) {
                 if (g == null) {
-                    return mk_exp(_this.prefix + " eq " + x.toISOString());
+                    return mk_exp("".concat(_this.prefix, " eq ").concat(x.toISOString()));
                 }
                 else {
                     var o = _this.dateToObject(x);
-                    return mk_exp(g + "(" + _this.prefix + ") eq " + o[g]);
+                    return mk_exp("".concat(g, "(").concat(_this.prefix, ") eq ").concat(o[g]));
                 }
             }
             else {
-                return mk_exp(g + "(" + _this.prefix + ") eq " + g + "(" + x.getPropName() + ")");
+                return mk_exp("".concat(g, "(").concat(_this.prefix, ") eq ").concat(g, "(").concat(x.getPropName(), ")"));
             }
         };
         this.isAfter = function (d) {
             if (typeof d === 'string')
-                return mk_exp(_this.prefix + " gt " + d);
+                return mk_exp("".concat(_this.prefix, " gt ").concat(d));
             else if (d instanceof Date)
-                return mk_exp(_this.prefix + " gt " + d.toISOString());
+                return mk_exp("".concat(_this.prefix, " gt ").concat(d.toISOString()));
             else
-                return mk_exp(_this.prefix + " gt " + d.getPropName());
+                return mk_exp("".concat(_this.prefix, " gt ").concat(d.getPropName()));
         };
         this.isBefore = function (d) {
             if (typeof d === 'string')
-                return mk_exp(_this.prefix + " lt " + d);
+                return mk_exp("".concat(_this.prefix, " lt ").concat(d));
             else if (d instanceof Date)
-                return mk_exp(_this.prefix + " lt " + d.toISOString());
+                return mk_exp("".concat(_this.prefix, " lt ").concat(d.toISOString()));
             else
-                return mk_exp(_this.prefix + " gt " + d.getPropName());
+                return mk_exp("".concat(_this.prefix, " gt ").concat(d.getPropName()));
         };
         this.dateToObject = function (d) {
             if (typeof d === 'string') {
@@ -138,8 +138,8 @@ var FilterBuilder = /** @class */ (function () {
         };
         ////////////////
         // FilterBuilderArray
-        this.empty = function () { return mk_exp("not " + _this.prefix + "/any()"); };
-        this.notEmpty = function () { return mk_exp(_this.prefix + "/any()"); };
+        this.empty = function () { return mk_exp("not ".concat(_this.prefix, "/any()")); };
+        this.notEmpty = function () { return mk_exp("".concat(_this.prefix, "/any()")); };
         this.any = function (exp) {
             var key = get_param_key(exp);
             var props = get_property_keys(exp);
@@ -149,12 +149,12 @@ var FilterBuilder = /** @class */ (function () {
             if (props.length) {
                 var builder = exp(mk_builder(props, FilterBuilder));
                 var expr = builder.getFilterExpresion();
-                return mk_exp(_this.prefix + "/any(" + key + ":" + key + "/" + expr + ")");
+                return mk_exp("".concat(_this.prefix, "/any(").concat(key, ":").concat(key, "/").concat(expr, ")"));
             }
             else {
                 var builder = exp(new FilterBuilder(key));
                 var expr = builder.getFilterExpresion();
-                return mk_exp(_this.prefix + "/any(" + key + ":" + expr + ")");
+                return mk_exp("".concat(_this.prefix, "/any(").concat(key, ":").concat(expr, ")"));
             }
         };
         this.all = function (exp) {
@@ -166,51 +166,51 @@ var FilterBuilder = /** @class */ (function () {
             if (keys.length) {
                 var builder = exp(mk_builder(keys, FilterBuilder));
                 var expr = builder.getFilterExpresion();
-                return mk_exp(_this.prefix + "/all(" + key + ":" + key + "/" + expr + ")");
+                return mk_exp("".concat(_this.prefix, "/all(").concat(key, ":").concat(key, "/").concat(expr, ")"));
             }
             else {
                 var builder = exp(new FilterBuilder(key));
                 var expr = builder.getFilterExpresion();
-                return mk_exp(_this.prefix + "/all(" + key + ":" + expr + ")");
+                return mk_exp("".concat(_this.prefix, "/all(").concat(key, ":").concat(expr, ")"));
             }
         };
         ///////////////////////
         // FilterBuilderString
-        this.notNull = function () { return mk_exp(_this.prefix + " ne null"); };
+        this.notNull = function () { return mk_exp("".concat(_this.prefix, " ne null")); };
         this.contains = function (s, opt) {
             if (opt && opt.caseInsensitive) {
-                return mk_exp("contains(tolower(" + _this.prefix + "), " + (typeof s == 'string'
-                    ? "'" + s.toLocaleLowerCase() + "'"
-                    : "tolower(" + s.getPropName() + ")") + ")");
+                return mk_exp("contains(tolower(".concat(_this.prefix, "), ").concat(typeof s == 'string'
+                    ? "'".concat(s.toLocaleLowerCase(), "'")
+                    : "tolower(".concat(s.getPropName(), ")"), ")"));
             }
             if (s.getPropName) {
-                return mk_exp("contains(" + _this.prefix + ", " + s.getPropName() + ")");
+                return mk_exp("contains(".concat(_this.prefix, ", ").concat(s.getPropName(), ")"));
             }
-            return mk_exp("contains(" + _this.prefix + ", " + (typeof s == 'string' ? "'" + s + "'" : s) + ")");
+            return mk_exp("contains(".concat(_this.prefix, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s, ")"));
         };
         this.startsWith = function (s, opt) {
             if (opt && opt.caseInsensitive) {
-                return mk_exp("startswith(tolower(" + _this.prefix + "), " + (typeof s == 'string'
-                    ? "'" + s.toLocaleLowerCase() + "'"
-                    : "tolower(" + s.getPropName() + ")") + ")");
+                return mk_exp("startswith(tolower(".concat(_this.prefix, "), ").concat(typeof s == 'string'
+                    ? "'".concat(s.toLocaleLowerCase(), "'")
+                    : "tolower(".concat(s.getPropName(), ")"), ")"));
             }
-            return mk_exp("startswith(" + _this.prefix + ", " + (typeof s == 'string' ? "'" + s + "'" : s.getPropName()) + ")");
+            return mk_exp("startswith(".concat(_this.prefix, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s.getPropName(), ")"));
         };
         this.endsWith = function (s, opt) {
             if (opt && opt.caseInsensitive) {
-                return mk_exp("endswith(tolower(" + _this.prefix + "), " + (typeof s == 'string'
-                    ? "'" + s.toLocaleLowerCase() + "'"
-                    : "tolower(" + s.getPropName() + ")") + ")");
+                return mk_exp("endswith(tolower(".concat(_this.prefix, "), ").concat(typeof s == 'string'
+                    ? "'".concat(s.toLocaleLowerCase(), "'")
+                    : "tolower(".concat(s.getPropName(), ")"), ")"));
             }
-            return mk_exp("endswith(" + _this.prefix + ", " + (typeof s == 'string' ? "'" + s + "'" : s.getPropName()) + ")");
+            return mk_exp("endswith(".concat(_this.prefix, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s.getPropName(), ")"));
         };
         ///////////////////////
         // FilterBuilderNumber
         this.biggerThan = function (n) {
-            return mk_exp(_this.prefix + " gt " + (typeof n == 'number' ? n : n.getPropName()));
+            return mk_exp("".concat(_this.prefix, " gt ").concat(typeof n == 'number' ? n : n.getPropName()));
         };
         this.lessThan = function (n) {
-            return mk_exp(_this.prefix + " lt " + (typeof n == 'number' ? n : n.getPropName()));
+            return mk_exp("".concat(_this.prefix, " lt ").concat(typeof n == 'number' ? n : n.getPropName()));
         };
         ////////////////////////////////
         // FilterBuilder Generic Methods
@@ -219,21 +219,21 @@ var FilterBuilder = /** @class */ (function () {
                 case 'string':
                     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x)) {
                         // is a Guid?
-                        return mk_exp(_this.prefix + " eq " + x); // no quote around ${x}
+                        return mk_exp("".concat(_this.prefix, " eq ").concat(x)); // no quote around ${x}
                     }
                     if (o && o.caseInsensitive) {
-                        return mk_exp("tolower(" + _this.prefix + ") eq '" + x.toLocaleLowerCase() + "'");
+                        return mk_exp("tolower(".concat(_this.prefix, ") eq '").concat(x.toLocaleLowerCase(), "'"));
                     }
-                    return mk_exp(_this.prefix + " eq '" + x + "'");
+                    return mk_exp("".concat(_this.prefix, " eq '").concat(x, "'"));
                 case 'number':
-                    return mk_exp(_this.prefix + " eq " + x);
+                    return mk_exp("".concat(_this.prefix, " eq ").concat(x));
                 case 'boolean':
-                    return mk_exp(_this.prefix + " eq " + x);
+                    return mk_exp("".concat(_this.prefix, " eq ").concat(x));
                 default:
                     if (o && x && o.caseInsensitive) {
-                        return mk_exp("tolower(" + _this.prefix + ") eq tolower(" + x.getPropName() + ")");
+                        return mk_exp("tolower(".concat(_this.prefix, ") eq tolower(").concat(x.getPropName(), ")"));
                     }
-                    return mk_exp(_this.prefix + " eq " + (x || nullBuilder).getPropName());
+                    return mk_exp("".concat(_this.prefix, " eq ").concat((x || nullBuilder).getPropName()));
             }
         };
         this.notEquals = function (x, o) {
@@ -241,26 +241,26 @@ var FilterBuilder = /** @class */ (function () {
                 case 'string':
                     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x)) {
                         // is a Guid?
-                        return mk_exp(_this.prefix + " ne " + x); // no quote around ${x}
+                        return mk_exp("".concat(_this.prefix, " ne ").concat(x)); // no quote around ${x}
                     }
                     if (o && o.caseInsensitive) {
-                        return mk_exp("tolower(" + _this.prefix + ") ne '" + x.toLocaleLowerCase() + "'");
+                        return mk_exp("tolower(".concat(_this.prefix, ") ne '").concat(x.toLocaleLowerCase(), "'"));
                     }
-                    return mk_exp(_this.prefix + " ne '" + x + "'");
+                    return mk_exp("".concat(_this.prefix, " ne '").concat(x, "'"));
                 case 'number':
-                    return mk_exp(_this.prefix + " ne " + x);
+                    return mk_exp("".concat(_this.prefix, " ne ").concat(x));
                 case 'boolean':
-                    return mk_exp(_this.prefix + " ne " + x);
+                    return mk_exp("".concat(_this.prefix, " ne ").concat(x));
                 default:
                     if (o && o.caseInsensitive) {
-                        return mk_exp("tolower(" + _this.prefix + ") ne tolower(" + x.getPropName() + ")");
+                        return mk_exp("tolower(".concat(_this.prefix, ") ne tolower(").concat(x.getPropName(), ")"));
                     }
-                    return mk_exp(_this.prefix + " ne " + (x || nullBuilder).getPropName());
+                    return mk_exp("".concat(_this.prefix, " ne ").concat((x || nullBuilder).getPropName()));
             }
         };
         this.in = function (arr) {
-            var list = arr.map(function (x) { return (typeof x === 'string' ? "'" + x + "'" : x); }).join(',');
-            return mk_exp(_this.prefix + " in (" + list + ")");
+            var list = arr.map(function (x) { return (typeof x === 'string' ? "'".concat(x, "'") : x); }).join(',');
+            return mk_exp("".concat(_this.prefix, " in (").concat(list, ")"));
         };
     }
     return FilterBuilder;

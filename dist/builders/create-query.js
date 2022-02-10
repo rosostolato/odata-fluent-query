@@ -36,10 +36,10 @@ exports.createQueryDescriptor = createQueryDescriptor;
 function createQuery(descriptor) {
     return {
         _descriptor: descriptor,
-        select: create_select_1.createSelect(descriptor),
-        orderBy: create_orderby_1.createOrderby(descriptor),
-        filter: create_filter_1.createFilter(descriptor),
-        groupBy: create_groupby_1.createGroupby(descriptor),
+        select: (0, create_select_1.createSelect)(descriptor),
+        orderBy: (0, create_orderby_1.createOrderby)(descriptor),
+        filter: (0, create_filter_1.createFilter)(descriptor),
+        groupBy: (0, create_groupby_1.createGroupby)(descriptor),
         count: function () {
             return createQuery(__assign(__assign({}, descriptor), { count: true }));
         },
@@ -71,12 +71,12 @@ function createQuery(descriptor) {
             return createQuery(newDescriptor);
         },
         toString: function () {
-            return query_builder_1.makeQuery(descriptor)
-                .map(function (p) { return p.key + "=" + p.value; })
+            return (0, query_builder_1.makeQuery)(descriptor)
+                .map(function (p) { return "".concat(p.key, "=").concat(p.value); })
                 .join('&');
         },
         toObject: function () {
-            return query_builder_1.makeQuery(descriptor).reduce(function (obj, x) {
+            return (0, query_builder_1.makeQuery)(descriptor).reduce(function (obj, x) {
                 obj[x.key] = x.value;
                 return obj;
             }, {});

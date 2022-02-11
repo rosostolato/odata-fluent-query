@@ -3,14 +3,14 @@ import { odataQuery } from '../src'
 
 // string
 describe('testodataQuery filter by string', () => {
-  test('contains', () => {
+  it('contains', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.contains('test')).toString()
     const expected = "$filter=contains(mail, 'test')"
     expect(actual).toBe(expected)
   })
 
-  test('contains caseInsensitive', () => {
+  it('contains caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.contains('test', { caseInsensitive: true }))
@@ -19,14 +19,14 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
-  test('endsWith', () => {
+  it('endsWith', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.endsWith('test')).toString()
     const expected = "$filter=endswith(mail, 'test')"
     expect(actual).toBe(expected)
   })
 
-  test('endsWith caseInsensitive', () => {
+  it('endsWith caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.endsWith('test', { caseInsensitive: true }))
@@ -35,14 +35,14 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
-  test('equals', () => {
+  it('equals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.equals('test')).toString()
     const expected = "$filter=mail eq 'test'"
     expect(actual).toBe(expected)
   })
 
-  test('equals caseInsensitive', () => {
+  it('equals caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.equals('test', { caseInsensitive: true }))
@@ -51,14 +51,14 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
-  test('notEquals', () => {
+  it('notEquals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.notEquals('test')).toString()
     const expected = "$filter=mail ne 'test'"
     expect(actual).toBe(expected)
   })
 
-  test('not equals caseInsensitive', () => {
+  it('not equals caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.notEquals('test', { caseInsensitive: true }))
@@ -67,28 +67,28 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
-  test('equals null', () => {
+  it('equals null', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.equals(null)).toString()
     const expected = '$filter=mail eq null'
     expect(actual).toBe(expected)
   })
 
-  test('notEquals null', () => {
+  it('notEquals null', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.notEquals(null)).toString()
     const expected = '$filter=mail ne null'
     expect(actual).toBe(expected)
   })
 
-  test('startsWith', () => {
+  it('startsWith', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.mail.startsWith('test')).toString()
     const expected = "$filter=startswith(mail, 'test')"
     expect(actual).toBe(expected)
   })
 
-  test('startsWith caseInsensitive', () => {
+  it('startsWith caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.startsWith('test', { caseInsensitive: true }))
@@ -97,7 +97,7 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
-  test('string in array', () => {
+  it('string in array', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.givenName.in(['foo', 'bar'])).toString()
     const expected = "$filter=givenName in ('foo','bar')"
@@ -107,7 +107,7 @@ describe('testodataQuery filter by string', () => {
 
 // guid
 describe('testodataQuery filter by guid', () => {
-  test('equals', () => {
+  it('equals', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
     const actual = query.filter(q => q.mail.equals(guid)).toString()
@@ -115,7 +115,7 @@ describe('testodataQuery filter by guid', () => {
     expect(actual).toBe(expected)
   })
 
-  test('notEquals', () => {
+  it('notEquals', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
     const actual = query.filter(q => q.mail.notEquals(guid)).toString()
@@ -123,7 +123,7 @@ describe('testodataQuery filter by guid', () => {
     expect(actual).toBe(expected)
   })
 
-  test('guid as string', () => {
+  it('guid as string', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
     const actual = query
@@ -136,63 +136,63 @@ describe('testodataQuery filter by guid', () => {
 
 // number
 describe('testodataQuery filter by number', () => {
-  test('biggerThan', () => {
+  it('biggerThan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.biggerThan(5)).toString()
     const expected = '$filter=id gt 5'
     expect(actual).toBe(expected)
   })
 
-  test('lessThan', () => {
+  it('lessThan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.lessThan(5)).toString()
     const expected = '$filter=id lt 5'
     expect(actual).toBe(expected)
   })
 
-  test('biggerOrEqualThan', () => {
+  it('biggerOrEqualThan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.biggerOrEqualThan(5)).toString()
     const expected = '$filter=id ge 5'
     expect(actual).toBe(expected)
   })
 
-  test('lessOrEqualThan', () => {
+  it('lessOrEqualThan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.lessOrEqualThan(5)).toString()
     const expected = '$filter=id le 5'
     expect(actual).toBe(expected)
   })
 
-  test('equals', () => {
+  it('equals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.equals(5)).toString()
     const expected = '$filter=id eq 5'
     expect(actual).toBe(expected)
   })
 
-  test('notEquals', () => {
+  it('notEquals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.notEquals(5)).toString()
     const expected = '$filter=id ne 5'
     expect(actual).toBe(expected)
   })
 
-  test('eq null', () => {
+  it('eq null', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.equals(null)).toString()
     const expected = '$filter=id eq null'
     expect(actual).toBe(expected)
   })
 
-  test('not eq null', () => {
+  it('not eq null', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.notEquals(null)).toString()
     const expected = '$filter=id ne null'
     expect(actual).toBe(expected)
   })
 
-  test('number in array', () => {
+  it('number in array', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.in([5, 10])).toString()
     const expected = '$filter=id in (5,10)'
@@ -202,14 +202,14 @@ describe('testodataQuery filter by number', () => {
 
 // boolean
 describe('testodataQuery filter by boolean', () => {
-  test('equals', () => {
+  it('equals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.accountEnabled.equals(true)).toString()
     const expected = '$filter=accountEnabled eq true'
     expect(actual).toBe(expected)
   })
 
-  test('notEquals', () => {
+  it('notEquals', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.accountEnabled.notEquals(true))
@@ -221,14 +221,14 @@ describe('testodataQuery filter by boolean', () => {
 
 // Date
 describe('testodataQuery filter by Date', () => {
-  test('inTimeSpan', () => {
+  it('inTimeSpan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.createDate.inTimeSpan(2020)).toString()
     const expected = '$filter=(year(createDate) eq 2020)'
     expect(actual).toBe(expected)
   })
 
-  test('inTimeSpan full date', () => {
+  it('inTimeSpan full date', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.inTimeSpan(2020, 10, 14, 6, 30))
@@ -238,7 +238,7 @@ describe('testodataQuery filter by Date', () => {
     expect(actual).toBe(expected)
   })
 
-  test('isAfter', () => {
+  it('isAfter', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.isAfter(new Date(2020, 0)))
@@ -247,7 +247,7 @@ describe('testodataQuery filter by Date', () => {
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 
-  test('isBefore', () => {
+  it('isBefore', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.isBefore(new Date(2020, 0)))
@@ -256,7 +256,7 @@ describe('testodataQuery filter by Date', () => {
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 
-  test('isAfterOrEqual', () => {
+  it('isAfterOrEqual', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.isAfterOrEqual(new Date(2020, 0)))
@@ -265,7 +265,7 @@ describe('testodataQuery filter by Date', () => {
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 
-  test('isBeforeOrEqual', () => {
+  it('isBeforeOrEqual', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.isBeforeOrEqual(new Date(2020, 0)))
@@ -274,7 +274,7 @@ describe('testodataQuery filter by Date', () => {
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 
-  test('isSame', () => {
+  it('isSame', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.isSame(new Date(2020, 0)))
@@ -286,14 +286,14 @@ describe('testodataQuery filter by Date', () => {
 
 // object
 describe('testodataQuery filter by object', () => {
-  test('filter by nested property', () => {
+  it('filter by nested property', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.address.code.biggerThan(5)).toString()
     const expected = '$filter=address/code gt 5'
     expect(actual).toBe(expected)
   })
 
-  test('filter by nested property deep', () => {
+  it('filter by nested property deep', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.address.user.id.biggerThan(5)).toString()
     const expected = '$filter=address/user/id gt 5'
@@ -303,28 +303,28 @@ describe('testodataQuery filter by object', () => {
 
 // object
 describe('testodataQuery filter by array', () => {
-  test('filter by empty array', () => {
+  it('filter by empty array', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.phoneNumbers.empty()).toString()
     const expected = '$filter=not phoneNumbers/any()'
     expect(actual).toBe(expected)
   })
 
-  test('filter by not empty array', () => {
+  it('filter by not empty array', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.phoneNumbers.notEmpty()).toString()
     const expected = '$filter=phoneNumbers/any()'
     expect(actual).toBe(expected)
   })
 
-  test('filter by not empty related array', () => {
+  it('filter by not empty related array', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.posts.notEmpty()).toString()
     const expected = '$filter=posts/any()'
     expect(actual).toBe(expected)
   })
 
-  test('filter by any', () => {
+  it('filter by any', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.phoneNumbers.any(x => x.equals('test')))
@@ -333,7 +333,7 @@ describe('testodataQuery filter by array', () => {
     expect(actual).toBe(expected)
   })
 
-  test('filter by any nested', () => {
+  it('filter by any nested', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.posts.any(p => p.comments.any(c => c.equals(null))))
@@ -342,7 +342,7 @@ describe('testodataQuery filter by array', () => {
     expect(actual).toBe(expected)
   })
 
-  test('filter by all', () => {
+  it('filter by all', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.phoneNumbers.all(x => x.equals('test')))
@@ -351,7 +351,7 @@ describe('testodataQuery filter by array', () => {
     expect(actual).toBe(expected)
   })
 
-  test('filter by all nested', () => {
+  it('filter by all nested', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.posts.all(p => p.comments.all(c => c.notEquals(null))))
@@ -363,21 +363,21 @@ describe('testodataQuery filter by array', () => {
 
 // by another key
 describe('testodataQuery filter by another key', () => {
-  test('string', () => {
+  it('string', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.givenName.contains(q.surname)).toString()
     const expected = '$filter=contains(givenName, surname)'
     expect(actual).toBe(expected)
   })
 
-  test('number', () => {
+  it('number', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.equals(q.id)).toString()
     const expected = '$filter=id eq id'
     expect(actual).toBe(expected)
   })
 
-  test('boolean', () => {
+  it('boolean', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.accountEnabled.notEquals(q.accountEnabled))
@@ -386,7 +386,7 @@ describe('testodataQuery filter by another key', () => {
     expect(actual).toBe(expected)
   })
 
-  test('Date', () => {
+  it('Date', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.createDate.isSame(q.createDate, 'day'))
@@ -398,7 +398,7 @@ describe('testodataQuery filter by another key', () => {
 
 // composed
 describe('testodataQuery filter composed', () => {
-  test('and [inline]', () => {
+  it('and [inline]', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q =>
@@ -414,7 +414,7 @@ describe('testodataQuery filter composed', () => {
     expect(actual).toBe(expected)
   })
 
-  test('and [multilines]', () => {
+  it('and [multilines]', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.startsWith('a'))
@@ -427,7 +427,7 @@ describe('testodataQuery filter composed', () => {
     expect(actual).toBe(expected)
   })
 
-  test('or', () => {
+  it('or', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q =>
@@ -440,7 +440,7 @@ describe('testodataQuery filter composed', () => {
     expect(actual).toBe(expected)
   })
 
-  test('or with and [inline]', () => {
+  it('or with and [inline]', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q =>
@@ -455,7 +455,7 @@ describe('testodataQuery filter composed', () => {
     expect(actual).toBe(expected)
   })
 
-  test('or with and [multilines]', () => {
+  it('or with and [multilines]', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q =>
@@ -472,7 +472,7 @@ describe('testodataQuery filter composed', () => {
     expect(actual).toBe(expected)
   })
 
-  test('not', () => {
+  it('not', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q => q.mail.startsWith('a').or(q.mail.startsWith('b')).not())
@@ -486,14 +486,14 @@ describe('testodataQuery filter composed', () => {
 
 // alt
 describe('testodataQuery filter alt', () => {
-  test('alt', () => {
+  it('alt', () => {
     const query = odataQuery<User>()
     const actual = query.filter('mail', q => q.startsWith('test')).toString()
     const expected = "$filter=startswith(mail, 'test')"
     expect(actual).toBe(expected)
   })
 
-  test('alt or', () => {
+  it('alt or', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter('mail', q => q.startsWith('test').or(q.startsWith('ok')))
@@ -503,7 +503,7 @@ describe('testodataQuery filter alt', () => {
     expect(actual).toBe(expected)
   })
 
-  test('alt and', () => {
+  it('alt and', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter('mail', q => q.startsWith('test').and(q.endsWith('.com')))
@@ -513,7 +513,7 @@ describe('testodataQuery filter alt', () => {
     expect(actual).toBe(expected)
   })
 
-  test('alt and [multilines]', () => {
+  it('alt and [multilines]', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter('mail', q => q.startsWith('test'))

@@ -3,14 +3,14 @@ import { odataQuery } from '../src'
 
 describe('testing ODataQuery expand', () => {
   // one2one relation
-  test('expand', () => {
+  it('expand', () => {
     const query = odataQuery<User>()
     const actual = query.expand('address').toString()
     const expected = '$expand=address'
     expect(actual).toBe(expected)
   })
 
-  test('expand and select', () => {
+  it('expand and select', () => {
     const query = odataQuery<User>()
     const actual = query.expand('address', q => q.select('code')).toString()
 
@@ -18,7 +18,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand and select optional', () => {
+  it('expand and select optional', () => {
     const query = odataQuery<User>()
     const actual = query.expand('address2', q => q.select('code')).toString()
 
@@ -26,7 +26,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand twice', () => {
+  it('expand twice', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('address', q => q.expand('user', q => q.select('id')))
@@ -37,7 +37,7 @@ describe('testing ODataQuery expand', () => {
   })
 
   // one2many relation
-  test('expand and filter', () => {
+  it('expand and filter', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', e => e.filter(q => q.content.startsWith('test')))
@@ -47,7 +47,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand and filter composed', () => {
+  it('expand and filter composed', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', e =>
@@ -60,7 +60,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand and filter composed multiline', () => {
+  it('expand and filter composed multiline', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', e =>
@@ -75,7 +75,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand and orderby', () => {
+  it('expand and orderby', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', e => e.orderBy(q => q.id.desc()))
@@ -85,7 +85,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand and paginate', () => {
+  it('expand and paginate', () => {
     const query = odataQuery<User>()
     const actual = query.expand('posts', e => e.paginate(0)).toString()
 
@@ -93,7 +93,7 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  test('expand and paginate object', () => {
+  it('expand and paginate object', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', e =>

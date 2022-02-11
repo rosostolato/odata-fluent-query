@@ -2,21 +2,21 @@ import { User } from '../models'
 import { odataQuery } from '../src'
 
 describe('testing ODataQuery groupBy', () => {
-  test('groupBy', () => {
+  it('groupBy', () => {
     const query = odataQuery<User>()
     const actual = query.groupBy(['mail']).toString()
     const expected = '$apply=groupby((mail))'
     expect(actual).toBe(expected)
   })
 
-  test('groupBy multiple', () => {
+  it('groupBy multiple', () => {
     const query = odataQuery<User>()
     const actual = query.groupBy(['mail', 'surname']).toString()
     const expected = '$apply=groupby((mail, surname))'
     expect(actual).toBe(expected)
   })
 
-  test('groupBy aggregate', () => {
+  it('groupBy aggregate', () => {
     const query = odataQuery<User>()
     const actual = query
       .groupBy(['mail', 'surname'], a => a.countdistinct('id', 'all'))
@@ -26,7 +26,7 @@ describe('testing ODataQuery groupBy', () => {
     expect(actual).toBe(expected)
   })
 
-  test('groupBy aggregate multiple', () => {
+  it('groupBy aggregate multiple', () => {
     const query = odataQuery<User>()
 
     const actual = query

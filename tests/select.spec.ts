@@ -2,21 +2,21 @@ import { User } from '../models'
 import { odataQuery } from '../src'
 
 describe('testing odataQuery select', () => {
-  test('select one', () => {
+  it('select one', () => {
     const query = odataQuery<User>()
     const actual = query.select('id').toString()
     const expected = '$select=id'
     expect(actual).toBe(expected)
   })
 
-  test('select multiple', () => {
+  it('select multiple', () => {
     const query = odataQuery<User>()
     const actual = query.select('id', 'mail', 'surname').toString()
     const expected = '$select=id,mail,surname'
     expect(actual).toBe(expected)
   })
 
-  test('select with expression', () => {
+  it('select with expression', () => {
     const query = odataQuery<User>()
 
     const actual = query
@@ -30,7 +30,7 @@ describe('testing odataQuery select', () => {
     expect(actual).toBe(expected)
   })
 
-  test('select mixed', () => {
+  it('select mixed', () => {
     const query = odataQuery<User>()
 
     const actual = query
@@ -41,7 +41,7 @@ describe('testing odataQuery select', () => {
     expect(actual).toBe(expected)
   })
 
-  test('select optional', () => {
+  it('select optional', () => {
     const query = odataQuery<User>()
 
     const actual = query

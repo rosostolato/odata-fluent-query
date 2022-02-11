@@ -1,21 +1,29 @@
 {
   "name": "odata-fluent-query",
-  "version": "2.3.0",
-  "description": "OData fluent query builder",
+  "version": "2.3.1",
+  "description": "A fluent OData query builder",
+  "author": "Eduardo Rosostolato",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "homepage": "https://github.com/rosostolato/odata-fluent-query#readme",
   "repository": {
-    "url": "https://github.com/rosostolato/odata-fluent-query"
+    "type": "git",
+    "url": "git+https://github.com/rosostolato/odata-fluent-query.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rosostolato/odata-fluent-query/issues"
   },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
     "test:debug": "node --nolazy --inspect-brk ./node_modules/.bin/jest --runInBand --no-cache --watch",
+    "coverage": "jest --coverage",
+    "ci": "jest --coverage --verbose",
     "build": "tsc && copyfiles package.json README.md dist",
     "publish": "cd ./dist && npm publish",
     "release": "npm run build && npm run publish"
   },
-  "author": "",
-  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "copyfiles": "^2.4.1",

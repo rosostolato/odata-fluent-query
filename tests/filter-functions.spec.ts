@@ -1,33 +1,33 @@
 import { makeExp } from '../src/builders'
 
 describe('test filter expressions', () => {
-  test('parentheses', () => {
+  it('parentheses', () => {
     return expect(makeExp('exp')._get()).toEqual('exp')
   })
 
-  test('not expression', () => {
+  it('not expression', () => {
     return expect(makeExp('exp').not()._get()).toEqual('not (exp)')
   })
 
-  test('and expression', () => {
+  it('and expression', () => {
     return expect(makeExp('exp').and(makeExp('exp'))._get()).toEqual(
       'exp and exp'
     )
   })
 
-  test('or expression', () => {
+  it('or expression', () => {
     return expect(makeExp('exp').or(makeExp('exp'))._get()).toEqual(
       'exp or exp'
     )
   })
 
-  test('and expression inception', () => {
+  it('and expression inception', () => {
     return expect(makeExp('exp').and(makeExp('exp or exp'))._get()).toEqual(
       'exp and (exp or exp)'
     )
   })
 
-  test('or expression inception', () => {
+  it('or expression inception', () => {
     return expect(makeExp('exp').or(makeExp('exp or exp'))._get()).toEqual(
       'exp or (exp or exp)'
     )

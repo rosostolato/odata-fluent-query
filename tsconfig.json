@@ -1,14 +1,22 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "declaration": true,
     "sourceMap": true,
     "strict": true,
-    "outDir": "dist",
+    "baseUrl": "./",
+    "outDir": "./dist",
     "target": "es5",
-    "lib": ["es2018", "dom"]
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+    "moduleResolution": "node",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "esnext",
+      "dom"
+    ]
+  }
 }

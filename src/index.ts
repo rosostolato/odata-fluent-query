@@ -1,5 +1,4 @@
 import { createQuery, createQueryDescriptor } from './builders'
-
 import { ODataQuery } from './models'
 
 export function odataQuery<T>(): ODataQuery<T> {

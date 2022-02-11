@@ -1,9 +1,8 @@
 import { QueryDescriptor, StringOptions } from '../models'
-
 import { createQuery } from './create-query'
 
 export function getFuncArgs(func: Function) {
-  return (func + '')
+  return String(func)
     .replace(/[/][/].*$/gm, '') // strip single-line comments
     .replace(/\s+/g, '') // strip white space
     .replace(/[/][*][^/*]*[*][/]/g, '') // strip multi-line comments
@@ -49,7 +48,8 @@ export function makeExp(exp: string): any {
 }
 
 function filterBuilder(key: string) {
-  const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  const isGuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
   const arrFuncBuilder = (method: 'any' | 'all') => (exp: Function) => {
     const [arg] = getFuncArgs(exp)
@@ -58,26 +58,25 @@ function filterBuilder(key: string) {
     return makeExp(`${key}/${method}(${arg}: ${expr})`)
   }
 
-  const strFuncBuilder = (method: 'contains' | 'startswith' | 'endswith') => (
-    s: any,
-    opt?: StringOptions
-  ) => {
-    if (opt?.caseInsensitive) {
-      return makeExp(
-        `${method}(tolower(${key}), ${
-          typeof s == 'string'
-            ? `'${s.toLocaleLowerCase()}'`
-            : `tolower(${s._key})`
-        })`
-      )
-    } else if (s.getPropName) {
-      return makeExp(`${method}(${key}, ${s._key})`)
-    } else {
-      return makeExp(
-        `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
-      )
+  const strFuncBuilder =
+    (method: 'contains' | 'startswith' | 'endswith') =>
+    (s: any, opt?: StringOptions) => {
+      if (opt?.caseInsensitive) {
+        return makeExp(
+          `${method}(tolower(${key}), ${
+            typeof s == 'string'
+              ? `'${s.toLocaleLowerCase()}'`
+              : `tolower(${s._key})`
+          })`
+        )
+      } else if (s.getPropName) {
+        return makeExp(`${method}(${key}, ${s._key})`)
+      } else {
+        return makeExp(
+          `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
+        )
+      }
     }
-  }
 
   const equalityBuilder = (t: 'eq' | 'ne') => (x: any, opt?: StringOptions) => {
     switch (typeof x) {

@@ -1,5 +1,4 @@
 import { QueryDescriptor, QueryObject } from '../models'
-
 import { createFilter } from './create-filter'
 import { createGroupby } from './create-groupby'
 import { createOrderby } from './create-orderby'

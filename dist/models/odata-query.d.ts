@@ -1,6 +1,6 @@
 import { FilterBuilder, FilterBuilderType, FilterExpression } from './query-filter';
-import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby';
 import { GroupbyBuilder } from './query-groupby';
+import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby';
 import { SelectParams } from './query-select';
 export interface ODataQuery<T> {
     /**

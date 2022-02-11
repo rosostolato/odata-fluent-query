@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFilter = exports.makeExp = exports.dateToObject = exports.getFuncArgs = void 0;
 var create_query_1 = require("./create-query");
 function getFuncArgs(func) {
-    return (func + '')
+    return String(func)
         .replace(/[/][/].*$/gm, '') // strip single-line comments
         .replace(/\s+/g, '') // strip white space
         .replace(/[/][*][^/*]*[*][/]/g, '') // strip multi-line comments
@@ -68,19 +68,21 @@ function filterBuilder(key) {
         var expr = builder._get();
         return makeExp("".concat(key, "/").concat(method, "(").concat(arg, ": ").concat(expr, ")"));
     }; };
-    var strFuncBuilder = function (method) { return function (s, opt) {
-        if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
-            return makeExp("".concat(method, "(tolower(").concat(key, "), ").concat(typeof s == 'string'
-                ? "'".concat(s.toLocaleLowerCase(), "'")
-                : "tolower(".concat(s._key, ")"), ")"));
-        }
-        else if (s.getPropName) {
-            return makeExp("".concat(method, "(").concat(key, ", ").concat(s._key, ")"));
-        }
-        else {
-            return makeExp("".concat(method, "(").concat(key, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s, ")"));
-        }
-    }; };
+    var strFuncBuilder = function (method) {
+        return function (s, opt) {
+            if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
+                return makeExp("".concat(method, "(tolower(").concat(key, "), ").concat(typeof s == 'string'
+                    ? "'".concat(s.toLocaleLowerCase(), "'")
+                    : "tolower(".concat(s._key, ")"), ")"));
+            }
+            else if (s.getPropName) {
+                return makeExp("".concat(method, "(").concat(key, ", ").concat(s._key, ")"));
+            }
+            else {
+                return makeExp("".concat(method, "(").concat(key, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s, ")"));
+            }
+        };
+    };
     var equalityBuilder = function (t) { return function (x, opt) {
         switch (typeof x) {
             case 'string':

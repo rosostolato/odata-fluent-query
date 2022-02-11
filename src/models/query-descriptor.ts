@@ -1,6 +1,5 @@
 export interface QueryDescriptor {
   count?: boolean
-  strict?: boolean
   key?: string
   skip?: number
   take?: number

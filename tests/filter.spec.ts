@@ -5,95 +5,95 @@ import { odataQuery } from '../src'
 describe('testodataQuery filter by string', () => {
   it('contains', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.contains('test')).toString()
-    const expected = "$filter=contains(mail, 'test')"
+    const actual = query.filter(q => q.email.contains('test')).toString()
+    const expected = "$filter=contains(email, 'test')"
     expect(actual).toBe(expected)
   })
 
   it('contains caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.contains('test', { caseInsensitive: true }))
+      .filter(q => q.email.contains('test', { caseInsensitive: true }))
       .toString()
-    const expected = "$filter=contains(tolower(mail), 'test')"
+    const expected = "$filter=contains(tolower(email), 'test')"
     expect(actual).toBe(expected)
   })
 
   it('endsWith', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.endsWith('test')).toString()
-    const expected = "$filter=endswith(mail, 'test')"
+    const actual = query.filter(q => q.email.endsWith('test')).toString()
+    const expected = "$filter=endswith(email, 'test')"
     expect(actual).toBe(expected)
   })
 
   it('endsWith caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.endsWith('test', { caseInsensitive: true }))
+      .filter(q => q.email.endsWith('test', { caseInsensitive: true }))
       .toString()
-    const expected = "$filter=endswith(tolower(mail), 'test')"
+    const expected = "$filter=endswith(tolower(email), 'test')"
     expect(actual).toBe(expected)
   })
 
   it('equals', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.equals('test')).toString()
-    const expected = "$filter=mail eq 'test'"
+    const actual = query.filter(q => q.email.equals('test')).toString()
+    const expected = "$filter=email eq 'test'"
     expect(actual).toBe(expected)
   })
 
   it('equals caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.equals('test', { caseInsensitive: true }))
+      .filter(q => q.email.equals('test', { caseInsensitive: true }))
       .toString()
-    const expected = "$filter=tolower(mail) eq 'test'"
+    const expected = "$filter=tolower(email) eq 'test'"
     expect(actual).toBe(expected)
   })
 
   it('notEquals', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.notEquals('test')).toString()
-    const expected = "$filter=mail ne 'test'"
+    const actual = query.filter(q => q.email.notEquals('test')).toString()
+    const expected = "$filter=email ne 'test'"
     expect(actual).toBe(expected)
   })
 
   it('not equals caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.notEquals('test', { caseInsensitive: true }))
+      .filter(q => q.email.notEquals('test', { caseInsensitive: true }))
       .toString()
-    const expected = "$filter=tolower(mail) ne 'test'"
+    const expected = "$filter=tolower(email) ne 'test'"
     expect(actual).toBe(expected)
   })
 
   it('equals null', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.equals(null)).toString()
-    const expected = '$filter=mail eq null'
+    const actual = query.filter(q => q.email.equals(null)).toString()
+    const expected = '$filter=email eq null'
     expect(actual).toBe(expected)
   })
 
   it('notEquals null', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.notEquals(null)).toString()
-    const expected = '$filter=mail ne null'
+    const actual = query.filter(q => q.email.notEquals(null)).toString()
+    const expected = '$filter=email ne null'
     expect(actual).toBe(expected)
   })
 
   it('startsWith', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.mail.startsWith('test')).toString()
-    const expected = "$filter=startswith(mail, 'test')"
+    const actual = query.filter(q => q.email.startsWith('test')).toString()
+    const expected = "$filter=startswith(email, 'test')"
     expect(actual).toBe(expected)
   })
 
   it('startsWith caseInsensitive', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.startsWith('test', { caseInsensitive: true }))
+      .filter(q => q.email.startsWith('test', { caseInsensitive: true }))
       .toString()
-    const expected = "$filter=startswith(tolower(mail), 'test')"
+    const expected = "$filter=startswith(tolower(email), 'test')"
     expect(actual).toBe(expected)
   })
 
@@ -110,16 +110,16 @@ describe('testodataQuery filter by guid', () => {
   it('equals', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
-    const actual = query.filter(q => q.mail.equals(guid)).toString()
-    const expected = '$filter=mail eq ' + guid
+    const actual = query.filter(q => q.email.equals(guid)).toString()
+    const expected = '$filter=email eq ' + guid
     expect(actual).toBe(expected)
   })
 
   it('notEquals', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
-    const actual = query.filter(q => q.mail.notEquals(guid)).toString()
-    const expected = '$filter=mail ne ' + guid
+    const actual = query.filter(q => q.email.notEquals(guid)).toString()
+    const expected = '$filter=email ne ' + guid
     expect(actual).toBe(expected)
   })
 
@@ -127,9 +127,9 @@ describe('testodataQuery filter by guid', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
     const actual = query
-      .filter(q => q.mail.equals(guid, { ignoreGuid: true }))
+      .filter(q => q.email.equals(guid, { ignoreGuid: true }))
       .toString()
-    const expected = `$filter=mail eq '${guid}'`
+    const expected = `$filter=email eq '${guid}'`
     expect(actual).toBe(expected)
   })
 })
@@ -402,28 +402,28 @@ describe('testodataQuery filter composed', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q =>
-        q.mail
+        q.email
           .startsWith('a')
-          .and(q.mail.contains('o'))
-          .and(q.mail.endsWith('z'))
+          .and(q.email.contains('o'))
+          .and(q.email.endsWith('z'))
       )
       .toString()
 
     const expected =
-      "$filter=startswith(mail, 'a') and contains(mail, 'o') and endswith(mail, 'z')"
+      "$filter=startswith(email, 'a') and contains(email, 'o') and endswith(email, 'z')"
     expect(actual).toBe(expected)
   })
 
   it('and [multilines]', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.startsWith('a'))
-      .filter(q => q.mail.contains('o'))
-      .filter(q => q.mail.endsWith('z'))
+      .filter(q => q.email.startsWith('a'))
+      .filter(q => q.email.contains('o'))
+      .filter(q => q.email.endsWith('z'))
       .toString()
 
     const expected =
-      "$filter=startswith(mail, 'a') and contains(mail, 'o') and endswith(mail, 'z')"
+      "$filter=startswith(email, 'a') and contains(email, 'o') and endswith(email, 'z')"
     expect(actual).toBe(expected)
   })
 
@@ -431,12 +431,15 @@ describe('testodataQuery filter composed', () => {
     const query = odataQuery<User>()
     const actual = query
       .filter(q =>
-        q.mail.startsWith('a').or(q.mail.contains('o')).or(q.mail.endsWith('z'))
+        q.email
+          .startsWith('a')
+          .or(q.email.contains('o'))
+          .or(q.email.endsWith('z'))
       )
       .toString()
 
     const expected =
-      "$filter=startswith(mail, 'a') or contains(mail, 'o') or endswith(mail, 'z')"
+      "$filter=startswith(email, 'a') or contains(email, 'o') or endswith(email, 'z')"
     expect(actual).toBe(expected)
   })
 
@@ -446,12 +449,12 @@ describe('testodataQuery filter composed', () => {
       .filter(q =>
         q.givenName
           .startsWith('search')
-          .and(q.surname.startsWith('search').or(q.mail.startsWith('search')))
+          .and(q.surname.startsWith('search').or(q.email.startsWith('search')))
       )
       .toString()
 
     const expected =
-      "$filter=startswith(givenName, 'search') and (startswith(surname, 'search') or startswith(mail, 'search'))"
+      "$filter=startswith(givenName, 'search') and (startswith(surname, 'search') or startswith(email, 'search'))"
     expect(actual).toBe(expected)
   })
 
@@ -462,24 +465,24 @@ describe('testodataQuery filter composed', () => {
         q.givenName
           .startsWith('search')
           .or(q.surname.startsWith('search'))
-          .or(q.mail.startsWith('search'))
+          .or(q.email.startsWith('search'))
       )
       .filter(q => q.accountEnabled.equals(true))
       .toString()
 
     const expected =
-      "$filter=(startswith(givenName, 'search') or startswith(surname, 'search') or startswith(mail, 'search')) and accountEnabled eq true"
+      "$filter=(startswith(givenName, 'search') or startswith(surname, 'search') or startswith(email, 'search')) and accountEnabled eq true"
     expect(actual).toBe(expected)
   })
 
   it('not', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.mail.startsWith('a').or(q.mail.startsWith('b')).not())
+      .filter(q => q.email.startsWith('a').or(q.email.startsWith('b')).not())
       .toString()
 
     const expected =
-      "$filter=not (startswith(mail, 'a') or startswith(mail, 'b'))"
+      "$filter=not (startswith(email, 'a') or startswith(email, 'b'))"
     expect(actual).toBe(expected)
   })
 })
@@ -488,40 +491,40 @@ describe('testodataQuery filter composed', () => {
 describe('testodataQuery filter alt', () => {
   it('alt', () => {
     const query = odataQuery<User>()
-    const actual = query.filter('mail', q => q.startsWith('test')).toString()
-    const expected = "$filter=startswith(mail, 'test')"
+    const actual = query.filter('email', q => q.startsWith('test')).toString()
+    const expected = "$filter=startswith(email, 'test')"
     expect(actual).toBe(expected)
   })
 
   it('alt or', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter('mail', q => q.startsWith('test').or(q.startsWith('ok')))
+      .filter('email', q => q.startsWith('test').or(q.startsWith('ok')))
       .toString()
     const expected =
-      "$filter=startswith(mail, 'test') or startswith(mail, 'ok')"
+      "$filter=startswith(email, 'test') or startswith(email, 'ok')"
     expect(actual).toBe(expected)
   })
 
   it('alt and', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter('mail', q => q.startsWith('test').and(q.endsWith('.com')))
+      .filter('email', q => q.startsWith('test').and(q.endsWith('.com')))
       .toString()
     const expected =
-      "$filter=startswith(mail, 'test') and endswith(mail, '.com')"
+      "$filter=startswith(email, 'test') and endswith(email, '.com')"
     expect(actual).toBe(expected)
   })
 
   it('alt and [multilines]', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter('mail', q => q.startsWith('test'))
+      .filter('email', q => q.startsWith('test'))
       .filter('givenName', q => q.startsWith('test'))
       .toString()
 
     const expected =
-      "$filter=startswith(mail, 'test') and startswith(givenName, 'test')"
+      "$filter=startswith(email, 'test') and startswith(givenName, 'test')"
     expect(actual).toBe(expected)
   })
 })

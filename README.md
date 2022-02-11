@@ -196,10 +196,10 @@ odataQuery<User>()
 import { odataQuery } from 'odata-fluent-query'
 
 odataQuery<User>()
-  .groupBy(['mail'])
+  .groupBy(['email'])
   .toString()
 
-// result: $apply=groupby((mail))
+// result: $apply=groupby((email))
 ```
 
 It's posible to apply custom aggregations.
@@ -208,12 +208,12 @@ It's posible to apply custom aggregations.
 import { odataQuery } from 'odata-fluent-query'
 
 odataQuery<User>()
-  .groupBy(['mail', 'surname'], a =>
+  .groupBy(['email', 'surname'], a =>
     a.countdistinct('id', 'all').max('phoneNumbers', 'test')
   )
   .toString()
 
-// result: $apply=groupby((mail, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))
+// result: $apply=groupby((email, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))
 ```
 
 ## Paginating with `paginate`

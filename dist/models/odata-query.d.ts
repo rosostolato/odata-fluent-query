@@ -94,7 +94,7 @@ export interface ODataQuery<T> {
      * @param aggregate aggregate builder [optional]
      *
      * @example
-     * q.groupBy(["mail", "surname"], agg => agg
+     * q.groupBy(["email", "surname"], agg => agg
      *   .countdistinct("phoneNumbers", "count")
      *   .max("id", "id")
      * )

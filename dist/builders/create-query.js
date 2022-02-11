@@ -23,7 +23,6 @@ function createQueryDescriptor(key) {
         skip: undefined,
         take: undefined,
         count: false,
-        strict: false,
         aggregator: undefined,
         filters: [],
         expands: [],

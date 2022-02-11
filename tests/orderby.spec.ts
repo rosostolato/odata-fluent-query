@@ -4,43 +4,43 @@ import { odataQuery } from '../src'
 describe('testing ODataQuery orderby', () => {
   it('orderby', () => {
     const query = odataQuery<User>()
-    const actual = query.orderBy(q => q.mail).toString()
-    const expected = '$orderby=mail'
+    const actual = query.orderBy(q => q.email).toString()
+    const expected = '$orderby=email'
     expect(actual).toBe(expected)
   })
 
   it('orderby alt', () => {
     const query = odataQuery<User>()
-    const actual = query.orderBy('mail').toString()
-    const expected = '$orderby=mail'
+    const actual = query.orderBy('email').toString()
+    const expected = '$orderby=email'
     expect(actual).toBe(expected)
   })
 
   it('orderby asc', () => {
     const query = odataQuery<User>()
-    const actual = query.orderBy(q => q.mail.asc()).toString()
-    const expected = '$orderby=mail asc'
+    const actual = query.orderBy(q => q.email.asc()).toString()
+    const expected = '$orderby=email asc'
     expect(actual).toBe(expected)
   })
 
   it('orderby asc alt', () => {
     const query = odataQuery<User>()
-    const actual = query.orderBy('mail', 'asc').toString()
-    const expected = '$orderby=mail asc'
+    const actual = query.orderBy('email', 'asc').toString()
+    const expected = '$orderby=email asc'
     expect(actual).toBe(expected)
   })
 
   it('orderby desc', () => {
     const query = odataQuery<User>()
-    const actual = query.orderBy(q => q.mail.desc()).toString()
-    const expected = '$orderby=mail desc'
+    const actual = query.orderBy(q => q.email.desc()).toString()
+    const expected = '$orderby=email desc'
     expect(actual).toBe(expected)
   })
 
   it('orderby desc alt', () => {
     const query = odataQuery<User>()
-    const actual = query.orderBy('mail', 'desc').toString()
-    const expected = '$orderby=mail desc'
+    const actual = query.orderBy('email', 'desc').toString()
+    const expected = '$orderby=email desc'
     expect(actual).toBe(expected)
   })
 

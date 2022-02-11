@@ -11,7 +11,6 @@ export function createQueryDescriptor(key?: string): QueryDescriptor {
     skip: undefined,
     take: undefined,
     count: false,
-    strict: false,
     aggregator: undefined,
     filters: [],
     expands: [],

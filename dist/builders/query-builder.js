@@ -75,9 +75,6 @@ function makeQueryParentheses(query) {
 exports.makeQueryParentheses = makeQueryParentheses;
 function makeRelationQuery(rqd) {
     var expand = rqd.key || '';
-    if (rqd.strict) {
-        expand += '!';
-    }
     if (rqd.filters.length ||
         rqd.orderby.length ||
         rqd.select.length ||

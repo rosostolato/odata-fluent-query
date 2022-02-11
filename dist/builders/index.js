@@ -15,6 +15,5 @@ __exportStar(require("./create-groupby"), exports);
 __exportStar(require("./create-orderby"), exports);
 __exportStar(require("./create-query"), exports);
 __exportStar(require("./create-select"), exports);
-__exportStar(require("./filter-builder"), exports);
 __exportStar(require("./query-builder"), exports);
 //# sourceMappingURL=index.js.map

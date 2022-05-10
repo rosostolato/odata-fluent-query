@@ -342,6 +342,26 @@ describe('testodataQuery filter by array', () => {
     expect(actual).toBe(expected)
   })
 
+  it('filter by any (specific case)', () => {
+    interface Product {
+      productType: {
+        category: {
+          segmentCategories: { segmentId: number }[]
+        }
+      }
+    }
+    const selectedSegmentId = 1
+    const query = odataQuery<Product>().filter(q =>
+      q.productType.category.segmentCategories.any((p: any) =>
+        p.segmentId.equals(selectedSegmentId)
+      )
+    )
+    const actual = query.toString()
+    const expected =
+      '$filter=productType/category/segmentCategories/any(p: p/segmentId eq 1)'
+    expect(actual).toBe(expected)
+  })
+
   it('filter by all', () => {
     const query = odataQuery<User>()
     const actual = query

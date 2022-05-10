@@ -9,13 +9,13 @@
     "strict": true,
     "baseUrl": "./",
     "outDir": "./dist",
-    "target": "es5",
+    "target": "es2017",
     "moduleResolution": "node",
     "typeRoots": [
       "node_modules/@types"
     ],
     "lib": [
-      "esnext",
+      "es2020",
       "dom"
     ]
   },

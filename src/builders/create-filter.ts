@@ -1,16 +1,14 @@
 import { QueryDescriptor, StringOptions } from '../models'
 import { createQuery } from './create-query'
 
-export function getFuncArgs(func: Function) {
-  return String(func)
-    .replace(/[/][/].*$/gm, '') // strip single-line comments
-    .replace(/\s+/g, '') // strip white space
-    .replace(/[/][*][^/*]*[*][/]/g, '') // strip multi-line comments
-    .split('){', 1)[0]
-    .replace(/^[^(]*[(]/, '') // extract the parameters
-    .replace(/=[^,]+/g, '') // strip any ES6 defaults
+export function getFuncArgs(func: Function): string[] {
+  const [, , paramStr] = /(function)?(.*?)(?=[={])/.exec(func.toString()) ?? []
+  return (paramStr ?? '')
+    .replace('=>', '')
+    .replace('(', '')
+    .replace(')', '')
     .split(',')
-    .filter(Boolean) // split & filter [""]
+    .map(s => s.trim())
 }
 
 export function dateToObject(d: Date) {
@@ -159,21 +157,21 @@ function filterBuilder(key: string) {
     isAfterOrEqual: dateComparison('ge'),
     isBeforeOrEqual: dateComparison('le'),
 
-    ////////////////
+    /////////////////////
     // FilterBuilderArray
     empty: () => makeExp(`not ${key}/any()`),
     notEmpty: () => makeExp(`${key}/any()`),
     any: arrFuncBuilder('any'),
     all: arrFuncBuilder('all'),
 
-    ///////////////////////
+    //////////////////////
     // FilterBuilderString
     notNull: () => makeExp(`${key} ne null`),
     contains: strFuncBuilder('contains'),
     startsWith: strFuncBuilder('startswith'),
     endsWith: strFuncBuilder('endswith'),
 
-    ///////////////////////
+    //////////////////////
     // FilterBuilderNumber
     biggerThan: numberComparison('gt'),
     lessThan: numberComparison('lt'),

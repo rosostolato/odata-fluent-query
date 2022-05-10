@@ -1,4 +1,4 @@
-import { makeExp } from '../src/builders'
+import { getFuncArgs, makeExp } from '../src/builders'
 
 describe('test filter expressions', () => {
   it('parentheses', () => {
@@ -31,5 +31,29 @@ describe('test filter expressions', () => {
     return expect(makeExp('exp').or(makeExp('exp or exp'))._get()).toEqual(
       'exp or (exp or exp)'
     )
+  })
+})
+
+describe('getFuncArgs', () => {
+  it('should return the arguments of a function', () => {
+    const fn = function (a: number, b: number) {
+      return a + b
+    }
+    return expect(getFuncArgs(fn)).toEqual(['a', 'b'])
+  })
+
+  it('should return the arguments of an arrow function', () => {
+    const fn: (a: any) => any = a => a
+    return expect(getFuncArgs(fn)).toEqual(['a'])
+  })
+
+  it('should return the arguments of an arrow function 2', () => {
+    const fn: (p: any) => any = p => p.comments.any((c: any) => c.equals(null))
+    return expect(getFuncArgs(fn)).toEqual(['p'])
+  })
+
+  it('should return the arguments of an arrow function 3', () => {
+    const fn = (a: number, b: number) => a + b
+    return expect(getFuncArgs(fn)).toEqual(['a', 'b'])
   })
 })

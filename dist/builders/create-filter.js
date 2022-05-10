@@ -1,31 +1,15 @@
-"use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFilter = exports.makeExp = exports.dateToObject = exports.getFuncArgs = void 0;
-var create_query_1 = require("./create-query");
-function getFuncArgs(func) {
-    return String(func)
-        .replace(/[/][/].*$/gm, '') // strip single-line comments
-        .replace(/\s+/g, '') // strip white space
-        .replace(/[/][*][^/*]*[*][/]/g, '') // strip multi-line comments
-        .split('){', 1)[0]
-        .replace(/^[^(]*[(]/, '') // extract the parameters
-        .replace(/=[^,]+/g, '') // strip any ES6 defaults
+import { createQuery } from './create-query';
+export function getFuncArgs(func) {
+    var _a;
+    const [, , paramStr] = (_a = /(function)?(.*?)(?=[={])/.exec(func.toString())) !== null && _a !== void 0 ? _a : [];
+    return (paramStr !== null && paramStr !== void 0 ? paramStr : '')
+        .replace('=>', '')
+        .replace('(', '')
+        .replace(')', '')
         .split(',')
-        .filter(Boolean); // split & filter [""]
+        .map(s => s.trim());
 }
-exports.getFuncArgs = getFuncArgs;
-function dateToObject(d) {
+export function dateToObject(d) {
     if (typeof d === 'string') {
         d = new Date(d);
     }
@@ -38,140 +22,133 @@ function dateToObject(d) {
         second: d.getFullYear(),
     };
 }
-exports.dateToObject = dateToObject;
-function makeExp(exp) {
-    var _get = function (checkParetheses) {
-        if (checkParetheses === void 0) { checkParetheses = false; }
+export function makeExp(exp) {
+    const _get = (checkParetheses = false) => {
         if (!checkParetheses) {
             return exp;
         }
         else if (exp.indexOf(' or ') > -1 || exp.indexOf(' and ') > -1) {
-            return "(".concat(exp, ")");
+            return `(${exp})`;
         }
         else {
             return exp;
         }
     };
     return {
-        _get: _get,
-        not: function () { return makeExp("not (".concat(exp, ")")); },
-        and: function (exp) { return makeExp("".concat(_get(), " and ").concat(exp._get(true))); },
-        or: function (exp) { return makeExp("".concat(_get(), " or ").concat(exp._get(true))); },
+        _get,
+        not: () => makeExp(`not (${exp})`),
+        and: (exp) => makeExp(`${_get()} and ${exp._get(true)}`),
+        or: (exp) => makeExp(`${_get()} or ${exp._get(true)}`),
     };
 }
-exports.makeExp = makeExp;
 function filterBuilder(key) {
-    var isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    var arrFuncBuilder = function (method) { return function (exp) {
-        var arg = getFuncArgs(exp)[0];
-        var builder = exp(makeFilter(arg));
-        var expr = builder._get();
-        return makeExp("".concat(key, "/").concat(method, "(").concat(arg, ": ").concat(expr, ")"));
-    }; };
-    var strFuncBuilder = function (method) {
-        return function (s, opt) {
-            if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
-                return makeExp("".concat(method, "(tolower(").concat(key, "), ").concat(typeof s == 'string'
-                    ? "'".concat(s.toLocaleLowerCase(), "'")
-                    : "tolower(".concat(s._key, ")"), ")"));
-            }
-            else if (s.getPropName) {
-                return makeExp("".concat(method, "(").concat(key, ", ").concat(s._key, ")"));
-            }
-            else {
-                return makeExp("".concat(method, "(").concat(key, ", ").concat(typeof s == 'string' ? "'".concat(s, "'") : s, ")"));
-            }
-        };
+    const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const arrFuncBuilder = (method) => (exp) => {
+        const [arg] = getFuncArgs(exp);
+        const builder = exp(makeFilter(arg));
+        const expr = builder._get();
+        return makeExp(`${key}/${method}(${arg}: ${expr})`);
     };
-    var equalityBuilder = function (t) { return function (x, opt) {
+    const strFuncBuilder = (method) => (s, opt) => {
+        if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
+            return makeExp(`${method}(tolower(${key}), ${typeof s == 'string'
+                ? `'${s.toLocaleLowerCase()}'`
+                : `tolower(${s._key})`})`);
+        }
+        else if (s.getPropName) {
+            return makeExp(`${method}(${key}, ${s._key})`);
+        }
+        else {
+            return makeExp(`${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`);
+        }
+    };
+    const equalityBuilder = (t) => (x, opt) => {
         switch (typeof x) {
             case 'string':
                 if (isGuid.test(x) && !(opt === null || opt === void 0 ? void 0 : opt.ignoreGuid)) {
-                    return makeExp("".concat(key, " ").concat(t, " ").concat(x)); // no quote around ${x}
+                    return makeExp(`${key} ${t} ${x}`); // no quote around ${x}
                 }
                 else if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
-                    return makeExp("tolower(".concat(key, ") ").concat(t, " '").concat(x.toLocaleLowerCase(), "'"));
+                    return makeExp(`tolower(${key}) ${t} '${x.toLocaleLowerCase()}'`);
                 }
                 else {
-                    return makeExp("".concat(key, " ").concat(t, " '").concat(x, "'"));
+                    return makeExp(`${key} ${t} '${x}'`);
                 }
             case 'number':
-                return makeExp("".concat(key, " ").concat(t, " ").concat(x));
+                return makeExp(`${key} ${t} ${x}`);
             case 'boolean':
-                return makeExp("".concat(key, " ").concat(t, " ").concat(x));
+                return makeExp(`${key} ${t} ${x}`);
             default:
                 if (x && (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive)) {
-                    return makeExp("tolower(".concat(key, ") ").concat(t, " tolower(").concat(x._key, ")"));
+                    return makeExp(`tolower(${key}) ${t} tolower(${x._key})`);
                 }
                 else {
-                    return makeExp("".concat(key, " ").concat(t, " ").concat((x === null || x === void 0 ? void 0 : x._key) || null));
+                    return makeExp(`${key} ${t} ${(x === null || x === void 0 ? void 0 : x._key) || null}`);
                 }
         }
-    }; };
-    var dateComparison = function (compare) { return function (d) {
+    };
+    const dateComparison = (compare) => (d) => {
         if (typeof d === 'string')
-            return makeExp("".concat(key, " ").concat(compare, " ").concat(d));
+            return makeExp(`${key} ${compare} ${d}`);
         else if (d instanceof Date)
-            return makeExp("".concat(key, " ").concat(compare, " ").concat(d.toISOString()));
+            return makeExp(`${key} ${compare} ${d.toISOString()}`);
         else
-            return makeExp("".concat(key, " ").concat(compare, " ").concat(d._key));
-    }; };
-    var numberComparison = function (compare) { return function (n) {
-        return makeExp("".concat(key, " ").concat(compare, " ").concat(typeof n == 'number' ? n : n._key));
-    }; };
+            return makeExp(`${key} ${compare} ${d._key}`);
+    };
+    const numberComparison = (compare) => (n) => makeExp(`${key} ${compare} ${typeof n == 'number' ? n : n._key}`);
     return {
         _key: key,
         /////////////////////
         // FilterBuilderDate
-        inTimeSpan: function (y, m, d, h, mm) {
-            var exps = ["year(".concat(key, ") eq ").concat(y)];
+        inTimeSpan: (y, m, d, h, mm) => {
+            let exps = [`year(${key}) eq ${y}`];
             if (m != undefined)
-                exps.push("month(".concat(key, ") eq ").concat(m));
+                exps.push(`month(${key}) eq ${m}`);
             if (d != undefined)
-                exps.push("day(".concat(key, ") eq ").concat(d));
+                exps.push(`day(${key}) eq ${d}`);
             if (h != undefined)
-                exps.push("hour(".concat(key, ") eq ").concat(h));
+                exps.push(`hour(${key}) eq ${h}`);
             if (mm != undefined)
-                exps.push("minute(".concat(key, ") eq ").concat(mm));
+                exps.push(`minute(${key}) eq ${mm}`);
             return makeExp('(' + exps.join(') and (') + ')');
         },
-        isSame: function (x, g) {
+        isSame: (x, g) => {
             if (typeof x === 'string') {
-                return makeExp("".concat(key, " eq ").concat(x));
+                return makeExp(`${key} eq ${x}`);
             }
             else if (typeof x === 'number') {
-                return makeExp("".concat(g, "(").concat(key, ") eq ").concat(x));
+                return makeExp(`${g}(${key}) eq ${x}`);
             }
             else if (x instanceof Date) {
                 if (g == null) {
-                    return makeExp("".concat(key, " eq ").concat(x.toISOString()));
+                    return makeExp(`${key} eq ${x.toISOString()}`);
                 }
                 else {
-                    var o = dateToObject(x);
-                    return makeExp("".concat(g, "(").concat(key, ") eq ").concat(o[g]));
+                    const o = dateToObject(x);
+                    return makeExp(`${g}(${key}) eq ${o[g]}`);
                 }
             }
             else {
-                return makeExp("".concat(g, "(").concat(key, ") eq ").concat(g, "(").concat(x._key, ")"));
+                return makeExp(`${g}(${key}) eq ${g}(${x._key})`);
             }
         },
         isAfter: dateComparison('gt'),
         isBefore: dateComparison('lt'),
         isAfterOrEqual: dateComparison('ge'),
         isBeforeOrEqual: dateComparison('le'),
-        ////////////////
+        /////////////////////
         // FilterBuilderArray
-        empty: function () { return makeExp("not ".concat(key, "/any()")); },
-        notEmpty: function () { return makeExp("".concat(key, "/any()")); },
+        empty: () => makeExp(`not ${key}/any()`),
+        notEmpty: () => makeExp(`${key}/any()`),
         any: arrFuncBuilder('any'),
         all: arrFuncBuilder('all'),
-        ///////////////////////
+        //////////////////////
         // FilterBuilderString
-        notNull: function () { return makeExp("".concat(key, " ne null")); },
+        notNull: () => makeExp(`${key} ne null`),
         contains: strFuncBuilder('contains'),
         startsWith: strFuncBuilder('startswith'),
         endsWith: strFuncBuilder('endswith'),
-        ///////////////////////
+        //////////////////////
         // FilterBuilderNumber
         biggerThan: numberComparison('gt'),
         lessThan: numberComparison('lt'),
@@ -181,31 +158,29 @@ function filterBuilder(key) {
         // FilterBuilder Generic Methods
         equals: equalityBuilder('eq'),
         notEquals: equalityBuilder('ne'),
-        in: function (arr) {
-            var list = arr
-                .map(function (x) { return (typeof x === 'string' ? "'".concat(x, "'") : x); })
+        in(arr) {
+            const list = arr
+                .map(x => (typeof x === 'string' ? `'${x}'` : x))
                 .join(',');
-            return makeExp("".concat(key, " in (").concat(list, ")"));
+            return makeExp(`${key} in (${list})`);
         },
     };
 }
-function makeFilter(prefix) {
-    if (prefix === void 0) { prefix = ''; }
+function makeFilter(prefix = '') {
     return new Proxy({}, {
-        get: function (_, prop) {
-            var methods = filterBuilder(prefix);
-            var key = prefix ? "".concat(prefix, "/").concat(String(prop)) : String(prop);
+        get(_, prop) {
+            const methods = filterBuilder(prefix);
+            const key = prefix ? `${prefix}/${String(prop)}` : String(prop);
             return (methods === null || methods === void 0 ? void 0 : methods[prop]) ? methods[prop] : makeFilter(String(key));
         },
     });
 }
-function createFilter(descriptor) {
-    return function (keyOrExp, exp) {
-        var expr = typeof keyOrExp === 'string'
+export function createFilter(descriptor) {
+    return (keyOrExp, exp) => {
+        const expr = typeof keyOrExp === 'string'
             ? exp(filterBuilder(keyOrExp))
             : keyOrExp(makeFilter());
-        return (0, create_query_1.createQuery)(__assign(__assign({}, descriptor), { filters: descriptor.filters.concat(expr._get()) }));
+        return createQuery(Object.assign(Object.assign({}, descriptor), { filters: descriptor.filters.concat(expr._get()) }));
     };
 }
-exports.createFilter = createFilter;
 //# sourceMappingURL=create-filter.js.map

@@ -8,4 +8,4 @@ export declare function groupbyBuilder(aggregator?: string[]): {
     countdistinct(prop: string, as: string): any;
     custom: (prop: string, aggreg: string, as: string) => any;
 };
-export declare function createGroupby(descriptor: QueryDescriptor): (keys: string[], aggregate?: Function | undefined) => any;
+export declare function createGroupby(descriptor: QueryDescriptor): (keys: string[], aggregate?: Function) => any;

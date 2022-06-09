@@ -1,4 +1,5 @@
 import { createQuery } from './create-query';
+import isUUID from 'validator/lib/isUUID';
 export function getFuncArgs(func) {
     var _a;
     const [, , paramStr] = (_a = /(function)?(.*?)(?=[={])/.exec(func.toString())) !== null && _a !== void 0 ? _a : [];
@@ -42,7 +43,6 @@ export function makeExp(exp) {
     };
 }
 function filterBuilder(key) {
-    const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const arrFuncBuilder = (method) => (exp) => {
         const [arg] = getFuncArgs(exp);
         const builder = exp(makeFilter(arg));
@@ -65,7 +65,7 @@ function filterBuilder(key) {
     const equalityBuilder = (t) => (x, opt) => {
         switch (typeof x) {
             case 'string':
-                if (isGuid.test(x) && !(opt === null || opt === void 0 ? void 0 : opt.ignoreGuid)) {
+                if (isUUID(x) && !(opt === null || opt === void 0 ? void 0 : opt.ignoreGuid)) {
                     return makeExp(`${key} ${t} ${x}`); // no quote around ${x}
                 }
                 else if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {

@@ -1,6 +1,6 @@
 {
   "name": "odata-fluent-query",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "A fluent OData query builder",
   "author": "Eduardo Rosostolato",
   "main": "dist/index.js",

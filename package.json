@@ -1,6 +1,6 @@
 {
   "name": "odata-fluent-query",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "A fluent OData query builder",
   "author": "Eduardo Rosostolato",
   "main": "dist/index.js",
@@ -20,7 +20,7 @@
     "test:debug": "node --nolazy --inspect-brk ./node_modules/.bin/jest --runInBand --no-cache --watch",
     "coverage": "jest --coverage",
     "ci": "jest --coverage --verbose",
-    "build": "rimraf dist && tsc && copyfiles package.json README.md dist",
+    "build": "rimraf dist && tsc && copyfiles package.json README.md LICENSE dist",
     "publish": "cd dist && npm publish",
     "release": "npm run build && npm run publish"
   },

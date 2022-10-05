@@ -164,6 +164,7 @@ function filterBuilder(key: string) {
 
     //////////////////////
     // FilterBuilderString
+    isNull: () => makeExp(`${key} eq null`),
     notNull: () => makeExp(`${key} ne null`),
     contains: strFuncBuilder('contains'),
     startsWith: strFuncBuilder('startswith'),

@@ -1,4 +1,4 @@
-import { User } from '../models'
+import { User } from './data/models'
 import { odataQuery } from '../src'
 
 // string
@@ -74,9 +74,23 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
+  it('isNull', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.email.isNull()).toString()
+    const expected = '$filter=email eq null'
+    expect(actual).toBe(expected)
+  })
+
   it('notEquals null', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.email.notEquals(null)).toString()
+    const expected = '$filter=email ne null'
+    expect(actual).toBe(expected)
+  })
+
+  it('notNull', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.email.notNull()).toString()
     const expected = '$filter=email ne null'
     expect(actual).toBe(expected)
   })
@@ -111,7 +125,7 @@ describe('testodataQuery filter by guid', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
     const actual = query.filter(q => q.email.equals(guid)).toString()
-    const expected = '$filter=email eq ' + guid
+    const expected = `$filter=email eq ${guid}`
     expect(actual).toBe(expected)
   })
 
@@ -119,7 +133,7 @@ describe('testodataQuery filter by guid', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
     const actual = query.filter(q => q.email.notEquals(guid)).toString()
-    const expected = '$filter=email ne ' + guid
+    const expected = `$filter=email ne ${guid}`
     expect(actual).toBe(expected)
   })
 
@@ -301,7 +315,7 @@ describe('testodataQuery filter by object', () => {
   })
 })
 
-// object
+// array
 describe('testodataQuery filter by array', () => {
   it('filter by empty array', () => {
     const query = odataQuery<User>()

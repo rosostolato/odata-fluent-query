@@ -1,4 +1,4 @@
-import { User } from '../models'
+import { User } from './data/models'
 import { odataQuery } from '../src'
 
 describe('testing ODataQuery groupBy', () => {

@@ -3,7 +3,7 @@ export interface User {
   email: string | null
   surname?: string
   givenName: string
-  createDate: Date
+  createDate?: Date
   accountEnabled: boolean
 
   // simple array
@@ -14,7 +14,7 @@ export interface User {
   address2?: Address
 
   // one2many
-  posts: Post[]
+  posts?: Post[]
 }
 
 export interface Address {

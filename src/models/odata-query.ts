@@ -1,6 +1,6 @@
 import {
   FilterBuilder,
-  FilterBuilderType,
+  FilterBuilderProp,
   FilterExpression,
 } from './query-filter'
 import { GroupbyBuilder } from './query-groupby'
@@ -43,7 +43,7 @@ export interface ODataQuery<T> {
    */
   filter<TKey extends keyof T>(
     key: TKey,
-    exp: (x: FilterBuilderType<T[TKey]>) => FilterExpression
+    exp: (x: FilterBuilderProp<T[TKey]>) => FilterExpression
   ): ODataQuery<T>
 
   /**
@@ -158,14 +158,22 @@ export interface ODataQuery<T> {
   toObject(): QueryObject
 }
 
-// TODO: make available all odata functions
 export type QueryObject = {
-  [key: string]: string
+  $apply?: string
+  $count?: string
+  $expand?: string
+  $filter?: string
+  $orderby?: string
+  $select?: string
+  $skip?: string
+  $top?: string
 }
 
 export type ExpandQueryComplex<T> = T extends Array<infer U>
   ? ExpandArrayQuery<U>
-  : ExpandObjectQuery<T>
+  : T extends Object
+  ? ExpandObjectQuery<T>
+  : never
 
 export type RelationsOf<Model> = Pick<
   Model,

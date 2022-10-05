@@ -1,5 +1,4 @@
 export interface GroupbyBuilder<T> {
-  // aggregator: string[]
   sum(prop: keyof T, as: string): GroupbyBuilder<T>
   min(prop: keyof T, as: string): GroupbyBuilder<T>
   max(prop: keyof T, as: string): GroupbyBuilder<T>

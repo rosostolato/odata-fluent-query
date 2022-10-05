@@ -1,4 +1,4 @@
-import { FilterBuilder, FilterBuilderType, FilterExpression } from './query-filter';
+import { FilterBuilder, FilterBuilderProp, FilterExpression } from './query-filter';
 import { GroupbyBuilder } from './query-groupby';
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby';
 import { SelectParams } from './query-select';
@@ -35,7 +35,7 @@ export interface ODataQuery<T> {
      * @example
      * q.filter('id', id => id.equals(1))
      */
-    filter<TKey extends keyof T>(key: TKey, exp: (x: FilterBuilderType<T[TKey]>) => FilterExpression): ODataQuery<T>;
+    filter<TKey extends keyof T>(key: TKey, exp: (x: FilterBuilderProp<T[TKey]>) => FilterExpression): ODataQuery<T>;
     /**
      * Adds a $orderby operator to the OData query.
      * Ordering over relations is supported (check OData implementation for details).
@@ -131,9 +131,16 @@ export interface ODataQuery<T> {
     toObject(): QueryObject;
 }
 export declare type QueryObject = {
-    [key: string]: string;
+    $apply?: string;
+    $count?: string;
+    $expand?: string;
+    $filter?: string;
+    $orderby?: string;
+    $select?: string;
+    $skip?: string;
+    $top?: string;
 };
-export declare type ExpandQueryComplex<T> = T extends Array<infer U> ? ExpandArrayQuery<U> : ExpandObjectQuery<T>;
+export declare type ExpandQueryComplex<T> = T extends Array<infer U> ? ExpandArrayQuery<U> : T extends Object ? ExpandObjectQuery<T> : never;
 export declare type RelationsOf<Model> = Pick<Model, {
     [K in keyof Model]: Model[K] extends number | string | Boolean | Date | Uint8Array ? never : K;
 }[keyof Model]>;

@@ -1,6 +1,6 @@
 # odata-fluent-query
 
-**Clientside queries with extensive filtering and typesafe joins**
+**Client side queries with extensive filtering and typesafe joins**
 
 This lib only generates the query string, so you need to use it with your own implementation of http request. There is no need to scaffold any pre build model.
 
@@ -14,7 +14,7 @@ This lib only generates the query string, so you need to use it with your own im
 
 ## Filtering with `filter`
 
-Every query exposes a method called `filter`. This method accepts a function as parameter that builds an expersion.
+Every query exposes a method called `filter`. This method accepts a function as parameter that builds an expression.
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
@@ -42,7 +42,7 @@ export type FilterBuider<T> = {
 }
 ```
 
-You can modify/combine expresions using `not()`, `and()` and `or()`.
+You can modify/combine expressions using `not()`, `and()` and `or()`.
 
 ```ts
 .filter(u => u.username.contains('dave').not()) //where the username doest not contain dave
@@ -50,7 +50,7 @@ You can modify/combine expresions using `not()`, `and()` and `or()`.
 .filter(u => u.emailActivaed.equals(true).and(u.username.contains('dave')))
 ```
 
-Calling `filter` multiple times will merge the experions in a bigger expersion using the `and` operator. In this example you will get the users where "the id is not equal to 1 AND the username start with 'harry'".
+Calling `filter` multiple times will merge the expression in a bigger expression using the `and` operator. In this example you will get the users where "the id is not equal to 1 AND the username start with 'harry'".
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
@@ -109,7 +109,7 @@ odataQuery<User>().select('id', 'username')
 
 ## Ordering with `orderBy`
 
-`orderby` is used to order the result of your query. This method accepts a lamda to that return the property on witch you want to order.
+`orderby` is used to order the result of your query. This method accepts a function that returns the property you want to order by.
 
 ```ts
 odataQuery<User>().orderBy(u => u.id)
@@ -117,7 +117,7 @@ odataQuery<User>().orderBy(u => u.id)
 // result: $orderby=id
 ```
 
-It is posible to order on relations:
+It is possible to order on relations:
 
 ```ts
 odataQuery<User>().select('username').orderBy(u => u.address.city)
@@ -190,7 +190,7 @@ odataQuery<User>()
 
 ## Grouping with `groupBy`
 
-`groupBy` uses odata `$apply` method to gruop data by property with optional aggregations.
+`groupBy` uses odata `$apply` method to group data by property with optional aggregations.
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'

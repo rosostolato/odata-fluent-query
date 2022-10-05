@@ -24,8 +24,12 @@ export function groupbyBuilder(aggregator = []) {
 export function createGroupby(descriptor) {
     return (keys, aggregate) => {
         const agg = groupbyBuilder();
-        const result = (aggregate === null || aggregate === void 0 ? void 0 : aggregate(agg)) || agg;
-        return createQuery(Object.assign(Object.assign({}, descriptor), { groupby: keys.map(String), aggregator: result.aggregator.join(', ') || null }));
+        const result = aggregate?.(agg) || agg;
+        return createQuery({
+            ...descriptor,
+            groupby: keys.map(String),
+            aggregator: result.aggregator.join(', ') || null,
+        });
     };
 }
 //# sourceMappingURL=create-groupby.js.map

@@ -25,7 +25,10 @@ export function createQuery(descriptor) {
         filter: createFilter(descriptor),
         groupBy: createGroupby(descriptor),
         count() {
-            return createQuery(Object.assign(Object.assign({}, descriptor), { count: true }));
+            return createQuery({
+                ...descriptor,
+                count: true,
+            });
         },
         paginate(sizeOrOptions, page) {
             let data;
@@ -42,7 +45,12 @@ export function createQuery(descriptor) {
                     data.count = true;
                 }
             }
-            const queryDescriptor = Object.assign(Object.assign({}, descriptor), { take: data.pagesize, skip: data.pagesize * data.page, count: data.count });
+            const queryDescriptor = {
+                ...descriptor,
+                take: data.pagesize,
+                skip: data.pagesize * data.page,
+                count: data.count,
+            };
             if (!queryDescriptor.skip) {
                 queryDescriptor.skip = undefined;
             }
@@ -50,8 +58,11 @@ export function createQuery(descriptor) {
         },
         expand(key, query) {
             const expand = createQuery(createQueryDescriptor(key));
-            const result = (query === null || query === void 0 ? void 0 : query(expand)) || expand;
-            const newDescriptor = Object.assign(Object.assign({}, descriptor), { expands: descriptor.expands.concat(result._descriptor) });
+            const result = query?.(expand) || expand;
+            const newDescriptor = {
+                ...descriptor,
+                expands: descriptor.expands.concat(result._descriptor),
+            };
             return createQuery(newDescriptor);
         },
         toString() {

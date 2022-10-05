@@ -1,9 +1,8 @@
 import { createQuery } from './create-query';
 import isUUID from 'validator/lib/isUUID';
 export function getFuncArgs(func) {
-    var _a;
-    const [, , paramStr] = (_a = /(function)?(.*?)(?=[={])/.exec(func.toString())) !== null && _a !== void 0 ? _a : [];
-    return (paramStr !== null && paramStr !== void 0 ? paramStr : '')
+    const [, , paramStr] = /(function)?(.*?)(?=[={])/.exec(func.toString()) ?? [];
+    return (paramStr ?? '')
         .replace('=>', '')
         .replace('(', '')
         .replace(')', '')
@@ -50,7 +49,7 @@ function filterBuilder(key) {
         return makeExp(`${key}/${method}(${arg}: ${expr})`);
     };
     const strFuncBuilder = (method) => (s, opt) => {
-        if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
+        if (opt?.caseInsensitive) {
             return makeExp(`${method}(tolower(${key}), ${typeof s == 'string'
                 ? `'${s.toLocaleLowerCase()}'`
                 : `tolower(${s._key})`})`);
@@ -65,10 +64,10 @@ function filterBuilder(key) {
     const equalityBuilder = (t) => (x, opt) => {
         switch (typeof x) {
             case 'string':
-                if (isUUID(x) && !(opt === null || opt === void 0 ? void 0 : opt.ignoreGuid)) {
+                if (isUUID(x) && !opt?.ignoreGuid) {
                     return makeExp(`${key} ${t} ${x}`); // no quote around ${x}
                 }
-                else if (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive) {
+                else if (opt?.caseInsensitive) {
                     return makeExp(`tolower(${key}) ${t} '${x.toLocaleLowerCase()}'`);
                 }
                 else {
@@ -79,11 +78,11 @@ function filterBuilder(key) {
             case 'boolean':
                 return makeExp(`${key} ${t} ${x}`);
             default:
-                if (x && (opt === null || opt === void 0 ? void 0 : opt.caseInsensitive)) {
+                if (x && opt?.caseInsensitive) {
                     return makeExp(`tolower(${key}) ${t} tolower(${x._key})`);
                 }
                 else {
-                    return makeExp(`${key} ${t} ${(x === null || x === void 0 ? void 0 : x._key) || null}`);
+                    return makeExp(`${key} ${t} ${x?._key || null}`);
                 }
         }
     };
@@ -144,6 +143,7 @@ function filterBuilder(key) {
         all: arrFuncBuilder('all'),
         //////////////////////
         // FilterBuilderString
+        isNull: () => makeExp(`${key} eq null`),
         notNull: () => makeExp(`${key} ne null`),
         contains: strFuncBuilder('contains'),
         startsWith: strFuncBuilder('startswith'),
@@ -171,7 +171,7 @@ function makeFilter(prefix = '') {
         get(_, prop) {
             const methods = filterBuilder(prefix);
             const key = prefix ? `${prefix}/${String(prop)}` : String(prop);
-            return (methods === null || methods === void 0 ? void 0 : methods[prop]) ? methods[prop] : makeFilter(String(key));
+            return methods?.[prop] ? methods[prop] : makeFilter(String(key));
         },
     });
 }
@@ -180,7 +180,10 @@ export function createFilter(descriptor) {
         const expr = typeof keyOrExp === 'string'
             ? exp(filterBuilder(keyOrExp))
             : keyOrExp(makeFilter());
-        return createQuery(Object.assign(Object.assign({}, descriptor), { filters: descriptor.filters.concat(expr._get()) }));
+        return createQuery({
+            ...descriptor,
+            filters: descriptor.filters.concat(expr._get()),
+        });
     };
 }
 //# sourceMappingURL=create-filter.js.map

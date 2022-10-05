@@ -21,7 +21,11 @@ export function createSelect(descriptor) {
             }
         })
             .filter((k, i, arr) => arr.indexOf(k) === i); // unique
-        return createQuery(Object.assign(Object.assign({}, descriptor), { select: _keys, expands: descriptor.expands.filter(e => _keys.some(k => e.key == String(k))) }));
+        return createQuery({
+            ...descriptor,
+            select: _keys,
+            expands: descriptor.expands.filter(e => _keys.some(k => e.key == String(k))),
+        });
     };
 }
 //# sourceMappingURL=create-select.js.map

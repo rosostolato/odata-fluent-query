@@ -22,7 +22,10 @@ export function createOrderby(descriptor) {
         if (order) {
             expr = expr[order]();
         }
-        return createQuery(Object.assign(Object.assign({}, descriptor), { orderby: descriptor.orderby.concat(expr['_key']) }));
+        return createQuery({
+            ...descriptor,
+            orderby: descriptor.orderby.concat(expr['_key']),
+        });
     };
 }
 //# sourceMappingURL=create-orderby.js.map

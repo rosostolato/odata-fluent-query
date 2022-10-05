@@ -90,7 +90,7 @@ export function createQuery(descriptor: QueryDescriptor): any {
 
     toObject(): QueryObject {
       return makeQuery(descriptor).reduce((obj, x) => {
-        obj[x.key] = x.value
+        obj[x.key as keyof QueryObject] = x.value
         return obj
       }, {} as QueryObject)
     },

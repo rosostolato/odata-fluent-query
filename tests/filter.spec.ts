@@ -67,24 +67,10 @@ describe('testodataQuery filter by string', () => {
     expect(actual).toBe(expected)
   })
 
-  it('equals null', () => {
-    const query = odataQuery<User>()
-    const actual = query.filter(q => q.email.equals(null)).toString()
-    const expected = '$filter=email eq null'
-    expect(actual).toBe(expected)
-  })
-
   it('isNull', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.email.isNull()).toString()
     const expected = '$filter=email eq null'
-    expect(actual).toBe(expected)
-  })
-
-  it('notEquals null', () => {
-    const query = odataQuery<User>()
-    const actual = query.filter(q => q.email.notEquals(null)).toString()
-    const expected = '$filter=email ne null'
     expect(actual).toBe(expected)
   })
 
@@ -192,16 +178,16 @@ describe('testodataQuery filter by number', () => {
     expect(actual).toBe(expected)
   })
 
-  it('eq null', () => {
+  it('isNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.id.equals(null)).toString()
+    const actual = query.filter(q => q.id.isNull()).toString()
     const expected = '$filter=id eq null'
     expect(actual).toBe(expected)
   })
 
-  it('not eq null', () => {
+  it('notNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.id.notEquals(null)).toString()
+    const actual = query.filter(q => q.id.notNull()).toString()
     const expected = '$filter=id ne null'
     expect(actual).toBe(expected)
   })
@@ -296,6 +282,20 @@ describe('testodataQuery filter by Date', () => {
     const expected = '$filter=createDate eq 2020-01-01T'
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
+
+  it('isNull', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.createDate.isNull()).toString()
+    const expected = '$filter=createDate eq null'
+    expect(actual).toBe(expected)
+  })
+
+  it('notNull', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.createDate.notNull()).toString()
+    const expected = '$filter=createDate ne null'
+    expect(actual).toBe(expected)
+  })
 })
 
 // object
@@ -311,6 +311,20 @@ describe('testodataQuery filter by object', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.address.user.id.biggerThan(5)).toString()
     const expected = '$filter=address/user/id gt 5'
+    expect(actual).toBe(expected)
+  })
+
+  it('filter by null object property', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.address2.isNull()).toString()
+    const expected = '$filter=address2 eq null'
+    expect(actual).toBe(expected)
+  })
+
+  it('filter by not null object property', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.address2.notNull()).toString()
+    const expected = '$filter=address2 ne null'
     expect(actual).toBe(expected)
   })
 })
@@ -350,7 +364,7 @@ describe('testodataQuery filter by array', () => {
   it('filter by any nested', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.posts.any(p => p.comments.any(c => c.equals(null))))
+      .filter(q => q.posts.any(p => p.comments.any(c => c.isNull())))
       .toString()
     const expected = '$filter=posts/any(p: p/comments/any(c: c eq null))'
     expect(actual).toBe(expected)
@@ -388,9 +402,23 @@ describe('testodataQuery filter by array', () => {
   it('filter by all nested', () => {
     const query = odataQuery<User>()
     const actual = query
-      .filter(q => q.posts.all(p => p.comments.all(c => c.notEquals(null))))
+      .filter(q => q.posts.all(p => p.comments.all(c => c.notNull())))
       .toString()
     const expected = '$filter=posts/all(p: p/comments/all(c: c ne null))'
+    expect(actual).toBe(expected)
+  })
+
+  it('filter by null', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.posts.isNull()).toString()
+    const expected = '$filter=posts eq null'
+    expect(actual).toBe(expected)
+  })
+
+  it('filter by not null', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.posts.notNull()).toString()
+    const expected = '$filter=posts ne null'
     expect(actual).toBe(expected)
   })
 })

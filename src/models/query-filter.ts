@@ -62,6 +62,14 @@ export interface FilterString {
   ): FilterExpression
   endsWith(s: string | FilterString, options?: StringOptions): FilterExpression
   in(list: string[]): FilterExpression
+  length(): FilterNumber
+  tolower(): FilterString
+  toupper(): FilterString
+  trim(): FilterString
+  indexof(s: string): FilterNumber
+  substring(n: number): FilterString
+  append(s: string): FilterString
+  prepend(s: string): FilterString
 }
 
 export interface FilterNumber {

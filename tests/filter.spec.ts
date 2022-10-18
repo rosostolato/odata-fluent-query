@@ -103,6 +103,55 @@ describe('testodataQuery filter by string', () => {
     const expected = "$filter=givenName in ('foo','bar')"
     expect(actual).toBe(expected)
   })
+
+  it('length', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.givenName.length().equals(1)).toString()
+    const expected = "$filter=length(givenName) eq 1"
+    expect(actual).toBe(expected)
+  })
+
+  it('tolower toupper', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.givenName.tolower().notEquals(q.givenName.toupper())).toString()
+    const expected = "$filter=tolower(givenName) ne toupper(givenName)"
+    expect(actual).toBe(expected)
+  })
+
+  it('trim', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.givenName.trim().equals('bar')).toString()
+    const expected = "$filter=trim(givenName) eq 'bar'"
+    expect(actual).toBe(expected)
+  })
+
+  it('indexof', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.givenName.indexof('bar').equals(-1)).toString()
+    const expected = "$filter=indexof(givenName, 'bar') eq -1"
+    expect(actual).toBe(expected)
+  })
+
+  it('substring', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.givenName.substring(0).equals('bar')).toString()
+    const expected = "$filter=substring(givenName, 0) eq 'bar'"
+    expect(actual).toBe(expected)
+  })
+
+  it('concat', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.givenName.append('foo').prepend('bar').notEquals("bar")).toString()
+    const expected = "$filter=concat('bar', concat(givenName, 'foo')) ne 'bar'"
+    expect(actual).toBe(expected)
+  })
+
+  it('combined functions', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.address.street.tolower().append('foo').prepend('bar').contains(q.address.street.tolower())).toString()
+    const expected = "$filter=contains(concat('bar', concat(tolower(address/street), 'foo')), tolower(address/street))"
+    expect(actual).toBe(expected)
+  })
 })
 
 // guid

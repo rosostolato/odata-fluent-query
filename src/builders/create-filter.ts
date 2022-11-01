@@ -56,23 +56,23 @@ function filterBuilder(key: string) {
 
   const strFuncBuilder =
     (method: 'contains' | 'startswith' | 'endswith') =>
-    (s: any, opt?: StringOptions) => {
-      if (opt?.caseInsensitive) {
-        return makeExp(
-          `${method}(tolower(${key}), ${
-            typeof s == 'string'
+      (s: any, opt?: StringOptions) => {
+        if (opt?.caseInsensitive) {
+          return makeExp(
+            `${method}(tolower(${key}), ${
+              typeof s == 'string'
               ? `'${s.toLocaleLowerCase()}'`
               : `tolower(${s._key})`
-          })`
-        )
-      } else if (s.getPropName) {
-        return makeExp(`${method}(${key}, ${s._key})`)
-      } else {
-        return makeExp(
-          `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
-        )
+            })`
+          )
+        } else if (s.getPropName) {
+          return makeExp(`${method}(${key}, ${s._key})`)
+        } else {
+          return makeExp(
+            `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
+          )
+        }
       }
-    }
 
   const equalityBuilder = (t: 'eq' | 'ne') => (x: any, opt?: StringOptions) => {
     switch (typeof x) {
@@ -169,6 +169,14 @@ function filterBuilder(key: string) {
     contains: strFuncBuilder('contains'),
     startsWith: strFuncBuilder('startswith'),
     endsWith: strFuncBuilder('endswith'),
+    tolower: () => makeFilter(`tolower(${key})`),
+    toupper: () => makeFilter(`toupper(${key})`),
+    length: () => makeFilter(`length(${key})`),
+    trim: () => makeFilter(`trim(${key})`),
+    indexof: (s: string) => makeFilter(`indexof(${key}, '${s}')`),
+    substring: (n: number) => makeFilter(`substring(${key}, ${n})`),
+    append: (s: string) => makeFilter(`concat(${key}, '${s}')`),
+    prepend: (s: string) => makeFilter(`concat('${s}', ${key})`),
 
     //////////////////////
     // FilterBuilderNumber

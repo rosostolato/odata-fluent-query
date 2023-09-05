@@ -18,39 +18,33 @@ describe('testing odataQuery select', () => {
 
   it('select with expression', () => {
     const query = odataQuery<User>()
-
     const actual = query
       .select(
         x => x.id,
         x => x.address.street
       )
       .toString()
-
     const expected = '$select=id,address/street'
     expect(actual).toBe(expected)
   })
 
   it('select mixed', () => {
     const query = odataQuery<User>()
-
     const actual = query
       .select('id', x => x.givenName, 'accountEnabled')
       .toString()
-
     const expected = '$select=id,givenName,accountEnabled'
     expect(actual).toBe(expected)
   })
 
   it('select optional', () => {
     const query = odataQuery<User>()
-
     const actual = query
       .select(
         x => x.givenName,
         x => x.surname
       )
       .toString()
-
     const expected = '$select=givenName,surname'
     expect(actual).toBe(expected)
   })

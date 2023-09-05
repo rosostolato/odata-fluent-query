@@ -1,3 +1,4 @@
+import { ExpandParam, ExpandKey, ExpandQueryComplex } from './query-expand'
 import {
   FilterBuilder,
   FilterBuilderProp,
@@ -9,17 +10,26 @@ import { SelectParams } from './query-select'
 
 export interface ODataQuery<T> {
   /**
-   * Adds a $select operator to the OData query.
-   * There is only one instance of $select, if you call multiple times it will take the last one.
+   * set $count=true
+   */
+  count(): ODataQuery<T>
+
+  /**
+   * Adds a $expand operator to the OData query.
+   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
+   * The lambda in the second parameter allows you to build a complex inner query.
    *
-   * @param keys the names or a expression of the properties you want to select
+   * @param key the name of the relation.
+   * @param query a lambda expression that build the subquery from the querybuilder.
    *
    * @example
-   * q.select('id', 'title')
-   * q.select(x => x.address.city)
-   * q.select('id', x => x.title)
+   * q.exand('blogs', q => q.select('id', 'title'))
+   * q.exand(u => u.blogs, q => q.select('id', 'title'))
    */
-  select<Tkey extends keyof T>(...keys: SelectParams<T, Tkey>): ODataQuery<T>
+  expand<Tkey extends keyof ExpandKey<T>, U = Required<T>[Tkey]>(
+    key: Tkey | ExpandParam<T, U>,
+    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+  ): ODataQuery<T>
 
   /**
    * Adds a $filter operator to the OData query.
@@ -44,6 +54,23 @@ export interface ODataQuery<T> {
   filter<TKey extends keyof T>(
     key: TKey,
     exp: (x: FilterBuilderProp<T[TKey]>) => FilterExpression
+  ): ODataQuery<T>
+
+  /**
+   * group by the selected keys
+   *
+   * @param keys keys to be grouped by
+   * @param aggregate aggregate builder [optional]
+   *
+   * @example
+   * q.groupBy(["email", "surname"], agg => agg
+   *   .countdistinct("phoneNumbers", "count")
+   *   .max("id", "id")
+   * )
+   */
+  groupBy<key extends keyof T>(
+    keys: key[],
+    aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>
   ): ODataQuery<T>
 
   /**
@@ -74,11 +101,6 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
-   * set $count=true
-   */
-  count(): ODataQuery<T>
-
-  /**
    * Adds a $skip and $top to the OData query.
    * The pageindex in zero-based.
    * This method automatically adds $count=true to the query.
@@ -106,45 +128,17 @@ export interface ODataQuery<T> {
   }): ODataQuery<T>
 
   /**
-   * group by the selected keys
+   * Adds a $select operator to the OData query.
+   * There is only one instance of $select, if you call multiple times it will take the last one.
    *
-   * @param keys keys to be grouped by
-   * @param aggregate aggregate builder [optional]
-   *
-   * @example
-   * q.groupBy(["email", "surname"], agg => agg
-   *   .countdistinct("phoneNumbers", "count")
-   *   .max("id", "id")
-   * )
-   */
-  groupBy<key extends keyof T>(
-    keys: key[],
-    aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>
-  ): ODataQuery<T>
-
-  /**
-   * Adds a $expand operator to the OData query.
-   * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
-   * The lambda in the second parameter allows you to build a complex inner query.
-   *
-   * @param key the name of the relation.
-   * @param query a lambda expression that build the subquery from the querybuilder.
+   * @param keys the names or a expression of the properties you want to select
    *
    * @example
-   * q.exand('blogs', q => q.select('id', 'title'))
+   * q.select('id', 'title')
+   * q.select(x => x.address.city)
+   * q.select('id', x => x.title)
    */
-  expand<key extends keyof RelationsOf<Required<T>>, U = Required<T>[key]>(
-    key: key,
-    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
-  ): ODataQuery<T>
-
-  /**
-   * exports query to string joined with `&`
-   *
-   * @example
-   * '$filter=order gt 5&$select=id'
-   */
-  toString(): string
+  select<Tkey extends keyof T>(...keys: SelectParams<T, Tkey>): ODataQuery<T>
 
   /**
    * exports query to object key/value
@@ -156,6 +150,14 @@ export interface ODataQuery<T> {
    * }
    */
   toObject(): QueryObject
+
+  /**
+   * exports query to string joined with `&`
+   *
+   * @example
+   * '$filter=order gt 5&$select=id'
+   */
+  toString(): string
 }
 
 export type QueryObject = {
@@ -168,26 +170,3 @@ export type QueryObject = {
   $skip?: string
   $top?: string
 }
-
-export type ExpandQueryComplex<T> = T extends Array<infer U>
-  ? ExpandArrayQuery<U>
-  : T extends Object
-  ? ExpandObjectQuery<T>
-  : never
-
-export type RelationsOf<Model> = Pick<
-  Model,
-  {
-    [K in keyof Model]: Model[K] extends
-      | number
-      | string
-      | Boolean
-      | Date
-      | Uint8Array
-      ? never
-      : K
-  }[keyof Model]
->
-
-export type ExpandObjectQuery<T> = Pick<ODataQuery<T>, 'select' | 'expand'>
-export type ExpandArrayQuery<T> = Omit<ODataQuery<T>, 'toString' | 'toObject'>

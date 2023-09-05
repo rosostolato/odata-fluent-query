@@ -13,7 +13,6 @@ describe('testing ODataQuery expand', () => {
   it('expand and select', () => {
     const query = odataQuery<User>()
     const actual = query.expand('address', q => q.select('code')).toString()
-
     const expected = '$expand=address($select=code)'
     expect(actual).toBe(expected)
   })
@@ -21,7 +20,6 @@ describe('testing ODataQuery expand', () => {
   it('expand and select optional', () => {
     const query = odataQuery<User>()
     const actual = query.expand('address2', q => q.select('code')).toString()
-
     const expected = '$expand=address2($select=code)'
     expect(actual).toBe(expected)
   })
@@ -31,7 +29,6 @@ describe('testing ODataQuery expand', () => {
     const actual = query
       .expand('address', q => q.expand('user', q => q.select('id')))
       .toString()
-
     const expected = '$expand=address($expand=user($select=id))'
     expect(actual).toBe(expected)
   })
@@ -42,7 +39,6 @@ describe('testing ODataQuery expand', () => {
     const actual = query
       .expand('posts', e => e.filter(q => q.content.startsWith('test')))
       .toString()
-
     const expected = "$expand=posts($filter=startswith(content, 'test'))"
     expect(actual).toBe(expected)
   })
@@ -54,7 +50,6 @@ describe('testing ODataQuery expand', () => {
         e.filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
       )
       .toString()
-
     const expected =
       "$expand=posts($filter=startswith(content, 'test') or id gt 5)"
     expect(actual).toBe(expected)
@@ -69,7 +64,6 @@ describe('testing ODataQuery expand', () => {
           .filter(q => q.id.lessThan(10))
       )
       .toString()
-
     const expected =
       "$expand=posts($filter=(startswith(content, 'test') or id gt 5) and id lt 10)"
     expect(actual).toBe(expected)
@@ -80,7 +74,6 @@ describe('testing ODataQuery expand', () => {
     const actual = query
       .expand('posts', e => e.orderBy(q => q.id.desc()))
       .toString()
-
     const expected = '$expand=posts($orderby=id desc)'
     expect(actual).toBe(expected)
   })
@@ -88,7 +81,6 @@ describe('testing ODataQuery expand', () => {
   it('expand and paginate', () => {
     const query = odataQuery<User>()
     const actual = query.expand('posts', e => e.paginate(0)).toString()
-
     const expected = '$expand=posts($top=0;$count=true)'
     expect(actual).toBe(expected)
   })
@@ -104,8 +96,53 @@ describe('testing ODataQuery expand', () => {
         })
       )
       .toString()
-
     const expected = '$expand=posts($skip=50;$top=10)'
+    expect(actual).toBe(expected)
+  })
+})
+
+describe('testing ODataQuery expand with key query', () => {
+  // one2one relation
+  it('expand', () => {
+    const query = odataQuery<User>()
+    const actual = query.expand(u => u.address).toString()
+    const expected = '$expand=address'
+    expect(actual).toBe(expected)
+  })
+
+  it('expand and select', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand(
+        u => u.address,
+        q => q.select('code')
+      )
+      .toString()
+    const expected = '$expand=address($select=code)'
+    expect(actual).toBe(expected)
+  })
+
+  it('expand and select optional', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand(
+        u => u.address2,
+        q => q.select('code')
+      )
+      .toString()
+    const expected = '$expand=address2($select=code)'
+    expect(actual).toBe(expected)
+  })
+
+  it('expand twice', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand(
+        u => u.address.user,
+        q => q.select('id')
+      )
+      .toString()
+    const expected = '$expand=address/user($select=id)'
     expect(actual).toBe(expected)
   })
 })

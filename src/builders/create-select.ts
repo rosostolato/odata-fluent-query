@@ -25,7 +25,6 @@ export function createSelect(descriptor: QueryDescriptor) {
         }
       })
       .filter((k, i, arr) => arr.indexOf(k) === i) // unique
-
     return createQuery({
       ...descriptor,
       select: _keys,

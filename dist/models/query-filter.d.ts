@@ -35,9 +35,9 @@ export interface FilterNumber {
     equals(n: number | FilterNumber): FilterExpression;
     notEquals(n: number | FilterNumber): FilterExpression;
     biggerThan(n: number | FilterNumber): FilterExpression;
-    biggerOrEqualThan(n: number | FilterNumber): FilterExpression;
+    biggerThanOrEqual(n: number | FilterNumber): FilterExpression;
     lessThan(n: number | FilterNumber): FilterExpression;
-    lessOrEqualThan(n: number | FilterNumber): FilterExpression;
+    lessThanOrEqual(n: number | FilterNumber): FilterExpression;
     in(list: number[]): FilterExpression;
 }
 export interface FilterBoolean {

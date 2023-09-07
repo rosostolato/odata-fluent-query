@@ -199,16 +199,16 @@ describe('testodataQuery filter by number', () => {
     expect(actual).toBe(expected)
   })
 
-  it('biggerOrEqualThan', () => {
+  it('biggerThanOrEqual', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.id.biggerOrEqualThan(5)).toString()
+    const actual = query.filter(q => q.id.biggerThanOrEqual(5)).toString()
     const expected = '$filter=id ge 5'
     expect(actual).toBe(expected)
   })
 
-  it('lessOrEqualThan', () => {
+  it('lessThanOrEqual', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.id.lessOrEqualThan(5)).toString()
+    const actual = query.filter(q => q.id.lessThanOrEqual(5)).toString()
     const expected = '$filter=id le 5'
     expect(actual).toBe(expected)
   })

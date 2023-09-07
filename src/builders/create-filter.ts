@@ -182,8 +182,8 @@ function filterBuilder(key: string) {
     // FilterBuilderNumber
     biggerThan: numberComparison('gt'),
     lessThan: numberComparison('lt'),
-    biggerOrEqualThan: numberComparison('ge'),
-    lessOrEqualThan: numberComparison('le'),
+    biggerThanOrEqual: numberComparison('ge'),
+    lessThanOrEqual: numberComparison('le'),
 
     ////////////////////////////////
     // FilterBuilder Generic Methods

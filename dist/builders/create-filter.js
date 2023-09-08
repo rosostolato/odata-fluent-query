@@ -148,6 +148,14 @@ function filterBuilder(key) {
         contains: strFuncBuilder('contains'),
         startsWith: strFuncBuilder('startswith'),
         endsWith: strFuncBuilder('endswith'),
+        tolower: () => makeFilter(`tolower(${key})`),
+        toupper: () => makeFilter(`toupper(${key})`),
+        length: () => makeFilter(`length(${key})`),
+        trim: () => makeFilter(`trim(${key})`),
+        indexof: (s) => makeFilter(`indexof(${key}, '${s}')`),
+        substring: (n) => makeFilter(`substring(${key}, ${n})`),
+        append: (s) => makeFilter(`concat(${key}, '${s}')`),
+        prepend: (s) => makeFilter(`concat('${s}', ${key})`),
         //////////////////////
         // FilterBuilderNumber
         biggerThan: numberComparison('gt'),

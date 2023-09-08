@@ -1,8 +1,8 @@
-export declare type FilterBuilder<T> = {
+export type FilterBuilder<T> = {
     [P in keyof T]-?: FilterBuilderProp<T[P]>;
 };
-export declare type FilterBuilderProp<T> = null extends T ? FilterBuilderType<T> & FilterNullable : FilterBuilderType<T>;
-export declare type FilterBuilderType<T> = T extends Array<infer R> ? FilterCollection<R> : T extends string ? FilterString : T extends number ? FilterNumber : T extends boolean ? FilterBoolean : T extends Date ? FilterDate : T extends Object ? FilterBuilder<T> : never;
+export type FilterBuilderProp<T> = null extends T ? FilterBuilderType<T> & FilterNullable : FilterBuilderType<T>;
+export type FilterBuilderType<T> = T extends Array<infer R> ? FilterCollection<R> : T extends string ? FilterString : T extends number ? FilterNumber : T extends boolean ? FilterBoolean : T extends Date ? FilterDate : T extends Object ? FilterBuilder<T> : never;
 export interface StringOptions {
     /** Applies `tolower` method to the property */
     caseInsensitive?: boolean;
@@ -30,6 +30,14 @@ export interface FilterString {
     startsWith(s: string | FilterString, options?: StringOptions): FilterExpression;
     endsWith(s: string | FilterString, options?: StringOptions): FilterExpression;
     in(list: string[]): FilterExpression;
+    length(): FilterNumber;
+    tolower(): FilterString;
+    toupper(): FilterString;
+    trim(): FilterString;
+    indexof(s: string): FilterNumber;
+    substring(n: number): FilterString;
+    append(s: string): FilterString;
+    prepend(s: string): FilterString;
 }
 export interface FilterNumber {
     equals(n: number | FilterNumber): FilterExpression;

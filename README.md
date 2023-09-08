@@ -120,7 +120,9 @@ odataQuery<User>().orderBy(u => u.id)
 It is possible to order on relations:
 
 ```ts
-odataQuery<User>().select('username').orderBy(u => u.address.city)
+odataQuery<User>()
+  .select('username')
+  .orderBy(u => u.address.city)
 
 // result: $select=username;$orderby=address/city
 ```
@@ -149,7 +151,7 @@ odataQuery<User>().orderBy('id', 'desc')
 import { odataQuery } from 'odata-fluent-query'
 
 odataQuery<User>()
-  .expand('blogs')
+  .expand('blogs') // or .expand(u => u.blogs)
   .toString()
 
 // result: $expand=blogs
@@ -188,6 +190,19 @@ odataQuery<User>()
 // result: $expand=blogs($select=id,title;$expand=reactions($select=id,title))
 ```
 
+Key getters can easily get to deeper levels.
+
+```ts
+odataQuery<User>()
+  .expand(
+    u => u.blogs.reactions,
+    q => q.select('id', 'title')
+  )
+  .toString()
+
+// result: $expand=blogs/reactions($select=id,title)
+```
+
 ## Grouping with `groupBy`
 
 `groupBy` uses odata `$apply` method to group data by property with optional aggregations.
@@ -195,9 +210,7 @@ odataQuery<User>()
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-odataQuery<User>()
-  .groupBy(['email'])
-  .toString()
+odataQuery<User>().groupBy(['email']).toString()
 
 // result: $apply=groupby((email))
 ```
@@ -223,9 +236,7 @@ odataQuery<User>()
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-odataQuery<User>()
-  .paginate(10)
-  .toString()
+odataQuery<User>().paginate(10).toString()
 
 // result: $top=10&$count=true
 ```
@@ -235,9 +246,7 @@ Skip and top.
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-odataQuery<User>()
-  .paginate(25, 5)
-  .toString()
+odataQuery<User>().paginate(25, 5).toString()
 
 // result: $skip=125&$top=25&$count=true
 ```
@@ -247,9 +256,7 @@ Using object and setting `count` to false.
 ```ts
 import { odataQuery } from 'odata-fluent-query'
 
-odataQuery<User>()
-  .paginate({ page: 5, pagesize: 25, count: false })
-  .toString()
+odataQuery<User>().paginate({ page: 5, pagesize: 25, count: false }).toString()
 
 // result: $skip=125&$top=25
 ```

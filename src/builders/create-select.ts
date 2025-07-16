@@ -28,9 +28,6 @@ export function createSelect(descriptor: QueryDescriptor) {
     return createQuery({
       ...descriptor,
       select: _keys,
-      expands: descriptor.expands.filter(e =>
-        _keys.some(k => e.key == String(k))
-      ),
     })
   }
 }

@@ -1,6 +1,6 @@
 import { odataQuery } from '../src'
 import { dateToObject } from '../src/builders/create-filter'
-import { User } from './data/models'
+import { User } from './data/user'
 
 // string
 describe('testodataQuery filter by string', () => {

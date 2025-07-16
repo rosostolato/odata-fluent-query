@@ -1,3 +1,6 @@
+import type { Address } from './address'
+import type { Post } from './post'
+
 export interface User {
   id: number | null
   email: string | null
@@ -15,17 +18,4 @@ export interface User {
 
   // one2many
   posts: Post[] | null
-}
-
-export interface Address {
-  code: number
-  street: string
-  user: User
-}
-
-export interface Post {
-  id: number
-  date: Date
-  content: string
-  comments: (string | null)[]
 }

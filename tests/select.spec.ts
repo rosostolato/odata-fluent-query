@@ -1,5 +1,5 @@
-import { User } from './data/models'
 import { odataQuery } from '../src'
+import { User } from './data/user'
 
 describe('testing odataQuery select', () => {
   it('select one', () => {
@@ -49,14 +49,49 @@ describe('testing odataQuery select', () => {
     expect(actual).toBe(expected)
   })
 
-  it('remove expand after select', () => {
+  it('preserve expand after select', () => {
     const query = odataQuery<User>()
     const expandedQuery = query.expand('address')
     let actual = expandedQuery.toString()
     let expected = '$expand=address'
     expect(actual).toBe(expected)
     actual = expandedQuery.select('email').toString()
-    expected = '$select=email'
+    expected = '$expand=address&$select=email'
+    expect(actual).toBe(expected)
+  })
+
+  it('preserve multiple expands after select', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand('address')
+      .expand('posts', p => p.select('id'))
+      .select('email', 'givenName')
+      .toString()
+    const expected = '$expand=address,posts($select=id)&$select=email,givenName'
+    expect(actual).toBe(expected)
+  })
+
+  it('preserve expand with nested query after select', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand('posts', p =>
+        p.select('id', 'content').filter(post => post.id.biggerThan(5))
+      )
+      .select('email', 'givenName')
+      .toString()
+    const expected =
+      '$expand=posts($select=id,content;$filter=id gt 5)&$select=email,givenName'
+    expect(actual).toBe(expected)
+  })
+
+  it('select should not remove unrelated expands', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand('address')
+      .expand('posts')
+      .select('email') // This should not remove address or posts expands
+      .toString()
+    const expected = '$expand=address,posts&$select=email'
     expect(actual).toBe(expected)
   })
 })

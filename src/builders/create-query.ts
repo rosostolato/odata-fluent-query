@@ -5,6 +5,7 @@ import { createGroupby } from './create-groupby'
 import { createOrderby } from './create-orderby'
 import { createPaginate } from './create-paginate'
 import { createSelect } from './create-select'
+import { createCompute } from './create-compute'
 import { makeQuery } from './query-builder'
 
 export function createQueryDescriptor(key?: string): QueryDescriptor {
@@ -19,6 +20,7 @@ export function createQueryDescriptor(key?: string): QueryDescriptor {
     orderby: [],
     groupby: [],
     select: [],
+    compute: [],
   }
 }
 
@@ -31,6 +33,7 @@ export function createQuery(descriptor: QueryDescriptor): any {
     orderBy: createOrderby(descriptor),
     paginate: createPaginate(descriptor),
     select: createSelect(descriptor),
+    compute: createCompute(descriptor),
     count() {
       return createQuery({
         ...descriptor,

@@ -7,6 +7,7 @@ import {
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
 import { SelectParams } from './query-select'
+import { ComputeBuilder, ComputeExpression } from './query-compute'
 
 export interface ODataQuery<T> {
   /**
@@ -141,6 +142,18 @@ export interface ODataQuery<T> {
   select<Tkey extends keyof T>(...keys: SelectParams<T, Tkey>): ODataQuery<T>
 
   /**
+   * Adds a $compute operator to the OData query.
+   * Multiple calls to compute will add all the computed expressions.
+   *
+   * @param exp a lambda expression that builds a computed expression from the builder.
+   *
+   * @example
+   * q.compute(c => c.price.multiply(c.quantity).as('totalPrice'))
+   * q.compute(c => c.firstName.concat(' ', c.lastName).as('fullName'))
+   */
+  compute(exp: (builder: ComputeBuilder<T>) => ComputeExpression): ODataQuery<T>
+
+  /**
    * exports query to object key/value
    *
    * @example
@@ -162,6 +175,7 @@ export interface ODataQuery<T> {
 
 export type QueryObject = {
   $apply?: string
+  $compute?: string
   $count?: string
   $expand?: string
   $filter?: string

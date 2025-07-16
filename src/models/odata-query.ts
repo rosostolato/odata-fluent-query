@@ -102,7 +102,7 @@ export interface ODataQuery<T> {
 
   /**
    * Adds a $skip and $top to the OData query.
-   * The pageindex in zero-based.
+   * The pageindex is zero-based.
    * This method automatically adds $count=true to the query.
    *
    * @param pagesize page index ($skip).
@@ -114,7 +114,7 @@ export interface ODataQuery<T> {
   paginate(pagesize: number, page?: number): ODataQuery<T>
   /**
    * Adds a $skip and $top to the OData query.
-   * The pageindex in zero-based.
+   * The pageindex is zero-based.
    *
    * @param options paginate query options
    *

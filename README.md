@@ -1,14 +1,84 @@
 # odata-fluent-query
 
+> **A modern, type-safe OData query builder for TypeScript/JavaScript**
+
+![npm version](https://badge.fury.io/js/odata-fluent-query.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6+-blue)
+![Node](https://img.shields.io/badge/Node-18+-green)
+![Coverage](https://img.shields.io/badge/Coverage-97.61%25-brightgreen)
+
+✨ **Version 3.0** - Fully modernized and production-ready
+
 **Client side queries with extensive filtering and typesafe joins**
 
 This lib only generates the query string, so you need to use it with your own implementation of http request. There is no need to scaffold any pre build model.
+
+## Features
+
+- 🎯 **Full TypeScript support** with built-in type definitions
+- 🔒 **Type-safe queries** with IntelliSense support
+- 🚀 **Modern ES2022** target for optimal performance
+- ✅ **97.61% test coverage** with 148 comprehensive tests
+- 📦 **Minimal dependencies** with only validator as a runtime dependency
+- 🔧 **Fluent API** for readable query building
+
+## Installation
+
+```bash
+npm install odata-fluent-query
+```
+
+**Requirements:**
+- Node.js 18+
+- TypeScript 5.0+ (optional, but recommended)
+
+## TypeScript Support
+
+This package includes built-in TypeScript definitions and provides full type safety:
+
+```ts
+interface User {
+  id: number
+  email: string
+  isActive: boolean
+  posts: Post[]
+}
+
+// Full intellisense and type checking
+const query = odataQuery<User>()
+  .filter(u => u.email.contains('test'))  // ✅ Type-safe
+  .select('id', 'email')                   // ✅ Only valid properties
+  .orderBy(u => u.isActive)               // ✅ Correct types
+  .toString()
+
+// Result: "$filter=contains(email,'test')&$select=id,email&$orderby=isActive"
+```
+
+## Quick Start
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+// Simple filter
+const query = odataQuery<User>()
+  .filter(u => u.id.equals(1))
+  .toString()
+// Result: $filter=id eq 1
+
+// Complex query with multiple operations
+const complexQuery = odataQuery<User>()
+  .select('id', 'email', 'username')
+  .filter(u => u.isActive.equals(true).and(u.email.contains('@company.com')))
+  .orderBy(u => u.username)
+  .paginate(10, 0)
+  .toString()
+```
 
 - [Filtering with `filter`](#filtering-with-filter)
 - [Ordering with `orderBy`](#ordering-with-orderby)
 - [Selecting with `select`](#selecting-properties-with-select)
 - [Expanding with `expand`](#expanding-with-expand)
-- [Expanding with `groupBy`](#grouping-with-groupBy)
+- [Grouping with `groupBy`](#grouping-with-groupby)
 - [Paginating with `paginate`](#paginating-with-paginate)
 - [Development](#development)
 
@@ -60,29 +130,29 @@ odataQuery<User>()
   .filter(u => u.username.startsWith('Harry'))
   .toString()
 
-// result: $filter=id eq 1 and startswith(username, 'Harry')
+// result: $filter=id ne 1 and startswith(username, 'Harry')
 ```
 
 More filter examples:
 
 ```ts
-odataQuery<User>().filter(u => not(u.id.equals(1))) //where the id is not 1
+odataQuery<User>().filter(u => u.id.equals(1).not()) //where the id is not 1
 
-// result: $filter=id ne 1
+// result: $filter=not (id eq 1)
 
 odataQuery<User>().filter(u => u.id.equals(1).and(
   u.username.startsWith('Harry') //where the id is 1 AND the username starts with 'harry'
-)))
+))
 
-// result: $filter=id eq 1 and startswith(username, 'harry')
+// result: $filter=id eq 1 and startswith(username, 'Harry')
 
 odataQuery<User>().filter(u => u.id.equals(1).or(
   u.username.startsWith('Harry') //where the id is 1 OR the username starts with 'harry'
-)))
+))
 
-// result: $filter=id eq 1 or startswith(username, 'harry')
+// result: $filter=id eq 1 or startswith(username, 'Harry')
 
-odataQuery<User>().filter(u => u.email.startswith(u.name)) //You can also use properties of the same type instead of just values
+odataQuery<User>().filter(u => u.email.startsWith(u.name)) //You can also use properties of the same type instead of just values
 
 // result: $filter=startswith(email, name)
 ```
@@ -124,10 +194,10 @@ odataQuery<User>()
   .select('username')
   .orderBy(u => u.address.city)
 
-// result: $select=username;$orderby=address/city
+// result: $select=username&$orderby=address/city
 ```
 
-You can set the order mode by calling `Desc` or `Asc`.
+You can set the order mode by calling `desc()` or `asc()`.
 
 ```ts
 odataQuery<User>().orderBy(u => u.id.desc())
@@ -168,11 +238,11 @@ odataQuery<User>()
       .select('id', 'title')
       .filter(b => b.public.equals(true))
       .orderBy('id')
-      .paginate(0, 10)
+      .paginate(10, 0)
   )
   .toString()
 
-// result: $expand=blogs($skip=0;$top=10;$orderby=id;$select=id,title;$filter=public eq true)
+// result: $expand=blogs($top=10;$count=true;$orderby=id;$select=id,title;$filter=public eq true)
 ```
 
 It's possible to nest "expand" calls inside each other.
@@ -183,8 +253,8 @@ import { odataQuery } from "odata-fluent-query";
 odataQuery<User>()
   .expand('blogs', q => q
     .select('id', 'title')
-    .expand('reactions' q => q.select('id', 'title')
-  ))
+    .expand('reactions', q => q.select('id', 'title'))
+  )
   .toString();
 
 // result: $expand=blogs($select=id,title;$expand=reactions($select=id,title))
@@ -229,6 +299,14 @@ odataQuery<User>()
 // result: $apply=groupby((email, surname), aggregate(id with countdistinct as all, phoneNumbers with max as test))
 ```
 
+Available aggregation functions:
+- `sum(property, alias)` - Sum of values
+- `min(property, alias)` - Minimum value
+- `max(property, alias)` - Maximum value  
+- `average(property, alias)` - Average value
+- `countdistinct(property, alias)` - Count distinct values
+- `custom(property, aggregation, alias)` - Custom aggregation
+
 ## Paginating with `paginate`
 
 `paginate` applies `$top`, `$skip` and `$count` automatically.
@@ -241,7 +319,7 @@ odataQuery<User>().paginate(10).toString()
 // result: $top=10&$count=true
 ```
 
-Skip and top.
+Skip and top with page-based pagination.
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
@@ -263,26 +341,55 @@ odataQuery<User>().paginate({ page: 5, pagesize: 25, count: false }).toString()
 
 ## Development
 
-Dependencies are managed by using `npm`. To install all the dependencies run:
+**Requirements:**
+- Node.js 18+
+- npm 8+
 
-```sh
-npm
+**Setup:**
+```bash
+npm install
 ```
 
-To build the project run:
-
-```sh
-npm build
+**Build:**
+```bash
+npm run build        # Build the project
+npm run build:watch  # Build in watch mode
 ```
 
-The output files will be placed in the `build` directory. This project contains unittest using `jest` and `ts-jest`. They are placed in the `test` directory. To run all the test run:
-
-```sh
-npm run test
+**Testing:**
+```bash
+npm test                # Run tests
+npm run test:coverage   # Run with coverage report
+npm run test:watch      # Run tests in watch mode
+npm run test:debug      # Debug tests
 ```
 
-After this you can open `coverage/lcov-report/index.html` in your browser to see all the details about you tests. To publish the package you can run:
-
-```sh
-npm publish
+**Code Quality:**
+```bash
+npm run lint           # Check code style
+npm run lint:fix       # Auto-fix linting issues
+npm run ci             # Full CI check (build + test + coverage)
 ```
+
+**Publishing:**
+```bash
+npm run ci             # Verify everything works
+npm publish            # Publish to npm (runs CI automatically)
+```
+
+The output files will be placed in the `dist` directory. This project contains comprehensive unit tests using `jest` and `ts-jest`. 
+
+After running tests with coverage, you can open `coverage/lcov-report/index.html` in your browser to see detailed coverage reports.
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Run tests (`npm run ci`)
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+## License
+
+MIT - see [LICENSE](LICENSE) file for details.

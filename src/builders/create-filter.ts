@@ -1,6 +1,6 @@
+import isUUID from 'validator/lib/isUUID'
 import { QueryDescriptor, StringOptions } from '../models'
 import { createQuery } from './create-query'
-import isUUID from 'validator/lib/isUUID'
 
 export function getFuncArgs(func: Function): string[] {
   const [, , paramStr] = /(function)?(.*?)(?=[={])/.exec(func.toString()) ?? []
@@ -56,25 +56,32 @@ function filterBuilder(key: string) {
 
   const strFuncBuilder =
     (method: 'contains' | 'startswith' | 'endswith') =>
-      (s: any, opt?: StringOptions) => {
-        if (opt?.caseInsensitive) {
-          return makeExp(
-            `${method}(tolower(${key}), ${
-              typeof s == 'string'
+    (s: any, opt?: StringOptions) => {
+      if (opt?.caseInsensitive) {
+        return makeExp(
+          `${method}(tolower(${key}), ${
+            typeof s == 'string'
               ? `'${s.toLocaleLowerCase()}'`
               : `tolower(${s._key})`
-            })`
-          )
-        } else if (s.getPropName) {
-          return makeExp(`${method}(${key}, ${s._key})`)
-        } else {
-          return makeExp(
-            `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
-          )
-        }
+          })`
+        )
+      } else if (s.getPropName) {
+        return makeExp(`${method}(${key}, ${s._key})`)
+      } else {
+        return makeExp(
+          `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
+        )
       }
+    }
 
   const equalityBuilder = (t: 'eq' | 'ne') => (x: any, opt?: StringOptions) => {
+    // Explicitly reject undefined values
+    if (x === undefined) {
+      throw new Error(
+        `Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.`
+      )
+    }
+
     switch (typeof x) {
       case 'string':
         if (isUUID(x) && !opt?.ignoreGuid) {
@@ -92,7 +99,9 @@ function filterBuilder(key: string) {
         return makeExp(`${key} ${t} ${x}`)
 
       default:
-        if (x && opt?.caseInsensitive) {
+        if (x instanceof Date) {
+          return makeExp(`${key} ${t} ${x.toISOString()}`)
+        } else if (x && opt?.caseInsensitive) {
           return makeExp(`tolower(${key}) ${t} tolower(${x._key})`)
         } else {
           return makeExp(`${key} ${t} ${x?._key || null}`)

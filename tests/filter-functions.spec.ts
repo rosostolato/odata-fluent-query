@@ -1,4 +1,4 @@
-import { getFuncArgs, makeExp } from '../src/builders'
+import { getFuncArgs, makeExp } from '../src/builders/create-filter'
 
 describe('test filter expressions', () => {
   it('parentheses', () => {
@@ -55,5 +55,17 @@ describe('getFuncArgs', () => {
   it('should return the arguments of an arrow function 3', () => {
     const fn = (a: number, b: number) => a + b
     return expect(getFuncArgs(fn)).toEqual(['a', 'b'])
+  })
+})
+
+describe('getFuncArgs edge cases', () => {
+  it('should handle malformed function strings', () => {
+    // Create a function that might not match the regex pattern
+    const malformedFunc = () => {}
+    // Monkey patch toString to return something that won't match regex
+    malformedFunc.toString = () => 'invalid'
+
+    const result = getFuncArgs(malformedFunc)
+    expect(result).toEqual([''])
   })
 })

@@ -33,9 +33,20 @@ module.exports = tseslint.config(
   },
   {
     files: ['**/*.js'],
+    languageOptions: {
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    ignores: ['dist/', 'coverage/', 'node_modules/'],
+    files: ['tests/**/*'],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    ignores: ['dist/', 'coverage/', 'node_modules/', '*.config.js'],
   }
 )

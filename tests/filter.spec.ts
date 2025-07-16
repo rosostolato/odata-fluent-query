@@ -1,5 +1,6 @@
-import { User } from './data/models'
 import { odataQuery } from '../src'
+import { dateToObject } from '../src/builders/create-filter'
+import { User } from './data/models'
 
 // string
 describe('testodataQuery filter by string', () => {
@@ -107,49 +108,68 @@ describe('testodataQuery filter by string', () => {
   it('length', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.givenName.length().equals(1)).toString()
-    const expected = "$filter=length(givenName) eq 1"
+    const expected = '$filter=length(givenName) eq 1'
     expect(actual).toBe(expected)
   })
 
   it('tolower toupper', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.givenName.tolower().notEquals(q.givenName.toupper())).toString()
-    const expected = "$filter=tolower(givenName) ne toupper(givenName)"
+    const actual = query
+      .filter(q => q.givenName.tolower().notEquals(q.givenName.toupper()))
+      .toString()
+    const expected = '$filter=tolower(givenName) ne toupper(givenName)'
     expect(actual).toBe(expected)
   })
 
   it('trim', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.givenName.trim().equals('bar')).toString()
+    const actual = query
+      .filter(q => q.givenName.trim().equals('bar'))
+      .toString()
     const expected = "$filter=trim(givenName) eq 'bar'"
     expect(actual).toBe(expected)
   })
 
   it('indexof', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.givenName.indexof('bar').equals(-1)).toString()
+    const actual = query
+      .filter(q => q.givenName.indexof('bar').equals(-1))
+      .toString()
     const expected = "$filter=indexof(givenName, 'bar') eq -1"
     expect(actual).toBe(expected)
   })
 
   it('substring', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.givenName.substring(0).equals('bar')).toString()
+    const actual = query
+      .filter(q => q.givenName.substring(0).equals('bar'))
+      .toString()
     const expected = "$filter=substring(givenName, 0) eq 'bar'"
     expect(actual).toBe(expected)
   })
 
   it('concat', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.givenName.append('foo').prepend('bar').notEquals("bar")).toString()
+    const actual = query
+      .filter(q => q.givenName.append('foo').prepend('bar').notEquals('bar'))
+      .toString()
     const expected = "$filter=concat('bar', concat(givenName, 'foo')) ne 'bar'"
     expect(actual).toBe(expected)
   })
 
   it('combined functions', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.address.street.tolower().append('foo').prepend('bar').contains(q.address.street.tolower())).toString()
-    const expected = "$filter=contains(concat('bar', concat(tolower(address/street), 'foo')), tolower(address/street))"
+    const actual = query
+      .filter(q =>
+        q.address.street
+          .tolower()
+          .append('foo')
+          .prepend('bar')
+          .contains(q.address.street.tolower())
+      )
+      .toString()
+    const expected =
+      "$filter=contains(concat('bar', concat(tolower(address/street), 'foo')), tolower(address/street))"
     expect(actual).toBe(expected)
   })
 })
@@ -637,5 +657,127 @@ describe('testodataQuery filter alt', () => {
     const expected =
       "$filter=startswith(email, 'test') and startswith(givenName, 'test')"
     expect(actual).toBe(expected)
+  })
+})
+
+describe('test additional filter edge cases', () => {
+  it('date isSame with number parameter', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isSame(2023, 'year'))
+      .toString()
+    const expected = '$filter=year(createDate) eq 2023'
+    expect(actual).toBe(expected)
+  })
+
+  it('date isSame with Date parameter and grouping', () => {
+    const query = odataQuery<User>()
+    const testDate = new Date('2023-01-01')
+    const actual = query
+      .filter(q => q.createDate.isSame(testDate, 'year'))
+      .toString()
+    const expected = `$filter=year(createDate) eq ${testDate.getFullYear()}`
+    expect(actual).toBe(expected)
+  })
+
+  it('date isSame with object reference and grouping', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isSame(q.createDate, 'year'))
+      .toString()
+    const expected = '$filter=year(createDate) eq year(createDate)'
+    expect(actual).toBe(expected)
+  })
+
+  it('date isSame with string parameter', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isSame('2023-01-01T00:00:00.000Z'))
+      .toString()
+    const expected = '$filter=createDate eq 2023-01-01T00:00:00.000Z'
+    expect(actual).toBe(expected)
+  })
+
+  it('boolean equals with object reference and caseInsensitive', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.email.equals(q.surname, { caseInsensitive: true }))
+      .toString()
+    const expected = '$filter=tolower(email) eq tolower(surname)'
+    expect(actual).toBe(expected)
+  })
+
+  it('date comparison with object reference', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isAfter(q.createDate))
+      .toString()
+    const expected = '$filter=createDate gt createDate'
+    expect(actual).toBe(expected)
+  })
+
+  it('string contains with object reference that has getPropName', () => {
+    const query = odataQuery<User>()
+    // Create a mock object with getPropName method to trigger that branch
+    const mockProp = { _key: 'surname', getPropName: () => 'surname' }
+    const actual = query
+      .filter(q => q.email.contains(mockProp as any))
+      .toString()
+    const expected = '$filter=contains(email, surname)'
+    expect(actual).toBe(expected)
+  })
+
+  it('number comparison with object reference', () => {
+    const query = odataQuery<User>()
+    const actual = query.filter(q => q.id.biggerThan(q.id)).toString()
+    const expected = '$filter=id gt id'
+    expect(actual).toBe(expected)
+  })
+
+  it('string contains with object reference and caseInsensitive', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.email.contains(q.surname, { caseInsensitive: true }))
+      .toString()
+    const expected = '$filter=contains(tolower(email), tolower(surname))'
+    expect(actual).toBe(expected)
+  })
+
+  it('string contains with non-string object (no getPropName)', () => {
+    const query = odataQuery<User>()
+    const mockObj = { _key: 'surname' }
+    const actual = query
+      .filter(q => q.email.contains(mockObj as any))
+      .toString()
+    const expected = '$filter=contains(email, [object Object])'
+    expect(actual).toBe(expected)
+  })
+
+  it('date comparison with string parameter', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.isAfter('2023-01-01T00:00:00.000Z'))
+      .toString()
+    const expected = '$filter=createDate gt 2023-01-01T00:00:00.000Z'
+    expect(actual).toBe(expected)
+  })
+})
+
+describe('test dateToObject function', () => {
+  it('should convert string to Date object', () => {
+    const dateString = '2023-01-01'
+    const result = dateToObject(dateString as any) // Test the string conversion branch
+    const testDate = new Date(dateString)
+
+    expect(result.year).toBe(testDate.getFullYear())
+    expect(result.month).toBe(testDate.getMonth())
+  })
+
+  it('should handle Date object directly', () => {
+    const date = new Date('2023-01-01')
+    const result = dateToObject(date)
+
+    expect(result.year).toBe(date.getFullYear())
+    expect(result.month).toBe(date.getMonth())
   })
 })

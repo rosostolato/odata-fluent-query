@@ -9,7 +9,7 @@ import { makeQuery } from './query-builder'
 
 export function createQueryDescriptor(key?: string): QueryDescriptor {
   return {
-    key: key,
+    key: key ?? undefined,
     skip: undefined,
     take: undefined,
     count: false,

@@ -1,4 +1,31 @@
-node_modules
-coverage
-build
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Lock files
 package-lock.json
+yarn.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock

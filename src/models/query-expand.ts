@@ -1,6 +1,6 @@
 import { ODataQuery } from './odata-query'
 
-type Primitive = number | string | Boolean | Date | Uint8Array
+type Primitive = number | string | boolean | Date | Uint8Array
 
 export type ExpandParam<T, U> = (exp: ExpandBuilder<T>) => ExpandBuilder<U>
 
@@ -22,7 +22,7 @@ export type ExpandKey<T> = Pick<
     [K in keyof T]: NonNullable<Required<T>[K]> extends
       | number
       | string
-      | Boolean
+      | boolean
       | Date
       | Uint8Array
       ? never
@@ -32,7 +32,7 @@ export type ExpandKey<T> = Pick<
 
 export type ExpandQueryComplex<T> = T extends Array<infer U>
   ? ExpandArrayQuery<U>
-  : T extends Object
+  : T extends object
   ? ExpandObjectQuery<T>
   : never
 

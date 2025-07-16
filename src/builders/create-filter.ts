@@ -122,7 +122,7 @@ function filterBuilder(key: string) {
       h?: number,
       mm?: number
     ) => {
-      let exps = [`year(${key}) eq ${y}`]
+      const exps = [`year(${key}) eq ${y}`]
       if (m != undefined) exps.push(`month(${key}) eq ${m}`)
       if (d != undefined) exps.push(`day(${key}) eq ${d}`)
       if (h != undefined) exps.push(`hour(${key}) eq ${h}`)

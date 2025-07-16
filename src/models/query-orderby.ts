@@ -3,12 +3,12 @@ export type OrderByBuilder<T> = {
 }
 
 export type OrderByBuilderTyped<T> = T extends Array<infer R>
-  ? R extends Object
+  ? R extends object
     ? OrderByBuilder<R>
     : never
   : T extends number | string | boolean | Date | Uint8Array
   ? OrderBy
-  : T extends Object
+  : T extends object
   ? OrderByBuilder<T>
   : never
 

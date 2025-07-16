@@ -6,7 +6,7 @@ export interface KeyValue<T> {
 }
 
 export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
-  let params: {
+  const params: {
     key: string
     value: string
   }[] = []
@@ -105,7 +105,7 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
   ) {
     expand += `(`
 
-    let operators = []
+    const operators = []
 
     if (rqd.skip != null) {
       operators.push(`$skip=${rqd.skip}`)

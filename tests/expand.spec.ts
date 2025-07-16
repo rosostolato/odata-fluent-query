@@ -1,5 +1,5 @@
-import { User } from './data/models'
 import { odataQuery } from '../src'
+import { User } from './data/models'
 
 describe('testing ODataQuery expand', () => {
   // one2one relation
@@ -99,6 +99,30 @@ describe('testing ODataQuery expand', () => {
     const expected = '$expand=posts($skip=50;$top=10)'
     expect(actual).toBe(expected)
   })
+
+  it('expand with empty query (no conditions)', () => {
+    const query = odataQuery<User>()
+    const actual = query.expand('posts', e => e).toString()
+    const expected = '$expand=posts'
+    expect(actual).toBe(expected)
+  })
+
+  it('expand with count false', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .expand('posts', e => e.paginate({ pagesize: 5, page: 0, count: false }))
+      .toString()
+    const expected = '$expand=posts($top=5)'
+    expect(actual).toBe(expected)
+  })
+
+  it('expand with only count false (no other conditions)', () => {
+    const query = odataQuery<User>()
+    // Test expand where the inner query has no meaningful conditions
+    const actual = query.expand('posts').toString()
+    const expected = '$expand=posts'
+    expect(actual).toBe(expected)
+  })
 })
 
 describe('testing ODataQuery expand with key query', () => {
@@ -143,6 +167,13 @@ describe('testing ODataQuery expand with key query', () => {
       )
       .toString()
     const expected = '$expand=address/user($select=id)'
+    expect(actual).toBe(expected)
+  })
+
+  it('expand with empty query (no conditions)', () => {
+    const query = odataQuery<User>()
+    const actual = query.expand('posts', e => e).toString()
+    const expected = '$expand=posts'
     expect(actual).toBe(expected)
   })
 })

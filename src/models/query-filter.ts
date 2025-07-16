@@ -16,7 +16,7 @@ export type FilterBuilderType<T> = T extends Array<infer R>
   ? FilterBoolean
   : T extends Date
   ? FilterDate
-  : T extends Object
+  : T extends object
   ? FilterBuilder<T>
   : never
 

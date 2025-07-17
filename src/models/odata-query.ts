@@ -139,17 +139,25 @@ export interface ODataQuery<T> {
    * q.select(x => x.address.city)
    * q.select('id', x => x.title)
    */
-  select<Tkey extends keyof T>(...keys: SelectParams<T, Tkey>): ODataQuery<T>
+  select<TKey extends keyof T>(...keys: SelectParams<T, TKey>): ODataQuery<T>
 
   /**
    * Adds a $compute operator to the OData query.
    * Multiple calls to compute will add all the computed expressions.
+   * Computed aliases are type-safe and accessible in subsequent select, filter, and orderBy operations.
    *
    * @param exp a lambda expression that builds a computed expression from the builder.
    *
    * @example
+   * // Basic compute with mathematical operations
    * q.compute(c => c.price.multiply(c.quantity).as('totalPrice'))
    * q.compute(c => c.firstName.concat(' ', c.lastName).as('fullName'))
+   * 
+   * // Using computed aliases in subsequent operations
+   * q.compute(c => c.price.multiply(c.quantity).as('totalPrice'))
+   *  .select('id', 'name', 'totalPrice')
+   *  .filter(p => p.totalPrice.biggerThan(100))
+   *  .orderBy('totalPrice', 'desc')
    */
   compute<K extends string, V>(
     exp: (builder: ComputeBuilder<T>) => ComputeExpressionWithAlias<K, V>

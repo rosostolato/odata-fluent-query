@@ -2,7 +2,7 @@ import { QueryDescriptor } from '../models'
 import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString, ComputeBoolean } from '../models/query-compute'
 import { createQuery } from './create-query'
 
-function getComputeExpression(propertyPath: string): Record<string, (...args: any[]) => unknown> {
+function computeBuilder(propertyPath: string): Record<string, (...args: any[]) => unknown> {
   return {
     as: <TAlias extends string>(alias: TAlias) => ({
       toString: () => `${propertyPath} as ${alias}`,
@@ -13,9 +13,9 @@ function getComputeExpression(propertyPath: string): Record<string, (...args: an
     substring: (start: number, length?: number) => {
       const args = length !== undefined ? `${start},${length}` : start.toString()
 
-      return getComputeExpression(`substring(${propertyPath},${args})`)
+      return computeBuilder(`substring(${propertyPath},${args})`)
     },
-    length: () => getComputeExpression(`length(${propertyPath})`),
+    length: () => computeBuilder(`length(${propertyPath})`),
     concat: (...values: (string | ComputeString | ComputeExpression)[]) => {
       const args = values.map(v => {
         if (typeof v === 'string') return `'${v}'`
@@ -29,7 +29,7 @@ function getComputeExpression(propertyPath: string): Record<string, (...args: an
       // beyond just two. This will allow a user to pass many arguments
       // to `.concat` and the nesting will be done behind the scenes.
       if (args.length === 1) {
-        return getComputeExpression(`concat(${propertyPath},${args[0]})`)
+        return computeBuilder(`concat(${propertyPath},${args[0]})`)
       } else {
         let result = `concat(${propertyPath},${args[0]})`
 
@@ -37,46 +37,46 @@ function getComputeExpression(propertyPath: string): Record<string, (...args: an
           result = `concat(${result},${args[i]})`
         }
 
-        return getComputeExpression(result)
+        return computeBuilder(result)
       }
     },
     and: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} and ${value.toString()}`),
+      computeBuilder(`${propertyPath} and ${value.toString()}`),
     or: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} or ${value.toString()}`),
-    not: () => getComputeExpression(`not ${propertyPath}`),
+      computeBuilder(`${propertyPath} or ${value.toString()}`),
+    not: () => computeBuilder(`not ${propertyPath}`),
     equals: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} eq ${value.toString()}`),
+      computeBuilder(`${propertyPath} eq ${value.toString()}`),
     notEquals: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} ne ${value.toString()}`),
+      computeBuilder(`${propertyPath} ne ${value.toString()}`),
     multiply: (value: number | ComputeNumber | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} mul ${value.toString()}`)
+      computeBuilder(`${propertyPath} mul ${value.toString()}`)
     ,
     divide: (value: number | ComputeNumber | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} div ${value.toString()}`)
+      computeBuilder(`${propertyPath} div ${value.toString()}`)
     ,
     add: (value: number | ComputeNumber | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} add ${value.toString()}`)
+      computeBuilder(`${propertyPath} add ${value.toString()}`)
     ,
     subtract: (value: number | ComputeNumber | ComputeExpression) => 
-      getComputeExpression(`${propertyPath} sub ${value.toString()}`),
-    year: () => getComputeExpression(`year(${propertyPath})`),
-    month: () => getComputeExpression(`month(${propertyPath})`),
-    day: () => getComputeExpression(`day(${propertyPath})`),
-    hour: () => getComputeExpression(`hour(${propertyPath})`),
-    minute: () => getComputeExpression(`minute(${propertyPath})`),
-    second: () => getComputeExpression(`second(${propertyPath})`),
-    date: () => getComputeExpression(`date(${propertyPath})`),
-    time: () => getComputeExpression(`time(${propertyPath})`)
+      computeBuilder(`${propertyPath} sub ${value.toString()}`),
+    year: () => computeBuilder(`year(${propertyPath})`),
+    month: () => computeBuilder(`month(${propertyPath})`),
+    day: () => computeBuilder(`day(${propertyPath})`),
+    hour: () => computeBuilder(`hour(${propertyPath})`),
+    minute: () => computeBuilder(`minute(${propertyPath})`),
+    second: () => computeBuilder(`second(${propertyPath})`),
+    date: () => computeBuilder(`date(${propertyPath})`),
+    time: () => computeBuilder(`time(${propertyPath})`)
   }
 }
 
-function createComputeBuilder<T>(): ComputeBuilder<T> {
+function makeCompute<T>(): ComputeBuilder<T> {
   return new Proxy({} as ComputeBuilder<T>, {
     get(_target, prop) {
       if (typeof prop === 'symbol') return undefined
       
-      return getComputeExpression(prop.toString())
+      return computeBuilder(prop.toString())
     }
   })
 }
@@ -85,7 +85,7 @@ export function createCompute<T>(descriptor: QueryDescriptor) {
   return (
     exp: (builder: ComputeBuilder<T>) => ComputeExpression
   ) => {
-    const builder = createComputeBuilder<T>()
+    const builder = makeCompute<T>()
     const expression = exp(builder)
     
     const newDescriptor = {

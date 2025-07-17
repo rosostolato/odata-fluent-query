@@ -8,6 +8,8 @@ export interface User {
   givenName: string
   createDate: Date | null
   accountEnabled: boolean
+  birthDate: Date
+  lastLogin: Date
 
   // simple array
   phoneNumbers: string[]

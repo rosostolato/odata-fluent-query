@@ -80,6 +80,13 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
     })
   }
 
+  if (qd.compute.length) {
+    params.push({
+      key: '$compute',
+      value: `${qd.compute.join(',')}`,
+    })
+  }
+
   return params
 }
 
@@ -99,6 +106,7 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
     rqd.orderby.length ||
     rqd.select.length ||
     rqd.expands.length ||
+    rqd.compute.length ||
     rqd.skip != null ||
     rqd.take != null ||
     rqd.count != false
@@ -139,6 +147,10 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
 
     if (rqd.expands.length) {
       operators.push(`$expand=${rqd.expands.map(makeRelationQuery).join(',')}`)
+    }
+
+    if (rqd.compute.length) {
+      operators.push(`$compute=${rqd.compute.join(',')}`)
     }
 
     expand += operators.join(';') + ')'

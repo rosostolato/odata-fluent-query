@@ -9,4 +9,5 @@ export interface QueryDescriptor {
   orderby: string[]
   groupby: string[]
   expands: QueryDescriptor[]
+  compute: string[]
 }

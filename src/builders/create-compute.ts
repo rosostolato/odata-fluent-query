@@ -31,21 +31,17 @@ function createComputeBuilder<T>(): ComputeBuilder<T> {
 function getComputeProperty(propertyPath: string): unknown {
   return {
     as: <K extends string>(alias: K) => ({
-        toString: () => `${propertyPath} as ${alias}`,
-        _alias: alias,
-        _type: undefined
-      }),
-
+      toString: () => `${propertyPath} as ${alias}`,
+      _alias: alias,
+      _type: undefined
+    }),
     toString: () => propertyPath,
-    
     substring: (start: number, length?: number) => {
       const args = length !== undefined ? `${start},${length}` : start.toString()
 
       return getComputeProperty(`substring(${propertyPath},${args})`)
     },
-
     length: () => getComputeProperty(`length(${propertyPath})`),
-
     concat: (...values: (string | ComputeString | ComputeExpression)[]) => {
       const args = values.map(v => {
         if (typeof v === 'string') {
@@ -59,11 +55,9 @@ function getComputeProperty(propertyPath: string): unknown {
       
       return getComputeProperty(`concat(${propertyPath},${args.join(',')})`)
     },
-    
     multiply: (value: number | ComputeNumber | ComputeExpression) => 
       getComputeProperty(`${propertyPath} mul ${value.toString()}`)
     ,
-
     divide: (value: number | ComputeNumber | ComputeExpression) => 
       getComputeProperty(`${propertyPath} div ${value.toString()}`)
     ,
@@ -72,7 +66,6 @@ function getComputeProperty(propertyPath: string): unknown {
     ,
     subtract: (value: number | ComputeNumber | ComputeExpression) => 
       getComputeProperty(`${propertyPath} sub ${value.toString()}`),
-
     year: () => getComputeProperty(`year(${propertyPath})`),
     month: () => getComputeProperty(`month(${propertyPath})`),
     day: () => getComputeProperty(`day(${propertyPath})`),

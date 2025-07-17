@@ -166,6 +166,114 @@ odataQuery<User>().filter('id', id => id.equals(1))
 // result: $filter=id eq 1
 ```
 
+## Selecting properties with `select`
+
+`select` is used to select a set of properties of your model:
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+odataQuery<User>().select('id', 'username')
+
+// result: $select=id,username
+```
+
+## Ordering with `orderBy`
+
+`orderby` is used to order the result of your query. This method accepts a function that returns the property you want to order by.
+
+```ts
+odataQuery<User>().orderBy(u => u.id)
+
+// result: $orderby=id
+```
+
+It is possible to order on relations:
+
+```ts
+odataQuery<User>()
+  .select('username')
+  .orderBy(u => u.address.city)
+
+// result: $select=username&$orderby=address/city
+```
+
+You can set the order mode by calling `desc()` or `asc()`.
+
+```ts
+odataQuery<User>().orderBy(u => u.id.desc())
+
+// result: $orderby=id desc
+```
+
+You can also `orderBy` with key string.
+
+```ts
+odataQuery<User>().orderBy('id', 'desc')
+
+// result: $orderby=id desc
+```
+
+## Expanding with `expand`
+
+`expand` is used to load the relationships of the model within the current query. This query can be used to filter, expand and select on the relation you are including.
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+odataQuery<User>()
+  .expand('blogs') // or .expand(u => u.blogs)
+  .toString()
+
+// result: $expand=blogs
+```
+
+All the query methods are available inside an "expand" call.
+
+```ts
+import { odataQuery } from 'odata-fluent-query'
+
+odataQuery<User>()
+  .expand('blogs', q =>
+    q
+      .select('id', 'title')
+      .filter(b => b.public.equals(true))
+      .orderBy('id')
+      .paginate(10, 0)
+  )
+  .toString()
+
+// result: $expand=blogs($top=10;$count=true;$orderby=id;$select=id,title;$filter=public eq true)
+```
+
+It's possible to nest "expand" calls inside each other.
+
+```ts
+import { odataQuery } from "odata-fluent-query";
+
+odataQuery<User>()
+  .expand('blogs', q => q
+    .select('id', 'title')
+    .expand('reactions', q => q.select('id', 'title'))
+  )
+  .toString();
+
+// result: $expand=blogs($select=id,title;$expand=reactions($select=id,title))
+```
+
+Key getters can easily get to deeper levels.
+
+```ts
+odataQuery<User>()
+  .expand(
+    u => u.blogs.reactions,
+    q => q.select('id', 'title')
+  )
+  .toString()
+
+// result: $expand=blogs/reactions($select=id,title)
+```
+
 ## Computing with `compute`
 
 The `compute` method allows you to create computed properties using mathematical operations, string functions and boolean operations. Computed aliases are **type-safe** and can be used in subsequent `select`, `filter`, and `orderBy` operations.
@@ -347,114 +455,6 @@ odataQuery<User>()
   .toString()
 
 // result: $expand=posts($filter=contains(fullTitle,'tech')&$select=id,fullTitle;$compute=concat(title,' - ',category) as fullTitle)
-```
-
-## Selecting properties with `select`
-
-`select` is used to select a set of properties of your model:
-
-```ts
-import { odataQuery } from 'odata-fluent-query'
-
-odataQuery<User>().select('id', 'username')
-
-// result: $select=id,username
-```
-
-## Ordering with `orderBy`
-
-`orderby` is used to order the result of your query. This method accepts a function that returns the property you want to order by.
-
-```ts
-odataQuery<User>().orderBy(u => u.id)
-
-// result: $orderby=id
-```
-
-It is possible to order on relations:
-
-```ts
-odataQuery<User>()
-  .select('username')
-  .orderBy(u => u.address.city)
-
-// result: $select=username&$orderby=address/city
-```
-
-You can set the order mode by calling `desc()` or `asc()`.
-
-```ts
-odataQuery<User>().orderBy(u => u.id.desc())
-
-// result: $orderby=id desc
-```
-
-You can also `orderBy` with key string.
-
-```ts
-odataQuery<User>().orderBy('id', 'desc')
-
-// result: $orderby=id desc
-```
-
-## Expanding with `expand`
-
-`expand` is used to load the relationships of the model within the current query. This query can be used to filter, expand and select on the relation you are including.
-
-```ts
-import { odataQuery } from 'odata-fluent-query'
-
-odataQuery<User>()
-  .expand('blogs') // or .expand(u => u.blogs)
-  .toString()
-
-// result: $expand=blogs
-```
-
-All the query methods are available inside an "expand" call.
-
-```ts
-import { odataQuery } from 'odata-fluent-query'
-
-odataQuery<User>()
-  .expand('blogs', q =>
-    q
-      .select('id', 'title')
-      .filter(b => b.public.equals(true))
-      .orderBy('id')
-      .paginate(10, 0)
-  )
-  .toString()
-
-// result: $expand=blogs($top=10;$count=true;$orderby=id;$select=id,title;$filter=public eq true)
-```
-
-It's possible to nest "expand" calls inside each other.
-
-```ts
-import { odataQuery } from "odata-fluent-query";
-
-odataQuery<User>()
-  .expand('blogs', q => q
-    .select('id', 'title')
-    .expand('reactions', q => q.select('id', 'title'))
-  )
-  .toString();
-
-// result: $expand=blogs($select=id,title;$expand=reactions($select=id,title))
-```
-
-Key getters can easily get to deeper levels.
-
-```ts
-odataQuery<User>()
-  .expand(
-    u => u.blogs.reactions,
-    q => q.select('id', 'title')
-  )
-  .toString()
-
-// result: $expand=blogs/reactions($select=id,title)
 ```
 
 ## Grouping with `groupBy`

@@ -52,6 +52,46 @@ describe('testing compute operations', () => {
       
       expect(query).toBe('$compute=subtotal add shipping sub discount as finalTotal')
     })
+
+    it('should handle primitive numbers in mathematical operations', () => {
+      const query = odataQuery<Product>()
+        .compute(c => c.price.multiply(2).as('doublePrice'))
+        .toString()
+      
+      expect(query).toBe("$compute=price mul 2 as doublePrice")
+    })
+
+    it('should handle compute expressions in mathematical operations', () => {
+      const query = odataQuery<Product>()
+        .compute(c => c.price.multiply(c.quantity).as('totalPrice'))
+        .toString()
+      
+      expect(query).toBe("$compute=price mul quantity as totalPrice")
+    })
+
+    it('should handle primitive numbers in divide operations', () => {
+      const query = odataQuery<Product>()
+        .compute(c => c.price.divide(2).as('halfPrice'))
+        .toString()
+      
+      expect(query).toBe("$compute=price div 2 as halfPrice")
+    })
+
+    it('should handle primitive numbers in add operations', () => {
+      const query = odataQuery<Product>()
+        .compute(c => c.price.add(100).as('priceWithSurcharge'))
+        .toString()
+      
+      expect(query).toBe("$compute=price add 100 as priceWithSurcharge")
+    })
+
+    it('should handle primitive numbers in subtract operations', () => {
+      const query = odataQuery<Product>()
+        .compute(c => c.price.subtract(50).as('discountedPrice'))
+        .toString()
+      
+      expect(query).toBe("$compute=price sub 50 as discountedPrice")
+    })
   })
 
   describe('string operations', () => {
@@ -203,6 +243,70 @@ describe('testing compute operations', () => {
         .toString()
       
       expect(query).toBe("$compute=accountEnabled ne false as isNotDisabled")
+    })
+
+    it('should handle primitive values in boolean operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.and(true).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled and true as test")
+    })
+
+    it('should handle compute expressions in boolean operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.and(c.accountEnabled).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled and accountEnabled as test")
+    })
+
+    it('should handle primitive values in or operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.or(false).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled or false as test")
+    })
+
+    it('should handle primitive values in equals operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.equals(true).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled eq true as test")
+    })
+
+    it('should handle primitive values in notEquals operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.notEquals(false).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled ne false as test")
+    })
+
+    it('should handle compute expressions in or operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.or(c.accountEnabled).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled or accountEnabled as test")
+    })
+
+    it('should handle compute expressions in equals operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.equals(c.accountEnabled).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled eq accountEnabled as test")
+    })
+
+    it('should handle compute expressions in notEquals operations', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.notEquals(c.accountEnabled).as('test'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled ne accountEnabled as test")
     })
   })
 

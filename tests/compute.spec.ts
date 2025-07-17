@@ -264,11 +264,9 @@ describe('testing compute operations', () => {
     })
 
     it('should handle symbol access in proxy', () => {
-      // This tests the symbol handling in the Proxy get trap
       const query = odataQuery<User>()
         .compute(c => {
           const builder: any = c
-          // Access a symbol property to trigger the symbol handling code path
           const symbolResult = builder[Symbol.iterator]
           expect(symbolResult).toBeUndefined()
           

@@ -278,6 +278,8 @@ odataQuery<User>()
 
 The `compute` method allows you to create computed properties using mathematical operations, string functions and boolean operations. Computed aliases are **type-safe** and can be used in subsequent `select`, `filter`, and `orderBy` operations.
 
+> **📋 Compatibility Note**: The `$compute` feature requires **OData 4.01** or later. For .NET servers, this means **Microsoft.AspNetCore.OData 8.0.6+** or **Microsoft.AspNetCore.OData 9.0+**. Verify your OData server supports the `$compute` query option before using this feature.
+
 ### Mathematical Operations
 
 ```ts

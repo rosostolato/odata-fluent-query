@@ -2,7 +2,7 @@ import { QueryDescriptor } from '../models'
 import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString } from '../models/query-compute'
 import { createQuery } from './create-query'
 
-function getComputeExpression(propertyPath: string): unknown {
+function getComputeExpression(propertyPath: string): Record<string, unknown> {
   return {
     as: <TAlias extends string>(alias: TAlias) => ({
       toString: () => `${propertyPath} as ${alias}`,

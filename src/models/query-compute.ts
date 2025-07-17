@@ -1,7 +1,23 @@
 export interface ComputeExpression {
   toString(): string
-  as(alias: string): ComputeExpression
+  as<K extends string>(alias: K): ComputeExpressionWithAlias<K, this>
 }
+
+export interface ComputeExpressionWithAlias<K extends string, V> {
+  toString(): string
+  readonly _alias: K
+  readonly _type: V
+}
+
+export type InferComputeType<T> = T extends ComputeNumber
+  ? number
+  : T extends ComputeString
+  ? string
+  : T extends ComputeBoolean
+  ? boolean
+  : T extends ComputeDate
+  ? Date
+  : unknown
 
 export interface ComputeNumber extends ComputeExpression {
   multiply(value: number | ComputeNumber): ComputeNumber
@@ -55,21 +71,28 @@ export type ComputeBuilder<T> = {
   [P in keyof T]: ComputeBuilderType<T[P]>
 }
 
-
 export function createComputeProperty<T>(propertyPath: string): ComputeBuilderType<T> {
   return computePropertyBuilder(propertyPath) as ComputeBuilderType<T>
 }
 
 function computePropertyBuilder(propertyPath: string): unknown {
   const methods = {
-    as: (alias: string) => ({ toString: () => `${propertyPath} as ${alias}` }),
+    as: <K extends string>(alias: K) => ({
+        toString: () => `${propertyPath} as ${alias}`,
+        _alias: alias,
+        _type: undefined
+      }),
+
     toString: () => propertyPath,
     
     substring: (start: number, length?: number) => {
       const args = length !== undefined ? `${start},${length}` : start.toString()
+
       return computePropertyBuilder(`substring(${propertyPath},${args})`)
     },
+
     length: () => computePropertyBuilder(`length(${propertyPath})`),
+
     concat: (...values: (string | ComputeString | ComputeExpression)[]) => {
       const args = values.map(v => {
         if (typeof v === 'string') {
@@ -80,36 +103,37 @@ function computePropertyBuilder(propertyPath: string): unknown {
           return v
         }
       })
+      
       return computePropertyBuilder(`concat(${propertyPath},${args.join(',')})`)
     },
     
-    multiply: (value: number | ComputeNumber | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} mul ${value.toString()}`)
-    },
-    divide: (value: number | ComputeNumber | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} div ${value.toString()}`)
-    },
-    add: (value: number | ComputeNumber | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} add ${value.toString()}`)
-    },
-    subtract: (value: number | ComputeNumber | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} sub ${value.toString()}`)
-    },
-    
-    and: (value: boolean | ComputeBoolean | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} and ${value.toString()}`)
-    },
-    or: (value: boolean | ComputeBoolean | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} or ${value.toString()}`)
-    },
+    multiply: (value: number | ComputeNumber | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} mul ${value.toString()}`)
+    ,
+
+    divide: (value: number | ComputeNumber | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} div ${value.toString()}`)
+    ,
+    add: (value: number | ComputeNumber | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} add ${value.toString()}`)
+    ,
+    subtract: (value: number | ComputeNumber | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} sub ${value.toString()}`),
+
+    and: (value: boolean | ComputeBoolean | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} and ${value.toString()}`),
+
+    or: (value: boolean | ComputeBoolean | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} or ${value.toString()}`),
+
     not: () => computePropertyBuilder(`not ${propertyPath}`),
-    equals: (value: boolean | number | string | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} eq ${value.toString()}`)
-    },
-    notEquals: (value: boolean | number | string | ComputeExpression) => {
-      return computePropertyBuilder(`${propertyPath} ne ${value.toString()}`)
-    },
-    
+
+    equals: (value: boolean | number | string | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} eq ${value.toString()}`),
+
+    notEquals: (value: boolean | number | string | ComputeExpression) => 
+      computePropertyBuilder(`${propertyPath} ne ${value.toString()}`),
+
     year: () => computePropertyBuilder(`year(${propertyPath})`),
     month: () => computePropertyBuilder(`month(${propertyPath})`),
     day: () => computePropertyBuilder(`day(${propertyPath})`),
@@ -121,13 +145,11 @@ function computePropertyBuilder(propertyPath: string): unknown {
   }
 
   return new Proxy(methods, {
-    get(target, prop: string | symbol) {
-      if (typeof prop === 'symbol') {
-        return undefined
-      }
+    get(target, prop, receiver) {
+      if (typeof prop === 'symbol') return undefined
       
       if (target[prop as keyof typeof target]) {
-        return Reflect.get(target, prop)
+        return Reflect.get(target, prop, receiver)
       }
       
       const newPath = propertyPath ? `${propertyPath}/${prop}` : prop

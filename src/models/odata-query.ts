@@ -7,7 +7,7 @@ import {
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
 import { SelectParams } from './query-select'
-import { ComputeBuilder, ComputeExpression } from './query-compute'
+import { ComputeBuilder, ComputeExpressionWithAlias, InferComputeType } from './query-compute'
 
 export interface ODataQuery<T> {
   /**
@@ -151,7 +151,9 @@ export interface ODataQuery<T> {
    * q.compute(c => c.price.multiply(c.quantity).as('totalPrice'))
    * q.compute(c => c.firstName.concat(' ', c.lastName).as('fullName'))
    */
-  compute(exp: (builder: ComputeBuilder<T>) => ComputeExpression): ODataQuery<T>
+  compute<K extends string, V>(
+    exp: (builder: ComputeBuilder<T>) => ComputeExpressionWithAlias<K, V>
+  ): ODataQuery<T & Record<K, InferComputeType<V>>>
 
   /**
    * exports query to object key/value

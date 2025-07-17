@@ -21,9 +21,7 @@ export function createCompute<T>(descriptor: QueryDescriptor) {
 function createComputeBuilder<T>(): ComputeBuilder<T> {
   return new Proxy({} as ComputeBuilder<T>, {
     get(_target, prop) {
-      if (typeof prop === 'symbol') {
-        return undefined
-      }
+      if (typeof prop === 'symbol') return undefined
       
       return getComputeProperty(prop.toString())
     }

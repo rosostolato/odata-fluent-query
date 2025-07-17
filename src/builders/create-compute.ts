@@ -44,13 +44,10 @@ function getComputeProperty(propertyPath: string): unknown {
     length: () => getComputeProperty(`length(${propertyPath})`),
     concat: (...values: (string | ComputeString | ComputeExpression)[]) => {
       const args = values.map(v => {
-        if (typeof v === 'string') {
-          return `'${v}'`
-        } else if (v && typeof v.toString === 'function') {
-          return v.toString()
-        } else {
-          return v
-        }
+        if (typeof v === 'string') return `'${v}'`
+        if (v && typeof v.toString === 'function') return v.toString()
+
+        return v
       })
       
       return getComputeProperty(`concat(${propertyPath},${args.join(',')})`)

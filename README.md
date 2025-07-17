@@ -168,7 +168,7 @@ odataQuery<User>().filter('id', id => id.equals(1))
 
 ## Computing with `compute`
 
-The `compute` method allows you to create computed properties using mathematical operations and string functions. Computed aliases are **type-safe** and can be used in subsequent `select`, `filter`, and `orderBy` operations.
+The `compute` method allows you to create computed properties using mathematical operations, string functions and boolean operations. Computed aliases are **type-safe** and can be used in subsequent `select`, `filter`, and `orderBy` operations.
 
 ### Mathematical Operations
 

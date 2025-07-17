@@ -20,6 +20,8 @@ export type InferComputeType<T> = T extends ComputeNumber
   ? number
   : T extends ComputeString
   ? string
+  : T extends ComputeBoolean
+  ? boolean
   : T extends ComputeDate
   ? Date
   : unknown
@@ -79,6 +81,41 @@ export interface ComputeString extends ComputeExpression {
   concat(...values: (string | ComputeString | ComputeExpression)[]): ComputeString
 }
 
+export interface ComputeBoolean extends ComputeExpression {
+  /**
+   * Logical AND operation with another boolean expression
+   * @param value The boolean value or compute expression to AND with
+   * @example c.isActive.and(c.isVerified) // isActive AND isVerified
+   */
+  and(value: boolean | ComputeBoolean): ComputeBoolean
+  
+  /**
+   * Logical OR operation with another boolean expression
+   * @param value The boolean value or compute expression to OR with
+   * @example c.isActive.or(c.isAdmin) // isActive OR isAdmin
+   */
+  or(value: boolean | ComputeBoolean): ComputeBoolean
+  
+  /**
+   * Logical NOT operation (negation)
+   * @example c.isActive.not() // NOT isActive
+   */
+  not(): ComputeBoolean
+  
+  /**
+   * Equality comparison
+   * @param value The boolean value or compute expression to compare with
+   * @example c.isActive.equals(true) // isActive eq true
+   */
+  equals(value: boolean | ComputeBoolean): ComputeBoolean
+  
+  /**
+   * Inequality comparison
+   * @param value The boolean value or compute expression to compare with
+   * @example c.isActive.notEquals(false) // isActive ne false
+   */
+  notEquals(value: boolean | ComputeBoolean): ComputeBoolean
+}
 
 export interface ComputeDate extends ComputeExpression {
   /**
@@ -148,6 +185,8 @@ export type ComputeBuilderType<T> = T extends string
   ? ComputeString
   : T extends number
   ? ComputeNumber
+  : T extends boolean
+  ? ComputeBoolean
   : T extends Date
   ? ComputeDate
   : T extends (infer U)[]

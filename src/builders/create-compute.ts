@@ -1,5 +1,5 @@
 import { QueryDescriptor } from '../models'
-import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString } from '../models/query-compute'
+import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString, ComputeBoolean } from '../models/query-compute'
 import { createQuery } from './create-query'
 
 function getComputeExpression(propertyPath: string): Record<string, (...args: any[]) => unknown> {
@@ -40,6 +40,15 @@ function getComputeExpression(propertyPath: string): Record<string, (...args: an
         return getComputeExpression(result)
       }
     },
+    and: (value: boolean | ComputeBoolean | ComputeExpression) => 
+      getComputeExpression(`${propertyPath} and ${value.toString()}`),
+    or: (value: boolean | ComputeBoolean | ComputeExpression) => 
+      getComputeExpression(`${propertyPath} or ${value.toString()}`),
+    not: () => getComputeExpression(`not ${propertyPath}`),
+    equals: (value: boolean | ComputeBoolean | ComputeExpression) => 
+      getComputeExpression(`${propertyPath} eq ${value.toString()}`),
+    notEquals: (value: boolean | ComputeBoolean | ComputeExpression) => 
+      getComputeExpression(`${propertyPath} ne ${value.toString()}`),
     multiply: (value: number | ComputeNumber | ComputeExpression) => 
       getComputeExpression(`${propertyPath} mul ${value.toString()}`)
     ,
@@ -58,7 +67,7 @@ function getComputeExpression(propertyPath: string): Record<string, (...args: an
     minute: () => getComputeExpression(`minute(${propertyPath})`),
     second: () => getComputeExpression(`second(${propertyPath})`),
     date: () => getComputeExpression(`date(${propertyPath})`),
-    time: () => getComputeExpression(`time(${propertyPath})`),
+    time: () => getComputeExpression(`time(${propertyPath})`)
   }
 }
 

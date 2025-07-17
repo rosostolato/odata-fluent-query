@@ -18,7 +18,7 @@ This lib only generates the query string, so you need to use it with your own im
 - 🎯 **Full TypeScript support** with built-in type definitions
 - 🔒 **Type-safe queries** with IntelliSense support
 - 🚀 **Modern ES2022** target for optimal performance
-- ✅ **98% test coverage** with 192 comprehensive tests
+- ✅ **98% test coverage** with 197 comprehensive tests
 - 📦 **Minimal dependencies** with only validator as a runtime dependency
 - 🔧 **Fluent API** for readable query building
 
@@ -232,6 +232,65 @@ Available string operations:
 - `concat(...values)` - String concatenation
 - `substring(start, length?)` - Extract substring
 - `length()` - Get string length
+
+### Boolean Operations
+
+```ts
+interface User {
+  id: number
+  isActive: boolean
+  isVerified: boolean
+  surname: string
+}
+
+// Boolean logical operations
+odataQuery<User>()
+  .compute(c => c.isActive.and(c.isVerified).as('isActiveAndVerified'))
+  .toString()
+
+// result: $compute=isActive and isVerified as isActiveAndVerified
+
+// Boolean comparisons
+odataQuery<User>()
+  .compute(c => c.surname.equals('Doe').as('isJohnDoe'))
+  .toString()
+
+// result: $compute=surname eq 'Doe' as isJohnDoe
+```
+
+Available boolean operations:
+- `and(value)` - Logical AND operation
+- `or(value)` - Logical OR operation
+- `not()` - Logical NOT operation
+- `equals(value)` - Equality comparison
+- `notEquals(value)` - Inequality comparison
+
+### Date Operations
+
+```ts
+interface User {
+  birthDate: Date
+  lastLogin: Date
+}
+
+// Extract date components
+odataQuery<User>()
+  .compute(c => c.birthDate.year().as('birthYear'))
+  .compute(c => c.lastLogin.month().as('loginMonth'))
+  .toString()
+
+// result: $compute=year(birthDate) as birthYear,month(lastLogin) as loginMonth
+```
+
+Available date operations:
+- `year()` - Extract year component
+- `month()` - Extract month component (1-12)
+- `day()` - Extract day component (1-31)
+- `hour()` - Extract hour component (0-23)
+- `minute()` - Extract minute component (0-59)
+- `second()` - Extract second component (0-59)
+- `date()` - Extract date portion only
+- `time()` - Extract time portion only
 
 ### Type-Safe Computed Aliases
 

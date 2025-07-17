@@ -164,6 +164,48 @@ describe('testing compute operations', () => {
   })
 
 
+  describe('boolean operations', () => {
+    it('should generate and operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.and(true).as('isActiveAndTrue'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled and true as isActiveAndTrue")
+    })
+
+    it('should generate or operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.or(false).as('isActiveOrFalse'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled or false as isActiveOrFalse")
+    })
+
+    it('should generate not operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.not().as('isNotActive'))
+        .toString()
+      
+      expect(query).toBe("$compute=not accountEnabled as isNotActive")
+    })
+
+    it('should generate equals operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.equals(true).as('isActive'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled eq true as isActive")
+    })
+
+    it('should generate notEquals operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.accountEnabled.notEquals(false).as('isNotDisabled'))
+        .toString()
+      
+      expect(query).toBe("$compute=accountEnabled ne false as isNotDisabled")
+    })
+  })
+
   describe('date operations', () => {
     it('should generate year operation', () => {
       const query = odataQuery<User>()

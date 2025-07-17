@@ -50,7 +50,21 @@ function getComputeProperty(propertyPath: string): unknown {
         return v
       })
       
-      return getComputeProperty(`concat(${propertyPath},${args.join(',')})`)
+      // AVJ: below we have to handle the fact that OData concat
+      // requires nested concat calls for multiple arguments
+      // beyond just two. This will allow a user to pass many arguments
+      // to `.concat` and the nesting will be done behind the scenes.
+      if (args.length === 1) {
+        return getComputeProperty(`concat(${propertyPath},${args[0]})`)
+      } else {
+        let result = `concat(${propertyPath},${args[0]})`
+
+        for (let i = 1; i < args.length; i++) {
+          result = `concat(${result},${args[i]})`
+        }
+
+        return getComputeProperty(result)
+      }
     },
     multiply: (value: number | ComputeNumber | ComputeExpression) => 
       getComputeProperty(`${propertyPath} mul ${value.toString()}`)

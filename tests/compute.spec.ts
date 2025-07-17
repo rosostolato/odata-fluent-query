@@ -84,7 +84,7 @@ describe('testing compute operations', () => {
         .compute(c => c.givenName.concat(' ', 'Test').as('fullName'))
         .toString()
       
-      expect(query).toBe("$compute=concat(givenName,' ','Test') as fullName")
+      expect(query).toBe("$compute=concat(concat(givenName,' '),'Test') as fullName")
     })
 
     it('should generate concat with multiple values', () => {
@@ -92,7 +92,7 @@ describe('testing compute operations', () => {
         .compute(c => c.givenName.concat(' ', 'Test', ' (', c.email, ')').as('displayName'))
         .toString()
       
-      expect(query).toBe("$compute=concat(givenName,' ','Test',' (',email,')') as displayName")
+      expect(query).toBe("$compute=concat(concat(concat(concat(concat(givenName,' '),'Test'),' ('),email),')') as displayName")
     })
   })
 
@@ -123,7 +123,7 @@ describe('testing compute operations', () => {
         .compute(c => c.givenName.concat(', ', 'suffix').as('fullName'))
         .toString()
       
-      expect(query).toBe("$compute=concat(givenName,', ','suffix') as fullName")
+      expect(query).toBe("$compute=concat(concat(givenName,', '),'suffix') as fullName")
     })
 
     it('should work in expand queries', () => {
@@ -134,7 +134,7 @@ describe('testing compute operations', () => {
         )
         .toString()
       
-      expect(query).toBe("$expand=posts($select=id,content;$compute=concat(content,' - ','suffix') as fullContent)")
+      expect(query).toBe("$expand=posts($select=id,content;$compute=concat(concat(content,' - '),'suffix') as fullContent)")
     })
   })
 
@@ -257,16 +257,16 @@ describe('testing compute operations', () => {
 
     it('should handle concat with non-string, non-function values', () => {
       const query = odataQuery<User>()
-        .compute(c => c.givenName.concat(' - ', null as any, ' test').as('withNull'))
+        .compute(c => c.givenName.concat(' - ', null as never, ' test').as('withNull'))
         .toString()
       
-      expect(query).toBe("$compute=concat(givenName,' - ',,' test') as withNull")
+      expect(query).toBe("$compute=concat(concat(concat(givenName,' - '),null),' test') as withNull")
     })
 
     it('should handle symbol access in proxy', () => {
       const query = odataQuery<User>()
         .compute(c => {
-          const builder: any = c
+          const builder = c
           const symbolResult = builder[Symbol.iterator]
           expect(symbolResult).toBeUndefined()
           

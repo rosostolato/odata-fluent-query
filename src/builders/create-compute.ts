@@ -1,5 +1,5 @@
 import { QueryDescriptor } from '../models'
-import { ComputeBoolean, ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString } from '../models/query-compute'
+import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString } from '../models/query-compute'
 import { createQuery } from './create-query'
 
 export function createCompute<T>(descriptor: QueryDescriptor) {
@@ -72,20 +72,6 @@ function getComputeProperty(propertyPath: string): unknown {
     ,
     subtract: (value: number | ComputeNumber | ComputeExpression) => 
       getComputeProperty(`${propertyPath} sub ${value.toString()}`),
-
-    and: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      getComputeProperty(`${propertyPath} and ${value.toString()}`),
-
-    or: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      getComputeProperty(`${propertyPath} or ${value.toString()}`),
-
-    not: () => getComputeProperty(`not ${propertyPath}`),
-
-    equals: (value: boolean | number | string | ComputeExpression) => 
-      getComputeProperty(`${propertyPath} eq ${value.toString()}`),
-
-    notEquals: (value: boolean | number | string | ComputeExpression) => 
-      getComputeProperty(`${propertyPath} ne ${value.toString()}`),
 
     year: () => getComputeProperty(`year(${propertyPath})`),
     month: () => getComputeProperty(`month(${propertyPath})`),

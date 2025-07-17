@@ -8,8 +8,6 @@ export interface User {
   givenName: string
   createDate: Date | null
   accountEnabled: boolean
-  isActive: boolean
-  isVerified: boolean
   birthDate: Date
   lastLogin: Date
 

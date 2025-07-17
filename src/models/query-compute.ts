@@ -13,8 +13,6 @@ export type InferComputeType<T> = T extends ComputeNumber
   ? number
   : T extends ComputeString
   ? string
-  : T extends ComputeBoolean
-  ? boolean
   : T extends ComputeDate
   ? Date
   : unknown
@@ -32,13 +30,6 @@ export interface ComputeString extends ComputeExpression {
   concat(...values: (string | ComputeString | ComputeExpression)[]): ComputeString
 }
 
-export interface ComputeBoolean extends ComputeExpression {
-  and(value: boolean | ComputeBoolean): ComputeBoolean
-  or(value: boolean | ComputeBoolean): ComputeBoolean
-  not(): ComputeBoolean
-  equals(value: boolean | ComputeBoolean): ComputeBoolean
-  notEquals(value: boolean | ComputeBoolean): ComputeBoolean
-}
 
 export interface ComputeDate extends ComputeExpression {
   add(duration: string | ComputeDate): ComputeDate
@@ -57,8 +48,6 @@ export type ComputeBuilderType<T> = T extends string
   ? ComputeString
   : T extends number
   ? ComputeNumber
-  : T extends boolean
-  ? ComputeBoolean
   : T extends Date
   ? ComputeDate
   : T extends (infer U)[]

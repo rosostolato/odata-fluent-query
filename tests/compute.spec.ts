@@ -163,47 +163,6 @@ describe('testing compute operations', () => {
     })
   })
 
-  describe('boolean operations', () => {
-    it('should generate and operation', () => {
-      const query = odataQuery<User>()
-        .compute(c => c.isActive.and(c.isVerified).as('bothActive'))
-        .toString()
-      
-      expect(query).toBe('$compute=isActive and isVerified as bothActive')
-    })
-
-    it('should generate or operation', () => {
-      const query = odataQuery<User>()
-        .compute(c => c.isActive.or(c.isVerified).as('eitherActive'))
-        .toString()
-      
-      expect(query).toBe('$compute=isActive or isVerified as eitherActive')
-    })
-
-    it('should generate not operation', () => {
-      const query = odataQuery<User>()
-        .compute(c => c.isActive.not().as('notActive'))
-        .toString()
-      
-      expect(query).toBe('$compute=not isActive as notActive')
-    })
-
-    it('should generate equals operation', () => {
-      const query = odataQuery<User>()
-        .compute(c => c.isActive.equals(true).as('isActiveTrue'))
-        .toString()
-      
-      expect(query).toBe('$compute=isActive eq true as isActiveTrue')
-    })
-
-    it('should generate notEquals operation', () => {
-      const query = odataQuery<User>()
-        .compute(c => c.isActive.notEquals(false).as('isNotFalse'))
-        .toString()
-      
-      expect(query).toBe('$compute=isActive ne false as isNotFalse')
-    })
-  })
 
   describe('date operations', () => {
     it('should generate year operation', () => {

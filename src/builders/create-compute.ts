@@ -41,25 +41,25 @@ function computeBuilder(propertyPath: string): Record<string, (...args: any[]) =
       }
     },
     and: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} and ${value.toString()}`),
+      computeBuilder(`${propertyPath} and ${typeof value === 'boolean' ? value : value.toString()}`),
     or: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} or ${value.toString()}`),
+      computeBuilder(`${propertyPath} or ${typeof value === 'boolean' ? value : value.toString()}`),
     not: () => computeBuilder(`not ${propertyPath}`),
     equals: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} eq ${value.toString()}`),
+      computeBuilder(`${propertyPath} eq ${typeof value === 'boolean' ? value : value.toString()}`),
     notEquals: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} ne ${value.toString()}`),
+      computeBuilder(`${propertyPath} ne ${typeof value === 'boolean' ? value : value.toString()}`),
     multiply: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} mul ${value.toString()}`)
+      computeBuilder(`${propertyPath} mul ${typeof value === 'number' ? value : value.toString()}`)
     ,
     divide: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} div ${value.toString()}`)
+      computeBuilder(`${propertyPath} div ${typeof value === 'number' ? value : value.toString()}`)
     ,
     add: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} add ${value.toString()}`)
+      computeBuilder(`${propertyPath} add ${typeof value === 'number' ? value : value.toString()}`)
     ,
     subtract: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} sub ${value.toString()}`),
+      computeBuilder(`${propertyPath} sub ${typeof value === 'number' ? value : value.toString()}`),
     year: () => computeBuilder(`year(${propertyPath})`),
     month: () => computeBuilder(`month(${propertyPath})`),
     day: () => computeBuilder(`day(${propertyPath})`),

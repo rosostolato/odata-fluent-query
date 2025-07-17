@@ -163,6 +163,114 @@ describe('testing compute operations', () => {
     })
   })
 
+  describe('boolean operations', () => {
+    it('should generate and operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.isActive.and(c.isVerified).as('bothActive'))
+        .toString()
+      
+      expect(query).toBe('$compute=isActive and isVerified as bothActive')
+    })
+
+    it('should generate or operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.isActive.or(c.isVerified).as('eitherActive'))
+        .toString()
+      
+      expect(query).toBe('$compute=isActive or isVerified as eitherActive')
+    })
+
+    it('should generate not operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.isActive.not().as('notActive'))
+        .toString()
+      
+      expect(query).toBe('$compute=not isActive as notActive')
+    })
+
+    it('should generate equals operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.isActive.equals(true).as('isActiveTrue'))
+        .toString()
+      
+      expect(query).toBe('$compute=isActive eq true as isActiveTrue')
+    })
+
+    it('should generate notEquals operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.isActive.notEquals(false).as('isNotFalse'))
+        .toString()
+      
+      expect(query).toBe('$compute=isActive ne false as isNotFalse')
+    })
+  })
+
+  describe('date operations', () => {
+    it('should generate year operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.birthDate.year().as('birthYear'))
+        .toString()
+      
+      expect(query).toBe('$compute=year(birthDate) as birthYear')
+    })
+
+    it('should generate month operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.birthDate.month().as('birthMonth'))
+        .toString()
+      
+      expect(query).toBe('$compute=month(birthDate) as birthMonth')
+    })
+
+    it('should generate day operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.birthDate.day().as('birthDay'))
+        .toString()
+      
+      expect(query).toBe('$compute=day(birthDate) as birthDay')
+    })
+
+    it('should generate hour operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.lastLogin.hour().as('loginHour'))
+        .toString()
+      
+      expect(query).toBe('$compute=hour(lastLogin) as loginHour')
+    })
+
+    it('should generate minute operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.lastLogin.minute().as('loginMinute'))
+        .toString()
+      
+      expect(query).toBe('$compute=minute(lastLogin) as loginMinute')
+    })
+
+    it('should generate second operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.lastLogin.second().as('loginSecond'))
+        .toString()
+      
+      expect(query).toBe('$compute=second(lastLogin) as loginSecond')
+    })
+
+    it('should generate date operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.lastLogin.date().as('loginDate'))
+        .toString()
+      
+      expect(query).toBe('$compute=date(lastLogin) as loginDate')
+    })
+
+    it('should generate time operation', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.lastLogin.time().as('loginTime'))
+        .toString()
+      
+      expect(query).toBe('$compute=time(lastLogin) as loginTime')
+    })
+  })
+
   describe('edge cases', () => {
     it('should handle empty compute gracefully', () => {
       const query = odataQuery<Product>()
@@ -186,6 +294,30 @@ describe('testing compute operations', () => {
         .toString()
       
       expect(query).toBe("$compute=concat(substring(givenName,0,1),'X') as initials")
+    })
+
+    it('should handle concat with non-string, non-function values', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.givenName.concat(' - ', null as any, ' test').as('withNull'))
+        .toString()
+      
+      expect(query).toBe("$compute=concat(givenName,' - ',,' test') as withNull")
+    })
+
+    it('should handle symbol access in proxy', () => {
+      // This tests the symbol handling in the Proxy get trap
+      const query = odataQuery<User>()
+        .compute(c => {
+          const builder: any = c
+          // Access a symbol property to trigger the symbol handling code path
+          const symbolResult = builder[Symbol.iterator]
+          expect(symbolResult).toBeUndefined()
+          
+          return c.givenName.as('name')
+        })
+        .toString()
+      
+      expect(query).toBe('$compute=givenName as name')
     })
   })
 })

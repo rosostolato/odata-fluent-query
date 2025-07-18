@@ -1,23 +1,28 @@
+type Defined<T> = Exclude<T, undefined>
+type ExtractNull<T> = Extract<null, T>
+
 export type FilterBuilder<T> = {
-  [P in keyof T]-?: FilterBuilderProp<T[P]>
+  readonly [P in keyof T]-?: FilterBuilderProp<T[P]>
 }
 
 export type FilterBuilderProp<T> = null extends T
-  ? FilterBuilderType<T> & FilterNullable
-  : FilterBuilderType<T>
+  ? FilterBuilderType<Defined<T>, NonNullable<T>> & FilterNullable
+  : FilterBuilderType<Defined<T>, T>
 
-export type FilterBuilderType<T> = T extends Array<infer R>
+export type FilterBuilderType<Type, Primitive> = Primitive extends Array<
+  infer R
+>
   ? FilterCollection<R>
-  : T extends string
-  ? FilterString
-  : T extends number
-  ? FilterNumber
-  : T extends boolean
-  ? FilterBoolean
-  : T extends Date
-  ? FilterDate
-  : T extends object
-  ? FilterBuilder<T>
+  : Primitive extends string
+  ? FilterString<Type>
+  : Primitive extends number
+  ? FilterNumber<Type>
+  : Primitive extends boolean
+  ? FilterBoolean<Type>
+  : Primitive extends Date
+  ? FilterDate<Type>
+  : Primitive extends object
+  ? FilterBuilder<Primitive>
   : never
 
 export interface StringOptions {
@@ -33,7 +38,10 @@ export interface FilterExpression {
   or(exp: FilterExpression): FilterExpression
 }
 
-export interface FilterDate {
+export interface FilterDate<T = Date> {
+  equals(d: string | Date | FilterDate | ExtractNull<T>): FilterExpression
+  notEquals(d: string | Date | FilterDate | ExtractNull<T>): FilterExpression
+
   inTimeSpan(
     y: number,
     m?: number,
@@ -41,27 +49,46 @@ export interface FilterDate {
     h?: number,
     mm?: number
   ): FilterExpression
-  isSame(d: string | Date | FilterDate): FilterExpression
+
+  isSame(d: string | Date | FilterDate | ExtractNull<T>): FilterExpression
   isSame(
-    d: number | Date | FilterDate,
+    d: number | Date | FilterDate | ExtractNull<T>,
     g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
   ): FilterExpression
-  isAfter(d: string | Date | FilterDate): FilterExpression
-  isAfterOrEqual(d: string | Date | FilterDate): FilterExpression
-  isBefore(d: string | Date | FilterDate): FilterExpression
-  isBeforeOrEqual(d: string | Date | FilterDate): FilterExpression
+
+  isAfter(d: string | Date | FilterDate | ExtractNull<T>): FilterExpression
+  isAfterOrEqual(
+    d: string | Date | FilterDate | ExtractNull<T>
+  ): FilterExpression
+  isBefore(d: string | Date | FilterDate | ExtractNull<T>): FilterExpression
+  isBeforeOrEqual(
+    d: string | Date | FilterDate | ExtractNull<T>
+  ): FilterExpression
 }
 
-export interface FilterString {
-  contains(s: string | FilterString, options?: StringOptions): FilterExpression
-  equals(s: string | FilterString, options?: StringOptions): FilterExpression
-  notEquals(s: string | FilterString, options?: StringOptions): FilterExpression
-  startsWith(
-    s: string | FilterString,
+export interface FilterString<T = string> {
+  contains(
+    s: string | FilterString | ExtractNull<T>,
     options?: StringOptions
   ): FilterExpression
-  endsWith(s: string | FilterString, options?: StringOptions): FilterExpression
-  in(list: string[]): FilterExpression
+  equals(
+    s: string | FilterString | ExtractNull<T>,
+    options?: StringOptions
+  ): FilterExpression
+  notEquals(
+    s: string | FilterString | ExtractNull<T>,
+    options?: StringOptions
+  ): FilterExpression
+  startsWith(
+    s: string | FilterString | ExtractNull<T>,
+    options?: StringOptions
+  ): FilterExpression
+  endsWith(
+    s: string | FilterString | ExtractNull<T>,
+    options?: StringOptions
+  ): FilterExpression
+  in(list: string[] | ExtractNull<T>): FilterExpression
+
   length(): FilterNumber
   tolower(): FilterString
   toupper(): FilterString
@@ -72,19 +99,19 @@ export interface FilterString {
   prepend(s: string): FilterString
 }
 
-export interface FilterNumber {
-  equals(n: number | FilterNumber): FilterExpression
-  notEquals(n: number | FilterNumber): FilterExpression
-  biggerThan(n: number | FilterNumber): FilterExpression
-  biggerThanOrEqual(n: number | FilterNumber): FilterExpression
-  lessThan(n: number | FilterNumber): FilterExpression
-  lessThanOrEqual(n: number | FilterNumber): FilterExpression
-  in(list: number[]): FilterExpression
+export interface FilterNumber<T = number> {
+  equals(n: number | FilterNumber | ExtractNull<T>): FilterExpression
+  notEquals(n: number | FilterNumber | ExtractNull<T>): FilterExpression
+  biggerThan(n: number | FilterNumber | ExtractNull<T>): FilterExpression
+  biggerThanOrEqual(n: number | FilterNumber | ExtractNull<T>): FilterExpression
+  lessThan(n: number | FilterNumber | ExtractNull<T>): FilterExpression
+  lessThanOrEqual(n: number | FilterNumber | ExtractNull<T>): FilterExpression
+  in(list: number[] | ExtractNull<T>): FilterExpression
 }
 
-export interface FilterBoolean {
-  equals(b: boolean | FilterBoolean): FilterExpression
-  notEquals(b: boolean | FilterBoolean): FilterExpression
+export interface FilterBoolean<T = boolean> {
+  equals(b: boolean | FilterBoolean | ExtractNull<T>): FilterExpression
+  notEquals(b: boolean | FilterBoolean | ExtractNull<T>): FilterExpression
 }
 
 export interface FilterNullable {

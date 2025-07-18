@@ -352,6 +352,24 @@ describe('testodataQuery filter by Date', () => {
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 
+  it('equals', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.equals(new Date(2020, 0)))
+      .toString()
+    const expected = '$filter=createDate eq 2020-01-01T'
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1)
+  })
+
+  it('notEquals', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.notEquals(new Date(2020, 0)))
+      .toString()
+    const expected = '$filter=createDate ne 2020-01-01T'
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1)
+  })
+
   it('isNull', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.createDate.isNull()).toString()

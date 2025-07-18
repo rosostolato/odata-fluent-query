@@ -1,4 +1,9 @@
-import { ExpandParam, ExpandKey, ExpandQueryComplex } from './query-expand'
+import {
+  ComputeBuilder,
+  ComputeExpressionWithAlias,
+  InferComputeType,
+} from './query-compute'
+import { ExpandKey, ExpandParam, ExpandQueryComplex } from './query-expand'
 import {
   FilterBuilder,
   FilterBuilderProp,
@@ -7,25 +12,27 @@ import {
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
 import { SelectParams } from './query-select'
-import { ComputeBuilder, ComputeExpressionWithAlias, InferComputeType } from './query-compute'
 
 export interface ODataQuery<T> {
   /**
-   * set $count=true
+   * Sets $count=true in the OData query.
+   * @returns The OData query with count enabled
+   * @example
+   * q.count()
    */
   count(): ODataQuery<T>
 
   /**
-   * Adds a $expand operator to the OData query.
+   * Adds $expand operator in the OData query.
    * Multiple calls to Expand will expand all the relations, e.g.: $expand=rel1(...),rel2(...).
    * The lambda in the second parameter allows you to build a complex inner query.
    *
-   * @param key the name of the relation.
-   * @param query a lambda expression that build the subquery from the querybuilder.
+   * @param key The name of the relation
+   * @param query Expression that builds the subquery from the querybuilder
    *
    * @example
-   * q.exand('blogs', q => q.select('id', 'title'))
-   * q.exand(u => u.blogs, q => q.select('id', 'title'))
+   * q.expand('blogs', q => q.select('id', 'title'))
+   * q.expand(u => u.blogs, q => q.select('id', 'title'))
    */
   expand<Tkey extends keyof ExpandKey<T>, U = Required<T>[Tkey]>(
     key: Tkey | ExpandParam<T, U>,
@@ -33,21 +40,21 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
-   * Adds a $filter operator to the OData query.
+   * Adds $filter operator in the OData query.
    * Multiple calls to Filter will be merged with `and`.
    *
-   * @param exp a lambda expression that builds an expression from the builder.
+   * @param exp Expression that builds an expression from the builder
    *
    * @example
    * q.filter(u => u.id.equals(1))
    */
   filter(exp: (x: FilterBuilder<T>) => FilterExpression): ODataQuery<T>
   /**
-   * Adds a $filter operator to the OData query.
+   * Adds $filter operator in the OData query.
    * Multiple calls to Filter will be merged with `and`.
    *
-   * @param key property key selector.
-   * @param exp a lambda expression that builds an expression from the builder.
+   * @param key Property key selector
+   * @param exp Expression that builds an expression from the builder
    *
    * @example
    * q.filter('id', id => id.equals(1))
@@ -58,10 +65,10 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
-   * group by the selected keys
+   * Groups the results by the selected keys.
    *
-   * @param keys keys to be grouped by
-   * @param aggregate aggregate builder [optional]
+   * @param keys Keys to be grouped by
+   * @param aggregate Aggregate builder [optional]
    *
    * @example
    * q.groupBy(["email", "surname"], agg => agg
@@ -75,11 +82,11 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
-   * Adds a $orderby operator to the OData query.
+   * Adds $orderby operator in the OData query.
    * Ordering over relations is supported (check OData implementation for details).
    *
-   * @param key key in T.
-   * @param order the order of the sort.
+   * @param key Key in T
+   * @param order The order of the sort
    *
    * @example
    * q.orderBy('blogs', 'desc')
@@ -89,10 +96,10 @@ export interface ODataQuery<T> {
     order?: 'asc' | 'desc'
   ): ODataQuery<T>
   /**
-   * Adds a $orderby operator to the OData query.
+   * Adds $orderby operator in the OData query.
    * Ordering over relations is supported (check OData implementation for details).
    *
-   * @param exp a lambda expression that builds the orderby expression from the builder.
+   * @param exp Expression that builds the orderby expression from the builder
    *
    * @example
    * q.orderBy(u => u.blogs().id.desc())
@@ -102,22 +109,22 @@ export interface ODataQuery<T> {
   ): ODataQuery<T>
 
   /**
-   * Adds a $skip and $top to the OData query.
+   * Adds $skip and $top in the OData query.
    * The pageindex is zero-based.
    * This method automatically adds $count=true to the query.
    *
-   * @param pagesize page index ($skip).
-   * @param page page size ($top)
+   * @param pagesize Page size ($top)
+   * @param page Page index ($skip)
    *
    * @example
    * q.paginate(50, 0)
    */
   paginate(pagesize: number, page?: number): ODataQuery<T>
   /**
-   * Adds a $skip and $top to the OData query.
+   * Adds $skip and $top in the OData query.
    * The pageindex is zero-based.
    *
-   * @param options paginate query options
+   * @param options Paginate query options
    *
    * @example
    * q.paginate({ pagesize: 50, page: 0, count: false })
@@ -129,10 +136,10 @@ export interface ODataQuery<T> {
   }): ODataQuery<T>
 
   /**
-   * Adds a $select operator to the OData query.
+   * Adds $select operator in the OData query.
    * There is only one instance of $select, if you call multiple times it will take the last one.
    *
-   * @param keys the names or a expression of the properties you want to select
+   * @param keys The names or an expression of the properties you want to select
    *
    * @example
    * q.select('id', 'title')
@@ -142,17 +149,17 @@ export interface ODataQuery<T> {
   select<TKey extends keyof T>(...keys: SelectParams<T, TKey>): ODataQuery<T>
 
   /**
-   * Adds a $compute operator to the OData query.
+   * Adds $compute operator in the OData query.
    * Multiple calls to compute will add all the computed expressions.
    * Computed aliases are type-safe and accessible in subsequent select, filter, and orderBy operations.
    *
-   * @param exp a lambda expression that builds a computed expression from the builder.
+   * @param exp Expression that builds a computed expression from the builder
    *
    * @example
    * // Basic compute with mathematical operations
    * q.compute(c => c.price.multiply(c.quantity).as('totalPrice'))
    * q.compute(c => c.firstName.concat(' ', c.lastName).as('fullName'))
-   * 
+   *
    * // Using computed aliases in subsequent operations
    * q.compute(c => c.price.multiply(c.quantity).as('totalPrice'))
    *  .select('id', 'name', 'totalPrice')
@@ -164,8 +171,9 @@ export interface ODataQuery<T> {
   ): ODataQuery<T & Record<K, InferComputeType<V>>>
 
   /**
-   * exports query to object key/value
+   * Exports the query to an object with key/value pairs.
    *
+   * @returns An object containing the OData query parameters
    * @example
    * {
    *  '$filter': 'order gt 5',
@@ -175,8 +183,9 @@ export interface ODataQuery<T> {
   toObject(): QueryObject
 
   /**
-   * exports query to string joined with `&`
+   * Exports the query to a string joined with `&`.
    *
+   * @returns A string representation of the OData query
    * @example
    * '$filter=order gt 5&$select=id'
    */

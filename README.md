@@ -75,10 +75,10 @@ const complexQuery = odataQuery<User>()
 ```
 
 - [Filtering with `filter`](#filtering-with-filter)
-- [Computing with `compute`](#computing-with-compute)
 - [Ordering with `orderBy`](#ordering-with-orderby)
 - [Selecting with `select`](#selecting-properties-with-select)
 - [Expanding with `expand`](#expanding-with-expand)
+- [Computing with `compute`](#computing-with-compute)
 - [Grouping with `groupBy`](#grouping-with-groupby)
 - [Paginating with `paginate`](#paginating-with-paginate)
 - [Development](#development)
@@ -327,7 +327,7 @@ odataQuery<User>()
   .compute(c => c.firstName.concat(' ', c.lastName).as('fullName'))
   .toString()
 
-// result: $compute=concat(firstName,' ',lastName) as fullName
+// result: $compute=concat(concat(firstName,' '),lastName) as fullName
 
 // String functions
 odataQuery<User>()

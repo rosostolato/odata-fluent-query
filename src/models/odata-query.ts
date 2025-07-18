@@ -28,7 +28,7 @@ export interface ODataQuery<T> {
    * The lambda in the second parameter allows you to build a complex inner query.
    *
    * @param key The name of the relation
-   * @param query A lambda expression that builds the subquery from the querybuilder
+   * @param query Expression that builds the subquery from the querybuilder
    *
    * @example
    * q.expand('blogs', q => q.select('id', 'title'))
@@ -43,7 +43,7 @@ export interface ODataQuery<T> {
    * Adds $filter operator in the OData query.
    * Multiple calls to Filter will be merged with `and`.
    *
-   * @param exp A lambda expression that builds an expression from the builder
+   * @param exp Expression that builds an expression from the builder
    *
    * @example
    * q.filter(u => u.id.equals(1))
@@ -54,7 +54,7 @@ export interface ODataQuery<T> {
    * Multiple calls to Filter will be merged with `and`.
    *
    * @param key Property key selector
-   * @param exp A lambda expression that builds an expression from the builder
+   * @param exp Expression that builds an expression from the builder
    *
    * @example
    * q.filter('id', id => id.equals(1))
@@ -99,7 +99,7 @@ export interface ODataQuery<T> {
    * Adds $orderby operator in the OData query.
    * Ordering over relations is supported (check OData implementation for details).
    *
-   * @param exp A lambda expression that builds the orderby expression from the builder
+   * @param exp Expression that builds the orderby expression from the builder
    *
    * @example
    * q.orderBy(u => u.blogs().id.desc())
@@ -153,7 +153,7 @@ export interface ODataQuery<T> {
    * Multiple calls to compute will add all the computed expressions.
    * Computed aliases are type-safe and accessible in subsequent select, filter, and orderBy operations.
    *
-   * @param exp A lambda expression that builds a computed expression from the builder
+   * @param exp Expression that builds a computed expression from the builder
    *
    * @example
    * // Basic compute with mathematical operations

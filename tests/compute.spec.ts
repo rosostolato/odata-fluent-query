@@ -2,6 +2,7 @@ import { odataQuery } from '../src'
 import { User } from './data/user'
 import { Product } from './data/product'
 import { Order } from './data/order'
+import { OptionalEntity } from './data/optional-entity'
 
 describe('testing compute operations', () => {
   describe('mathematical operations', () => {
@@ -373,6 +374,99 @@ describe('testing compute operations', () => {
         .toString()
       
       expect(query).toBe('$compute=time(lastLogin) as loginTime')
+    })
+  })
+
+  // AVJ: these optional tests are more specifically for ensuring type errors don't occur
+  describe('optional properties', () => {
+    it('should handle compute operations on optional string properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalString.substring(0, 1).as('firstLetter'))
+        .toString()
+      
+      expect(query).toBe('$compute=substring(optionalString,0,1) as firstLetter')
+    })
+
+    it('should handle compute operations on optional number properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalNumber.multiply(2).as('doubled'))
+        .toString()
+      
+      expect(query).toBe('$compute=optionalNumber mul 2 as doubled')
+    })
+
+    it('should handle compute operations on optional boolean properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalBoolean.and(true).as('result'))
+        .toString()
+      
+      expect(query).toBe('$compute=optionalBoolean and true as result')
+    })
+
+    it('should handle compute operations on optional date properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalDate.year().as('year'))
+        .toString()
+      
+      expect(query).toBe('$compute=year(optionalDate) as year')
+    })
+
+    it('should handle compute operations on nullable string properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.nullableString.length().as('length'))
+        .toString()
+      
+      expect(query).toBe('$compute=length(nullableString) as length')
+    })
+
+    it('should handle compute operations on nullable number properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.nullableNumber.add(10).as('added'))
+        .toString()
+      
+      expect(query).toBe('$compute=nullableNumber add 10 as added')
+    })
+
+    it('should handle compute operations on optional nullable properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalNullableString.concat(' suffix').as('withSuffix'))
+        .toString()
+      
+      expect(query).toBe("$compute=concat(optionalNullableString,' suffix') as withSuffix")
+    })
+
+    it('should allow chaining operations on optional properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalString.substring(0, 3).concat('...').as('short'))
+        .toString()
+      
+      expect(query).toBe("$compute=concat(substring(optionalString,0,3),'...') as short")
+    })
+
+    it('should work with mixed optional and required properties', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalString.concat(' - ', c.requiredName).as('display'))
+        .select('id', 'display')
+        .toString()
+      
+      expect(query).toBe('$select=id,display&$compute=concat(concat(optionalString,\' - \'),requiredName) as display')
+    })
+
+    it('should handle multiple optional property compute operations', () => {
+      const query = odataQuery<OptionalEntity>()
+        .compute(c => c.optionalNumber.multiply(2).as('doubled'))
+        .compute(c => c.optionalString.length().as('stringLength'))
+        .toString()
+      
+      expect(query).toBe('$compute=optionalNumber mul 2 as doubled,length(optionalString) as stringLength')
+    })
+
+    it('should still work with existing User optional properties', () => {
+      const query = odataQuery<User>()
+        .compute(c => c.surname.substring(0, 1).as('firstLetter'))
+        .toString()
+      
+      expect(query).toBe('$compute=substring(surname,0,1) as firstLetter')
     })
   })
 

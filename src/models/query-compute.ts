@@ -1,5 +1,4 @@
 export interface ComputeExpression {
-  toString(): string
   /**
    * Creates an alias for the computed expression that can be used in subsequent operations like select, filter, or orderby
    * @param alias The name to assign to the computed value
@@ -16,7 +15,9 @@ export interface ComputeExpressionWithAlias<
   TAliasKey extends string,
   TAliasValue
 > {
-  toString(): string
+  // AVJ: These properties are not used at runtime but are
+  // purely for type inference as the compute expression gets chained
+  // to other operations like select, filter, etc.
   readonly _alias: TAliasKey
   readonly _type: TAliasValue
 }

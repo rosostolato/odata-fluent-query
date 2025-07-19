@@ -195,6 +195,6 @@ export type ComputeBuilderType<T> = T extends string
   ? ComputeBuilder<T>
   : ComputeExpression
 
-  export type ComputeBuilder<T> = {
-    [P in keyof T]-?: ComputeBuilderType<NonNullable<T[P]>>
-  }
+export type ComputeBuilder<T> = {
+  [P in keyof T]-?: ComputeBuilderType<NonNullable<T[P]>>
+}

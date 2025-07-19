@@ -3,7 +3,7 @@ import { dateToObject } from '../src/builders/create-filter'
 import { User } from './data/user'
 
 // string
-describe('testodataQuery filter by string', () => {
+describe('test odataQuery filter by string', () => {
   it('contains', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.email.contains('test')).toString()
@@ -349,6 +349,24 @@ describe('testodataQuery filter by Date', () => {
       .filter(q => q.createDate.isSame(new Date(2020, 0)))
       .toString()
     const expected = '$filter=createDate eq 2020-01-01T'
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1)
+  })
+
+  it('equals', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.equals(new Date(2020, 0)))
+      .toString()
+    const expected = '$filter=createDate eq 2020-01-01T'
+    expect(actual.indexOf(expected)).toBeGreaterThan(-1)
+  })
+
+  it('notEquals', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .filter(q => q.createDate.notEquals(new Date(2020, 0)))
+      .toString()
+    const expected = '$filter=createDate ne 2020-01-01T'
     expect(actual.indexOf(expected)).toBeGreaterThan(-1)
   })
 
@@ -779,5 +797,129 @@ describe('test dateToObject function', () => {
 
     expect(result.year).toBe(date.getFullYear())
     expect(result.month).toBe(date.getMonth())
+  })
+})
+
+// nullable values
+describe('test odataQuery filter with nullable values', () => {
+  it('should allow null value for nullable string property', () => {
+    const query = odataQuery<User>()
+    const queryEmail: string | null = null
+    const actual = query.filter(q => q.email.equals(queryEmail)).toString()
+    const expected = '$filter=email eq null'
+    expect(actual).toBe(expected)
+  })
+
+  it('should allow string value for nullable string property', () => {
+    const query = odataQuery<User>()
+    const queryEmail: string | null = 'test@example.com'
+    const actual = query.filter(q => q.email.equals(queryEmail)).toString()
+    const expected = "$filter=email eq 'test@example.com'"
+    expect(actual).toBe(expected)
+  })
+
+  it('should allow null value for nullable number property', () => {
+    const query = odataQuery<User>()
+    const queryId: number | null = null
+    const actual = query.filter(q => q.id.equals(queryId)).toString()
+    const expected = '$filter=id eq null'
+    expect(actual).toBe(expected)
+  })
+
+  it('should allow number value for nullable number property', () => {
+    const query = odataQuery<User>()
+    const queryId: number | null = 42
+    const actual = query.filter(q => q.id.equals(queryId)).toString()
+    const expected = '$filter=id eq 42'
+    expect(actual).toBe(expected)
+  })
+
+  it('should allow null value for nullable date property', () => {
+    const query = odataQuery<User>()
+    const queryDate: Date | null = null
+    const actual = query.filter(q => q.createDate.equals(queryDate)).toString()
+    const expected = '$filter=createDate eq null'
+    expect(actual).toBe(expected)
+  })
+
+  it('should allow date value for nullable date property', () => {
+    const query = odataQuery<User>()
+    const queryDate = new Date('2023-01-01T00:00:00.000Z')
+    const actual = query.filter(q => q.createDate.equals(queryDate)).toString()
+    const expected = '$filter=createDate eq 2023-01-01T00:00:00.000Z'
+    expect(actual).toBe(expected)
+  })
+
+  it('should allow null value with notEquals for nullable property', () => {
+    const query = odataQuery<User>()
+    const queryEmail: string | null = null
+    const actual = query.filter(q => q.email.notEquals(queryEmail)).toString()
+    const expected = '$filter=email ne null'
+    expect(actual).toBe(expected)
+  })
+
+  it('should work with variables in nullable context', () => {
+    const query = odataQuery<User>()
+    const searchEmail: string | null = 'user@example.com'
+    const searchId: number | null = 123
+
+    const actual = query
+      .filter(q => q.email.equals(searchEmail))
+      .filter(q => q.id.equals(searchId))
+      .toString()
+
+    const expected = "$filter=email eq 'user@example.com' and id eq 123"
+    expect(actual).toBe(expected)
+  })
+
+  it('should work with mixed null and non-null values', () => {
+    const query = odataQuery<User>()
+    const searchEmail: string | null = null
+    const isEnabled: boolean = true
+
+    const actual = query
+      .filter(q => q.email.equals(searchEmail))
+      .filter(q => q.accountEnabled.equals(isEnabled))
+      .toString()
+
+    const expected = '$filter=email eq null and accountEnabled eq true'
+    expect(actual).toBe(expected)
+  })
+
+  // Test the exact code from the user's issue
+  it('should work with the original problematic code from user', () => {
+    const query = odataQuery<User>()
+    const queryEmail: string | null = null
+    // This was the original problem - should now work without needing isNull()
+    const filteredQuery = query.filter(q => q.email.equals(queryEmail))
+
+    const actual = filteredQuery.toString()
+    const expected = '$filter=email eq null'
+    expect(actual).toBe(expected)
+  })
+})
+
+describe('undefined value rejection', () => {
+  // Test that undefined values are rejected
+  it('should throw error when trying to filter by undefined value', () => {
+    const query = odataQuery<User>()
+    const undefinedValue: any = undefined
+
+    expect(() => {
+      query.filter(q => q.email.equals(undefinedValue))
+    }).toThrow(
+      'Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.'
+    )
+  })
+
+  it('should throw error for undefined in number filter', () => {
+    const query = odataQuery<User>()
+    const undefinedValue: any = undefined
+
+    expect(() => {
+      query.filter(q => q.id.equals(undefinedValue))
+    }).toThrow(
+      'Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.'
+    )
   })
 })

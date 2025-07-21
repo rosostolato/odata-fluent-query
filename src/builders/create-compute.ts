@@ -6,8 +6,6 @@ function computeBuilder(propertyPath: string): Record<string, (...args: any[]) =
   return {
     as: <TAlias extends string>(alias: TAlias) => ({
       toString: () => `${propertyPath} as ${alias}`,
-      _alias: alias,
-      _type: undefined
     }),
     toString: () => propertyPath,
     substring: (start: number, length?: number) => {

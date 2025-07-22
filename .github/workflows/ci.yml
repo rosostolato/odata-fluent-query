@@ -47,12 +47,10 @@ jobs:
           
       - name: Comment PR with test coverage
         if: matrix.node-version == '20.x' && github.event_name == 'pull_request'
-        uses: ArtiomTr/jest-coverage-report-action@v2
+        uses: MishaKav/jest-coverage-comment@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          coverage-file: coverage/lcov.info
-          base-coverage-file: coverage/lcov.info
-          annotations: all
-          package-manager: npm
-          threshold: 80
-          working-directory: ./
+          coverage-summary-path: coverage/coverage-summary.json
+          title: Test Coverage Report
+          summary-title: Coverage Summary
+          badge-title: Coverage

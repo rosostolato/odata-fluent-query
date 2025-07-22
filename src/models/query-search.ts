@@ -1,3 +1,7 @@
+export interface SearchExpressionInternal extends SearchExpression {
+  _get(): string
+}
+
 /**
  * Represents a search expression that can be used in OData $search queries
  */
@@ -34,12 +38,24 @@ export interface SearchExpression {
  */
 export interface SearchBuilder {
   /**
-   * Creates a search phrase (handles both single terms and multi-word phrases)
+   * Creates a search phrase for text
    * @param phrase The search phrase - can be a single word or multiple words
    * @returns SearchExpression for the phrase
    * @example
-   * search(s => s.phrase('bike')) // Results in: "bike"
-   * search(s => s.phrase('mountain bike')) // Results in: "mountain bike"
+   * search(s => s.phrase('bike')) // Results in: bike
+   * search(s => s.phrase('mountain bike')) // Results in: mountain bike
    */
   phrase(phrase: string): SearchExpression
+
+  /**
+   * Creates a search expression for non-string tokens (automatically quoted)
+   * Used for numbers, dates, booleans, or any value that needs to be quoted
+   * @param value The non-string value to search for
+   * @returns SearchExpression for the quoted value
+   * @example
+   * search(s => s.nonString(2022)) // Results in: "2022"
+   * search(s => s.nonString(true)) // Results in: "true"
+   * search(s => s.nonString(new Date('2023-01-01'))) // Results in: "2023-01-01T00:00:00.000Z"
+   */
+  nonString(value: number | boolean | Date): SearchExpression
 }

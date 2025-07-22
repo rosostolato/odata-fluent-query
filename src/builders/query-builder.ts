@@ -87,6 +87,13 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
     })
   }
 
+  if (qd.search) {
+    params.push({
+      key: '$search',
+      value: qd.search,
+    })
+  }
+
   return params
 }
 
@@ -107,6 +114,7 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
     rqd.select.length ||
     rqd.expands.length ||
     rqd.compute.length ||
+    rqd.search ||
     rqd.skip != null ||
     rqd.take != null ||
     rqd.count != false
@@ -151,6 +159,10 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
 
     if (rqd.compute.length) {
       operators.push(`$compute=${rqd.compute.join(',')}`)
+    }
+
+    if (rqd.search) {
+      operators.push(`$search=${rqd.search}`)
     }
 
     expand += operators.join(';') + ')'

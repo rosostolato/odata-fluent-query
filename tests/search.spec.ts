@@ -236,4 +236,36 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toBe(expected)
     })
   })
+
+  describe('search in expand operations', () => {
+    it('should work within expand queries', () => {
+      const query = odataQuery<User>()
+      const actual = query
+        .expand('posts', q => q
+          .search(s => s.phrase('technology'))
+          .select('id', 'content')
+        )
+        .toString()
+      
+      expect(actual).toContain('$expand=posts')
+      expect(actual).toContain('$search=technology')
+      expect(actual).toContain('$select=id,content')
+      expect(actual).toBe('$expand=posts($select=id,content;$search=technology)')
+    })
+
+    it('should combine search with other query options in expand', () => {
+      const query = odataQuery<User>()
+      const actual = query
+        .expand('posts', q => q
+          .search(s => s.token('2023'))
+          .filter(p => p.id.biggerThan(1))
+          .orderBy('date')
+        )
+        .toString()
+      
+      expect(actual).toContain('$search="2023"')
+      expect(actual).toContain('$filter=id gt 1')
+      expect(actual).toContain('$orderby=date')
+    })
+  })
 })

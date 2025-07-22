@@ -18,7 +18,7 @@ This lib only generates the query string, so you need to use it with your own im
 - 🎯 **Full TypeScript support** with built-in type definitions
 - 🔒 **Type-safe queries** with IntelliSense support
 - 🚀 **Modern ES2022** target for optimal performance
-- ✅ **98% test coverage** with 262 comprehensive tests
+- ✅ **98% test coverage** with 264 comprehensive tests
 - 📦 **Minimal dependencies** with only validator as a runtime dependency
 - 🔧 **Fluent API** for readable query building
 

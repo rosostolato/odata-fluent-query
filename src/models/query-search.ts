@@ -50,17 +50,17 @@ export interface SearchBuilder {
   phrase(phrase: string): SearchExpression
 
   /**
-   * Creates a search expression for non-string tokens (automatically quoted)
+   * Creates a search token (automatically quoted)
    * Use this for numbers, dates, booleans, or strings containing special characters (dots, symbols, etc.)
    * The output will be quoted to ensure it's treated as a valid OData search token
    * @param value The value to search for
    * @returns SearchExpression for the quoted value
    * @example
-   * search(s => s.nonString(2022)) // Results in: "2022"
-   * search(s => s.nonString(true)) // Results in: "true"
-   * search(s => s.nonString('example.com')) // Results in: "example.com" (quoted because of dot)
-   * search(s => s.nonString('user@domain.com')) // Results in: "user@domain.com" (quoted because of special chars)
-   * search(s => s.nonString(new Date('2023-01-01'))) // Results in: "2023-01-01T00:00:00.000Z"
+   * search(s => s.token(2022)) // Results in: "2022"
+   * search(s => s.token(true)) // Results in: "true"
+   * search(s => s.token('example.com')) // Results in: "example.com" (quoted because of dot)
+   * search(s => s.token('user@domain.com')) // Results in: "user@domain.com" (quoted because of special chars)
+   * search(s => s.token(new Date('2023-01-01'))) // Results in: "2023-01-01T00:00:00.000Z"
    */
-  nonString(value: number | boolean | Date | string): SearchExpression
+  token(value: number | boolean | Date | string): SearchExpression
 }

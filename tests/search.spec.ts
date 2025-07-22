@@ -17,31 +17,31 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toBe(expected)
     })
 
-    it('search with number using nonString (quoted)', () => {
+    it('search with number using token (quoted)', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.nonString(2022)).toString()
+      const actual = query.search(s => s.token(2022)).toString()
       const expected = '$search="2022"'
       expect(actual).toBe(expected)
     })
 
-    it('search with boolean using nonString (quoted)', () => {
+    it('search with boolean using token (quoted)', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.nonString(true)).toString()
+      const actual = query.search(s => s.token(true)).toString()
       const expected = '$search="true"'
       expect(actual).toBe(expected)
     })
 
-    it('search with date using nonString (quoted)', () => {
+    it('search with date using token (quoted)', () => {
       const query = odataQuery<User>()
       const date = new Date('2023-01-01T00:00:00.000Z')
-      const actual = query.search(s => s.nonString(date)).toString()
+      const actual = query.search(s => s.token(date)).toString()
       const expected = '$search="2023-01-01T00:00:00.000Z"'
       expect(actual).toBe(expected)
     })
 
-    it('search with string using nonString (quoted for special chars)', () => {
+    it('search with string using token (quoted for special chars)', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.nonString('example.com')).toString()
+      const actual = query.search(s => s.token('example.com')).toString()
       const expected = '$search="example.com"'
       expect(actual).toBe(expected)
     })
@@ -76,7 +76,7 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toBe(expected)
     })
 
-    it('search mixing phrase and nonString with logical operators', () => {
+    it('search mixing phrase and token with logical operators', () => {
       const query = odataQuery<User>()
       const actual = query.search(s => s.phrase('bike').and('2022')).toString()
       const expected = '$search=bike AND 2022'
@@ -92,9 +92,9 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toBe(expected)
     })
 
-    it('search with NOT on nonString', () => {
+    it('search with NOT on token', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.nonString(2022).not()).toString()
+      const actual = query.search(s => s.token(2022).not()).toString()
       const expected = '$search=NOT "2022"'
       expect(actual).toBe(expected)
     })
@@ -157,10 +157,10 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toContain('$count=true')
     })
 
-    it('search combined with nonString and filter', () => {
+    it('search combined with token and filter', () => {
       const query = odataQuery<User>()
       const actual = query
-        .search(s => s.nonString(2022))
+        .search(s => s.token(2022))
         .filter(u => u.id.biggerThan(10))
         .toString()
       expect(actual).toContain('$search="2022"')
@@ -177,9 +177,9 @@ describe('test odataQuery search functionality', () => {
       })
     })
 
-    it('search with nonString converts to object correctly', () => {
+    it('search with token converts to object correctly', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.nonString(2022)).toObject()
+      const actual = query.search(s => s.token(2022)).toObject()
       expect(actual).toEqual({
         $search: '"2022"'
       })
@@ -228,7 +228,7 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toBe(expected)
     })
 
-    it('handles mixed phrase and nonString in complex expressions', () => {
+    it('handles mixed phrase and token in complex expressions', () => {
       const query = odataQuery<User>()
       const actual = query.search(s => 
         s.phrase('bike').and('mountain').or('"2022"')

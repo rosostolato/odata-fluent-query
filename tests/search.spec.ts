@@ -38,6 +38,13 @@ describe('test odataQuery search functionality', () => {
       const expected = '$search="2023-01-01T00:00:00.000Z"'
       expect(actual).toBe(expected)
     })
+
+    it('search with string using nonString (quoted for special chars)', () => {
+      const query = odataQuery<User>()
+      const actual = query.search(s => s.nonString('example.com')).toString()
+      const expected = '$search="example.com"'
+      expect(actual).toBe(expected)
+    })
   })
 
   describe('search with logical operators', () => {

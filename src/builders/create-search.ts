@@ -15,13 +15,15 @@ function makeSearchExp(expression: string): SearchExpressionInternal {
 function makeSearchBuilder(): SearchBuilder {
   return {
     phrase: (phrase: string) => makeSearchExp(phrase),
-    nonString: (value: number | boolean | Date) => {
+    nonString: (value: number | boolean | Date | string) => {
       let stringValue: string
+
       if (value instanceof Date) {
         stringValue = value.toISOString()
       } else {
         stringValue = String(value)
       }
+      
       return makeSearchExp(`"${stringValue}"`)
     },
   }

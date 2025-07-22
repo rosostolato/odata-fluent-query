@@ -38,4 +38,13 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
-          fail_ci_if_error: false 
+          fail_ci_if_error: false
+          
+      - name: Comment PR with test coverage
+        if: matrix.node-version == '20.x' && github.event_name == 'pull_request'
+        uses: MishaKav/jest-coverage-comment@main
+        with:
+          coverage-summary-path: coverage/coverage-summary.json
+          title: Test Coverage Report
+          summary-title: Coverage Summary
+          badge-title: Coverage 

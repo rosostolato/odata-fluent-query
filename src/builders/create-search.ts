@@ -15,17 +15,8 @@ function makeSearchExp(expression: string): SearchExpressionInternal {
 function makeSearchBuilder(): SearchBuilder {
   return {
     phrase: (phrase: string) => makeSearchExp(phrase),
-    token: (value: number | boolean | Date | string) => {
-      let stringValue: string
-
-      if (value instanceof Date) {
-        stringValue = value.toISOString()
-      } else {
-        stringValue = String(value)
-      }
-      
-      return makeSearchExp(`"${stringValue}"`)
-    },
+    token: (value: number | boolean | string) =>  makeSearchExp(`"${String(value)}"`)
+    ,
   }
 }
 

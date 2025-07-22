@@ -31,11 +31,10 @@ describe('test odataQuery search functionality', () => {
       expect(actual).toBe(expected)
     })
 
-    it('search with date using token (quoted)', () => {
+    it('search with date string using token (quoted)', () => {
       const query = odataQuery<User>()
-      const date = new Date('2023-01-01T00:00:00.000Z')
-      const actual = query.search(s => s.token(date)).toString()
-      const expected = '$search="2023-01-01T00:00:00.000Z"'
+      const actual = query.search(s => s.token('2023-01-01')).toString()
+      const expected = '$search="2023-01-01"'
       expect(actual).toBe(expected)
     })
 

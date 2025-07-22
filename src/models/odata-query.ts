@@ -15,6 +15,16 @@ import { SelectParams } from './query-select'
 
 export interface ODataQuery<T> {
   /**
+   * Creates an ODataQuery from a query string
+   *
+   * @param queryString The OData query string to parse (e.g., "$filter=id eq 1&$select=name")
+   * @returns A new ODataQuery instance
+   * @example
+   * ODataQuery.fromString<User>("$filter=id eq 1&$select=name,email")
+   */
+  fromString?: never // This makes fromString unavailable on instances
+
+  /**
    * Sets $count=true in the OData query.
    * @returns The OData query with count enabled
    * @example
@@ -190,6 +200,18 @@ export interface ODataQuery<T> {
    * '$filter=order gt 5&$select=id'
    */
   toString(): string
+}
+
+export interface ODataQueryStatic {
+  /**
+   * Creates an ODataQuery from a query string
+   *
+   * @param queryString The OData query string to parse (e.g., "$filter=id eq 1&$select=name")
+   * @returns A new ODataQuery instance
+   * @example
+   * odataQuery.fromString<User>("$filter=id eq 1&$select=name,email")
+   */
+  fromString<T>(queryString: string): ODataQuery<T>
 }
 
 export type QueryObject = {

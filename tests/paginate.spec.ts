@@ -52,4 +52,22 @@ describe('testing ODataQuery paginate', () => {
     const expected = '$top=10&$count=true'
     expect(actual).toBe(expected)
   })
+
+  it('paginate with explicit count true', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .paginate({ pagesize: 15, page: 2, count: true })
+      .toString()
+    const expected = '$skip=30&$top=15&$count=true'
+    expect(actual).toBe(expected)
+  })
+
+  it('paginate with count null', () => {
+    const query = odataQuery<User>()
+    const actual = query
+      .paginate({ pagesize: 10, page: 1, count: null as any })
+      .toString()
+    const expected = '$skip=10&$top=10'
+    expect(actual).toBe(expected)
+  })
 })

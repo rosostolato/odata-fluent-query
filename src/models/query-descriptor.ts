@@ -1,13 +1,13 @@
 export interface QueryDescriptor {
-  count?: boolean | undefined
-  key?: string | undefined
-  skip?: number | undefined
-  take?: number | undefined
-  aggregator?: string | undefined
-  select: string[]
-  filters: string[]
-  orderby: string[]
-  groupby: string[]
-  expands: QueryDescriptor[]
+  key: string | null
   compute: string[]
+  expands: QueryDescriptor[]
+  filters: string[]
+  groupby: string[]
+  orderby: string[]
+  select: string[]
+  aggregator?: string
+  count?: boolean
+  skip?: number
+  take?: number
 }

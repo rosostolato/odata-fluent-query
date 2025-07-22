@@ -28,7 +28,7 @@ export function createPaginate(descriptor: QueryDescriptor) {
       count: data.count ?? false,
     }
     if (!queryDescriptor.skip) {
-      queryDescriptor.skip = undefined
+      delete queryDescriptor.skip
     }
     return createQuery(queryDescriptor)
   }

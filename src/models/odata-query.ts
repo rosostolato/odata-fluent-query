@@ -11,6 +11,7 @@ import {
 } from './query-filter'
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
+import { SearchBuilder, SearchExpression } from './query-search'
 import { SelectParams } from './query-select'
 
 export interface ODataQuery<T> {
@@ -171,6 +172,26 @@ export interface ODataQuery<T> {
   ): ODataQuery<T & Record<K, InferComputeType<V>>>
 
   /**
+   * Adds $search operator in the OData query.
+   * Enables free-text search across the collection.
+   * If both $search and $filter are specified, only entities satisfying both criteria are returned.
+   *
+   * @param exp Expression that builds a search expression from the builder
+   *
+   * @example
+   * // Basic search
+   * q.search(s => s.phrase('bike'))
+   * 
+   * // Search with logical operators
+   * q.search(s => s.phrase('mountain').and('bike'))
+   * q.search(s => s.phrase('bike').or('car'))
+   * 
+   * // Negation
+   * q.search(s => s.phrase('clothing').not())
+   */
+  search(exp: (builder: SearchBuilder) => SearchExpression): ODataQuery<T>
+
+  /**
    * Exports the query to an object with key/value pairs.
    *
    * @returns An object containing the OData query parameters
@@ -199,6 +220,7 @@ export type QueryObject = {
   $expand?: string
   $filter?: string
   $orderby?: string
+  $search?: string
   $select?: string
   $skip?: string
   $top?: string

@@ -10,4 +10,5 @@ export interface QueryDescriptor {
   groupby: string[]
   expands: QueryDescriptor[]
   compute: string[]
+  search?: string | undefined
 }

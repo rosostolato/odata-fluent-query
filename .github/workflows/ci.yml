@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [master, 'chore/**']
   pull_request:
     branches: [master]
     types: [opened, synchronize, reopened]

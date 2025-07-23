@@ -65,10 +65,7 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   }
 
   if (qd.search) {
-    params.push({
-      key: '$search',
-      value: qd.search,
-    })
+    addParam('$search', qd.search)
   }
 
   return params

@@ -5,31 +5,33 @@ describe('testing ODataQuery expand', () => {
   // one2one relation
   it('expand', () => {
     const query = odataQuery<User>()
-    const actual = query.expand('address').toString()
-    const expected = '$expand=address'
+    const actual = query.expand('manager').toString()
+    const expected = '$expand=manager'
     expect(actual).toBe(expected)
   })
 
   it('expand and select', () => {
     const query = odataQuery<User>()
-    const actual = query.expand('address', q => q.select('code')).toString()
-    const expected = '$expand=address($select=code)'
+    const actual = query.expand('manager', q => q.select('email')).toString()
+    const expected = '$expand=manager($select=email)'
     expect(actual).toBe(expected)
   })
 
   it('expand and select optional', () => {
     const query = odataQuery<User>()
-    const actual = query.expand('address2', q => q.select('code')).toString()
-    const expected = '$expand=address2($select=code)'
+    const actual = query
+      .expand('posts', q => q.select('id', 'title'))
+      .toString()
+    const expected = '$expand=posts($select=id,title)'
     expect(actual).toBe(expected)
   })
 
   it('expand twice', () => {
     const query = odataQuery<User>()
     const actual = query
-      .expand('address', q => q.expand('user', q => q.select('id')))
+      .expand('posts', q => q.expand('author', q => q.select('id')))
       .toString()
-    const expected = '$expand=address($expand=user($select=id))'
+    const expected = '$expand=posts($expand=author($select=id))'
     expect(actual).toBe(expected)
   })
 
@@ -121,8 +123,8 @@ describe('testing ODataQuery expand with key query', () => {
   // one2one relation
   it('expand', () => {
     const query = odataQuery<User>()
-    const actual = query.expand(u => u.address).toString()
-    const expected = '$expand=address'
+    const actual = query.expand(u => u.manager).toString()
+    const expected = '$expand=manager'
     expect(actual).toBe(expected)
   })
 
@@ -130,11 +132,11 @@ describe('testing ODataQuery expand with key query', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand(
-        u => u.address,
-        q => q.select('code')
+        u => u.manager,
+        q => q.select('email')
       )
       .toString()
-    const expected = '$expand=address($select=code)'
+    const expected = '$expand=manager($select=email)'
     expect(actual).toBe(expected)
   })
 
@@ -142,11 +144,11 @@ describe('testing ODataQuery expand with key query', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand(
-        u => u.address2,
-        q => q.select('code')
+        u => u.manager,
+        q => q.select('email')
       )
       .toString()
-    const expected = '$expand=address2($select=code)'
+    const expected = '$expand=manager($select=email)'
     expect(actual).toBe(expected)
   })
 
@@ -154,11 +156,11 @@ describe('testing ODataQuery expand with key query', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand(
-        u => u.address.user,
+        u => u.manager.posts,
         q => q.select('id')
       )
       .toString()
-    const expected = '$expand=address/user($select=id)'
+    const expected = '$expand=manager/posts($select=id)'
     expect(actual).toBe(expected)
   })
 

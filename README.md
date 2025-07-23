@@ -18,7 +18,7 @@ This lib only generates the query string, so you need to use it with your own im
 - 🎯 **Full TypeScript support** with built-in type definitions
 - 🔒 **Type-safe queries** with IntelliSense support
 - 🚀 **Modern ES2022** target for optimal performance
-- ✅ **98% test coverage** with 264 comprehensive tests
+- ✅ **98% test coverage** with 265 comprehensive tests
 - 📦 **Minimal dependencies** with only validator as a runtime dependency
 - 🔧 **Fluent API** for readable query building
 
@@ -468,7 +468,8 @@ The `search` method implements the OData `$search` system query option, which al
 
 ### Basic Search Operations
 
-The `search` method provides two main approaches for different types of search terms:
+The `search` method provides a simple, unified API using the `token()` method that automatically handles quoting based on the content, as OData spec requires search tokens with
+non-alpha characters to be wrapped in quotes:
 
 ```ts
 import { odataQuery } from 'odata-fluent-query'
@@ -481,210 +482,98 @@ interface User {
   isActive: boolean
 }
 
-// Simple phrase search (unquoted)
+// Simple text search (unquoted)
 odataQuery<User>()
-  .search(s => s.phrase('John'))
+  .search(s => s.token('John'))
   .toString()
 
 // result: $search=John
 
-// Multi-word phrase search (unquoted)
+// Non-alpha search (quoted)
 odataQuery<User>()
-  .search(s => s.phrase('John Smith'))
+  .search(s => s.token('2022'))
   .toString()
 
-// result: $search=John Smith
+// result: $search="2022"
 ```
 
-### Search Methods
+### The `token()` Method
 
-#### `phrase(text)` - Text Phrases
-Use `phrase()` for simple text searches containing only letters and spaces. The output is **not quoted**, making it suitable for natural language searches:
+The `token()` method automatically determines whether quotes are needed based on the content:
 
 ```ts
-// Single word
-odataQuery<User>().search(s => s.phrase('technology'))
+// Simple text - no quotes
+odataQuery<User>().search(s => s.token('technology'))
 // result: $search=technology
 
-// Multiple words  
-odataQuery<User>().search(s => s.phrase('getting started'))
-// result: $search=getting started
-
-// Category names
-odataQuery<User>().search(s => s.phrase('Product Reviews'))
-// result: $search=Product Reviews
-```
-
-#### `token(value)` - Quoted Values
-Use `token()` for numbers, booleans, dates, or strings with special characters. The output is **automatically quoted** to ensure proper OData parsing:
-
-```ts
-// Numbers
+// Numbers - automatically quoted
 odataQuery<User>().search(s => s.token(2023))
 // result: $search="2023"
 
-// Booleans  
-odataQuery<User>().search(s => s.token(true))
-// result: $search="true"
-
-// Strings with special characters
+// Special characters - automatically quoted
 odataQuery<User>().search(s => s.token('user@domain.com'))
 // result: $search="user@domain.com"
-
-// Domain names (contain dots)
-odataQuery<User>().search(s => s.token('example.com'))
-// result: $search="example.com"
-
-// Dates as strings
-odataQuery<User>().search(s => s.token('2023-01-15'))
-// result: $search="2023-01-15"
-
-// Convert Date objects manually if needed
-odataQuery<User>().search(s => s.token(new Date('2023-01-01').toISOString()))
-// result: $search="2023-01-01T00:00:00.000Z"
 ```
 
 ### Logical Operators
 
 Search expressions support logical operators with **proper OData precedence**: `Grouping → NOT → AND → OR`
 
-#### AND Operations
-```ts
-// Combine terms with AND
-odataQuery<User>()
-  .search(s => s.phrase('bike').and('mountain'))
-  .toString()
+### Logical Operators
 
+```ts
+// AND operations
+odataQuery<User>()
+  .search(s => s.token('bike').and('mountain'))
+  .toString()
 // result: $search=bike AND mountain
 
-// Chain multiple AND operations
+// OR operations
 odataQuery<User>()
-  .search(s => s.phrase('red').and('bike').and('mountain'))
+  .search(s => s.token('bike').or('car'))
   .toString()
-
-// result: $search=red AND bike AND mountain
-```
-
-#### OR Operations  
-```ts
-// Combine terms with OR
-odataQuery<User>()
-  .search(s => s.phrase('bike').or('car'))
-  .toString()
-
 // result: $search=bike OR car
 
-// Chain multiple OR operations
+// NOT operations
 odataQuery<User>()
-  .search(s => s.phrase('bike').or('car').or('truck'))
+  .search(s => s.token('electronics').not())
   .toString()
-
-// result: $search=bike OR car OR truck
-```
-
-#### NOT Operations
-```ts
-// Negate a search term
-odataQuery<User>()
-  .search(s => s.phrase('electronics').not())
-  .toString()
-
 // result: $search=NOT electronics
-
-// NOT with tokens
-odataQuery<User>()
-  .search(s => s.token(2022).not())
-  .toString()
-
-// result: $search=NOT "2022"
-
-// NOT combined with AND/OR
-odataQuery<User>()
-  .search(s => s.phrase('bike').and('red').not())
-  .toString()
-
-// result: $search=NOT bike AND red (due to operator precedence)
 ```
 
-#### Complex Expressions with Precedence
-OData search follows specific operator precedence rules. Understanding these is crucial for complex queries:
+Search expressions support **proper OData precedence**: `Grouping → NOT → AND → OR`
 
 ```ts
-// Precedence: NOT → AND → OR
+// Mix simple text and quoted values
 odataQuery<User>()
-  .search(s => s.phrase('laptop').or('mouse').and('wireless'))
+  .search(s => s.token('bike').and('mountain').or(2023))
   .toString()
-
-// result: $search=laptop OR mouse AND wireless
-// Equivalent to: laptop OR (mouse AND wireless)
-
-// Mix phrases and tokens  
-odataQuery<User>()
-  .search(s => s.phrase('bike').and('mountain').or('\"2023\"'))
-  .toString()
-
 // result: $search=bike AND mountain OR "2023"
 ```
 
 ### Combining Search with Other Query Options
 
-Search works seamlessly with all other OData query options:
-
 ```ts
-// Search + Filter
+// Search + Filter + Select
 odataQuery<User>()
-  .search(s => s.phrase('John'))
+  .search(s => s.token('John'))
   .filter(u => u.isActive.equals(true))
+  .select('id', 'email')
   .toString()
-
-// result: $search=John&$filter=isActive eq true
-
-// Search + Select + OrderBy
-odataQuery<User>()
-  .search(s => s.token('example.com'))
-  .select('id', 'email', 'firstName')
-  .orderBy('firstName')
-  .toString()
-
-// result: $search="example.com"&$select=id,email,firstName&$orderby=firstName
-
-// Search + Pagination
-odataQuery<User>()
-  .search(s => s.phrase('technology'))
-  .paginate(10, 2)
-  .toString()
-
-// result: $search=technology&$skip=20&$top=10&$count=true
+// result: $search=John&$filter=isActive eq true&$select=id,email
 ```
 
 ### Search in Expand Operations
 
-Search can also be used within `expand` operations to filter related entities:
-
 ```ts
-interface User {
-  id: number
-  name: string
-  posts: Post[]
-}
-
-interface Post {
-  id: number
-  title: string
-  content: string
-  category: string
-}
-
 // Search within expanded posts
 odataQuery<User>()
   .expand('posts', q => q
-    .search(s => s.phrase('OData'))
+    .search(s => s.token('OData'))
     .select('id', 'title')
-    .filter(p => p.category.equals('Technology'))
   )
   .toString()
-
-// result: $expand=posts($search=OData&$select=id,title&$filter=category eq 'Technology')
+// result: $expand=posts($search=OData&$select=id,title)
 ```
 
 ## Grouping with `groupBy`

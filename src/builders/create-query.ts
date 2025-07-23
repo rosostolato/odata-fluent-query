@@ -1,4 +1,5 @@
 import { QueryDescriptor, QueryObject } from '../models'
+import { createCompute } from './create-compute'
 import { createExpand } from './create-expand'
 import { createFilter } from './create-filter'
 import { createGroupby } from './create-groupby'
@@ -6,16 +7,12 @@ import { createOrderby } from './create-orderby'
 import { createPaginate } from './create-paginate'
 import { createSearch } from './create-search'
 import { createSelect } from './create-select'
-import { createCompute } from './create-compute'
 import { makeQuery } from './query-builder'
 
 export function createQueryDescriptor(key?: string): QueryDescriptor {
   return {
-    key: key ?? undefined,
-    skip: undefined,
-    take: undefined,
+    key: key ?? null,
     count: false,
-    aggregator: undefined,
     filters: [],
     expands: [],
     orderby: [],

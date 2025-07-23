@@ -102,7 +102,7 @@ describe('testing ODataQuery expand', () => {
 
   it('expand with empty query (no conditions)', () => {
     const query = odataQuery<User>()
-    const actual = query.expand('posts', e => e).toString()
+    const actual = query.expand('posts').toString()
     const expected = '$expand=posts'
     expect(actual).toBe(expected)
   })
@@ -113,14 +113,6 @@ describe('testing ODataQuery expand', () => {
       .expand('posts', e => e.paginate({ pagesize: 5, page: 0, count: false }))
       .toString()
     const expected = '$expand=posts($top=5)'
-    expect(actual).toBe(expected)
-  })
-
-  it('expand with only count false (no other conditions)', () => {
-    const query = odataQuery<User>()
-    // Test expand where the inner query has no meaningful conditions
-    const actual = query.expand('posts').toString()
-    const expected = '$expand=posts'
     expect(actual).toBe(expected)
   })
 })

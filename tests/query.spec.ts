@@ -1,4 +1,5 @@
-import { odataQuery } from '../src'
+import { odataQuery, QueryDescriptor } from '../src'
+import { makeRelationQuery } from '../src/builders'
 import { User } from './data/user'
 
 describe('testing ODataQuery', () => {
@@ -38,5 +39,20 @@ describe('testing ODataQuery', () => {
       $orderby: 'email',
     }
     expect(actual).toStrictEqual(expected)
+  })
+})
+
+describe('testing edge cases', () => {
+  it('should throw error if expand has no key', () => {
+    const queryDescriptor: QueryDescriptor = {
+      key: null,
+      expands: [],
+      filters: [],
+      orderby: [],
+      groupby: [],
+      compute: [],
+      select: [],
+    }
+    expect(() => makeRelationQuery(queryDescriptor)).toThrow()
   })
 })

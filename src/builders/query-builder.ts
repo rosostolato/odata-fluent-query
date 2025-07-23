@@ -11,80 +11,57 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
     value: string
   }[] = []
 
+  // Helper function to add a parameter
+  const addParam = (key: string, value: string) => {
+    params.push({ key, value })
+  }
+
+  // Use consistent order regardless of input order (since OData spec says order is insignificant)
   if (qd.filters.length) {
     if (qd.filters.length > 1) {
-      params.push({
-        key: '$filter',
-        value: `${qd.filters.map(makeQueryParentheses).join(' and ')}`,
-      })
+      addParam(
+        '$filter',
+        `${qd.filters.map(makeQueryParentheses).join(' and ')}`
+      )
     } else {
-      params.push({
-        key: '$filter',
-        value: `${qd.filters.join()}`,
-      })
+      addParam('$filter', `${qd.filters.join()}`)
     }
   }
 
   if (qd.groupby.length) {
     let group = `groupby((${qd.groupby.join(', ')})`
-
     if (qd.aggregator) {
       group += `, aggregate(${qd.aggregator})`
     }
-
-    params.push({
-      key: '$apply',
-      value: group + ')',
-    })
+    addParam('$apply', group + ')')
   }
 
   if (qd.expands.length) {
-    params.push({
-      key: '$expand',
-      value: `${qd.expands.map(makeRelationQuery).join(',')}`,
-    })
+    addParam('$expand', `${qd.expands.map(makeRelationQuery).join(',')}`)
   }
 
   if (qd.select.length) {
-    params.push({
-      key: '$select',
-      value: `${qd.select.join(',')}`,
-    })
+    addParam('$select', `${qd.select.join(',')}`)
   }
 
   if (qd.orderby.length) {
-    params.push({
-      key: '$orderby',
-      value: `${qd.orderby.join(', ')}`,
-    })
+    addParam('$orderby', `${qd.orderby.join(', ')}`)
   }
 
   if (qd.skip != null) {
-    params.push({
-      key: '$skip',
-      value: `${qd.skip}`,
-    })
+    addParam('$skip', `${qd.skip}`)
   }
 
   if (qd.take != null) {
-    params.push({
-      key: '$top',
-      value: `${qd.take}`,
-    })
+    addParam('$top', `${qd.take}`)
   }
 
   if (qd.count == true) {
-    params.push({
-      key: '$count',
-      value: `true`,
-    })
+    addParam('$count', 'true')
   }
 
   if (qd.compute.length) {
-    params.push({
-      key: '$compute',
-      value: `${qd.compute.join(',')}`,
-    })
+    addParam('$compute', `${qd.compute.join(',')}`)
   }
 
   if (qd.search) {
@@ -106,7 +83,10 @@ export function makeQueryParentheses(query: string): string {
 }
 
 export function makeRelationQuery(rqd: QueryDescriptor): string {
-  let expand: string = rqd.key || ''
+  if (!rqd.key) {
+    throw new Error('Query descriptor for expand must have a key')
+  }
+  let expand: string = rqd.key
 
   if (
     rqd.filters.length ||

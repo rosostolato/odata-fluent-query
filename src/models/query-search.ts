@@ -6,7 +6,7 @@ export interface SearchExpression {
    * Negates the current search expression
    * @returns A new search expression with NOT operator
    * @example
-   * search(s => s.phrase('clothing').not()) // Results in: NOT "clothing"
+   * search(s => s.token('clothing').not()) // Results in: NOT clothing
    */
   not(): SearchExpression
 

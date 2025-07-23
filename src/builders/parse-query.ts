@@ -82,6 +82,10 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
       case '$apply':
         parseApply(trimmedValue, descriptor)
         break
+
+      case '$search':
+        descriptor.search = trimmedValue
+        break
     }
   }
 
@@ -231,6 +235,10 @@ function parseNestedQuery(nestedQuery: string): QueryDescriptor {
 
       case '$expand':
         descriptor.expands = parseExpand(trimmedValue)
+        break
+
+      case '$search':
+        descriptor.search = trimmedValue
         break
     }
   }

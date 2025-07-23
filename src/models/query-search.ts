@@ -16,9 +16,9 @@ export interface SearchExpression {
    * @returns A new search expression representing both conditions
    * @example
    * search(s => s.token('bike').and('mountain')) // Results in: bike AND mountain
-   * search(s => s.token('bike').and('2022')) // Results in: bike AND "2022"
+   * search(s => s.token('bike').and(2022)) // Results in: bike AND "2022"
    */
-  and(value: string): SearchExpression
+  and(value: number | boolean | string): SearchExpression
 
   /**
    * Combines this search expression with another using logical OR
@@ -26,9 +26,9 @@ export interface SearchExpression {
    * @returns A new search expression representing either condition
    * @example
    * search(s => s.token('bike').or('car')) // Results in: bike OR car
-   * search(s => s.token('bike').or('2022')) // Results in: bike OR "2022"
+   * search(s => s.token('bike').or(2022)) // Results in: bike OR "2022"
    */
-  or(value: string): SearchExpression
+  or(value: number | boolean | string): SearchExpression
 }
 
 /**

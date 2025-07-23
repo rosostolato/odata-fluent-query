@@ -20,12 +20,12 @@ function makeSearchExp(expression: string): SearchExpressionInternal {
   return {
     _get: () => expression,
     not: () => makeSearchExp(`NOT ${expression}`),
-    and: (value: string) => {
+    and: (value: number | boolean | string) => {
       const processedValue = processToken(value)
       
       return makeSearchExp(`${expression} AND ${processedValue}`)
     },
-    or: (value: string) => {
+    or: (value: number | boolean | string) => {
       const processedValue = processToken(value)
 
       return makeSearchExp(`${expression} OR ${processedValue}`)

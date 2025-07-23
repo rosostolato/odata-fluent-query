@@ -18,7 +18,7 @@ This lib only generates the query string, so you need to use it with your own im
 - 🎯 **Full TypeScript support** with built-in type definitions
 - 🔒 **Type-safe queries** with IntelliSense support
 - 🚀 **Modern ES2022** target for optimal performance
-- ✅ **98% test coverage** with 265 comprehensive tests
+- ✅ **98% test coverage** with 267 comprehensive tests
 - 📦 **Minimal dependencies** with only validator as a runtime dependency
 - 🔧 **Fluent API** for readable query building
 
@@ -522,11 +522,16 @@ Search expressions support logical operators with **proper OData precedence**: `
 ### Logical Operators
 
 ```ts
-// AND operations
+// AND operations with automatic quoting
 odataQuery<User>()
   .search(s => s.token('bike').and('mountain'))
   .toString()
 // result: $search=bike AND mountain
+
+odataQuery<User>()
+  .search(s => s.token('bike').and(2023))
+  .toString()
+// result: $search=bike AND "2023"
 
 // OR operations
 odataQuery<User>()

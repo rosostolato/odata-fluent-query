@@ -100,6 +100,22 @@ describe('test odataQuery search functionality', () => {
 
       expect(actual).toBe(expected)
     })
+
+    it('search with AND using number parameter', () => {
+      const query = odataQuery<User>()
+      const actual = query.search(s => s.token('bike').and(2023)).toString()
+      const expected = '$search=bike AND "2023"'
+
+      expect(actual).toBe(expected)
+    })
+
+    it('search with OR using boolean parameter', () => {
+      const query = odataQuery<User>()
+      const actual = query.search(s => s.token('bike').or(true)).toString()
+      const expected = '$search=bike OR "true"'
+
+      expect(actual).toBe(expected)
+    })
   })
 
   describe('search with NOT operator', () => {

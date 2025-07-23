@@ -37,4 +37,4 @@ export type ExpandQueryComplex<T> = T extends Array<infer U>
   : never
 
 export type ExpandObjectQuery<T> = Pick<ODataQuery<T>, 'select' | 'expand'>
-export type ExpandArrayQuery<T> = Omit<ODataQuery<T>, 'toString' | 'toObject'>
+export type ExpandArrayQuery<T> = ODataQuery<T, any, any, any>

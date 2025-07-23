@@ -1,5 +1,5 @@
-export type SelectParams<T, Tkey> = Array<
-  Tkey | ((exp: SelectBuilder<T>) => SelectExpression)
+export type SelectParams<T, TKey extends keyof T> = Array<
+  TKey | ((exp: SelectBuilder<T>) => SelectExpression)
 >
 
 export type SelectBuilder<T> = {

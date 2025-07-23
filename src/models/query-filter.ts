@@ -1,5 +1,4 @@
-type Defined<T> = Exclude<T, undefined>
-type ExtractNull<T> = Extract<null, T>
+import { Defined, ExtractNull } from './type-utils'
 
 export type FilterBuilder<T> = {
   readonly [P in keyof T]-?: FilterBuilderProp<T[P]>

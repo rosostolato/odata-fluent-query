@@ -12,8 +12,56 @@ import {
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
 import { SelectParams } from './query-select'
+import {
+  ExpandedOptionalProperties,
+  IntersectTypes,
+  OptionalProperties,
+  RequiredProperties,
+  SelectedProperties,
+} from './type-utils'
 
-export interface ODataQuery<T> {
+export type QueryObject = {
+  $apply?: string
+  $compute?: string
+  $count?: string
+  $expand?: string
+  $filter?: string
+  $orderby?: string
+  $select?: string
+  $skip?: string
+  $top?: string
+}
+
+// Main result type that combines all transformations
+export type QueryResultType<
+  T,
+  TSelected extends keyof T | never = never,
+  TComputed = {},
+  TExpanded extends keyof OptionalProperties<T> = never
+> = [TSelected] extends [never]
+  ? // No select applied - include all required properties + expanded navigation properties + computed fields
+    IntersectTypes<
+      IntersectTypes<
+        RequiredProperties<T>,
+        ExpandedOptionalProperties<T, TExpanded>
+      >,
+      TComputed
+    >
+  : // Select applied - create intersection of selected properties
+    IntersectTypes<
+      IntersectTypes<
+        SelectedProperties<T, TSelected & keyof RequiredProperties<T>>,
+        ExpandedOptionalProperties<T, TSelected & TExpanded>
+      >,
+      TComputed
+    >
+
+export interface ODataQuery<
+  T,
+  TSelected extends keyof T | never = never,
+  TComputed = {},
+  TExpanded extends keyof OptionalProperties<T> = never
+> {
   /**
    * Creates an ODataQuery from a query string
    *
@@ -30,7 +78,7 @@ export interface ODataQuery<T> {
    * @example
    * q.count()
    */
-  count(): ODataQuery<T>
+  count(): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Adds $expand operator in the OData query.
@@ -47,7 +95,12 @@ export interface ODataQuery<T> {
   expand<Tkey extends keyof ExpandKey<T>, U = Required<T>[Tkey]>(
     key: Tkey | ExpandParam<T, U>,
     query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
-  ): ODataQuery<T>
+  ): ODataQuery<
+    T,
+    TSelected,
+    TComputed,
+    TExpanded | (Tkey & keyof OptionalProperties<T>)
+  >
 
   /**
    * Adds $filter operator in the OData query.
@@ -58,7 +111,9 @@ export interface ODataQuery<T> {
    * @example
    * q.filter(u => u.id.equals(1))
    */
-  filter(exp: (x: FilterBuilder<T>) => FilterExpression): ODataQuery<T>
+  filter(
+    exp: (x: FilterBuilder<T>) => FilterExpression
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
   /**
    * Adds $filter operator in the OData query.
    * Multiple calls to Filter will be merged with `and`.
@@ -72,7 +127,7 @@ export interface ODataQuery<T> {
   filter<TKey extends keyof T>(
     key: TKey,
     exp: (x: FilterBuilderProp<T[TKey]>) => FilterExpression
-  ): ODataQuery<T>
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Groups the results by the selected keys.
@@ -89,7 +144,7 @@ export interface ODataQuery<T> {
   groupBy<key extends keyof T>(
     keys: key[],
     aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>
-  ): ODataQuery<T>
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Adds $orderby operator in the OData query.
@@ -104,7 +159,7 @@ export interface ODataQuery<T> {
   orderBy<TKey extends keyof T>(
     key: TKey,
     order?: 'asc' | 'desc'
-  ): ODataQuery<T>
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
   /**
    * Adds $orderby operator in the OData query.
    * Ordering over relations is supported (check OData implementation for details).
@@ -116,7 +171,7 @@ export interface ODataQuery<T> {
    */
   orderBy(
     exp: (ob: OrderByBuilder<T>) => OrderBy | OrderByExpression
-  ): ODataQuery<T>
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Adds $skip and $top in the OData query.
@@ -129,7 +184,10 @@ export interface ODataQuery<T> {
    * @example
    * q.paginate(50, 0)
    */
-  paginate(pagesize: number, page?: number): ODataQuery<T>
+  paginate(
+    pagesize: number,
+    page?: number
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
   /**
    * Adds $skip and $top in the OData query.
    * The pageindex is zero-based.
@@ -143,7 +201,7 @@ export interface ODataQuery<T> {
     pagesize: number
     page?: number
     count?: boolean
-  }): ODataQuery<T>
+  }): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Adds $select operator in the OData query.
@@ -156,7 +214,43 @@ export interface ODataQuery<T> {
    * q.select(x => x.address.city)
    * q.select('id', x => x.title)
    */
-  select<TKey extends keyof T>(...keys: SelectParams<T, TKey>): ODataQuery<T>
+  select<K1 extends keyof T>(k1: K1): ODataQuery<T, K1, TComputed, TExpanded>
+  select<K1 extends keyof T, K2 extends keyof T>(
+    k1: K1,
+    k2: K2
+  ): ODataQuery<T, K1 | K2, TComputed, TExpanded>
+  select<K1 extends keyof T, K2 extends keyof T, K3 extends keyof T>(
+    k1: K1,
+    k2: K2,
+    k3: K3
+  ): ODataQuery<T, K1 | K2 | K3, TComputed, TExpanded>
+  select<
+    K1 extends keyof T,
+    K2 extends keyof T,
+    K3 extends keyof T,
+    K4 extends keyof T
+  >(
+    k1: K1,
+    k2: K2,
+    k3: K3,
+    k4: K4
+  ): ODataQuery<T, K1 | K2 | K3 | K4, TComputed, TExpanded>
+  select<
+    K1 extends keyof T,
+    K2 extends keyof T,
+    K3 extends keyof T,
+    K4 extends keyof T,
+    K5 extends keyof T
+  >(
+    k1: K1,
+    k2: K2,
+    k3: K3,
+    k4: K4,
+    k5: K5
+  ): ODataQuery<T, K1 | K2 | K3 | K4 | K5, TComputed, TExpanded>
+  select<TKey extends keyof T>(
+    ...keys: SelectParams<T, TKey>
+  ): ODataQuery<T, TKey, TComputed, TExpanded>
 
   /**
    * Adds $compute operator in the OData query.
@@ -178,7 +272,12 @@ export interface ODataQuery<T> {
    */
   compute<K extends string, V>(
     exp: (builder: ComputeBuilder<T>) => ComputeExpressionWithAlias<K, V>
-  ): ODataQuery<T & Record<K, InferComputeType<V>>>
+  ): ODataQuery<
+    T & Record<K, InferComputeType<V>>,
+    TSelected extends never ? never : TSelected,
+    TComputed & Record<K, InferComputeType<V>>,
+    TExpanded
+  >
 
   /**
    * Exports the query to an object with key/value pairs.
@@ -200,6 +299,18 @@ export interface ODataQuery<T> {
    * '$filter=order gt 5&$select=id'
    */
   toString(): string
+
+  /**
+   * Type-only property for TypeScript inference. Use `typeof query.type` to get the result type.
+   * This property exists only for type inference and has no runtime value.
+   *
+   * @example
+   * const query = odataQuery<User>().select('id', 'name')
+   * type UserResponse = typeof query.type // Will be Pick<User, 'id' | 'name'>
+   *
+   * const result = await http.get<UserResponse>(`/Users?${query.toString()}`)
+   */
+  readonly type: QueryResultType<T, TSelected, TComputed, TExpanded>
 }
 
 export interface ODataQueryStatic {
@@ -212,16 +323,4 @@ export interface ODataQueryStatic {
    * odataQuery.fromString<User>("$filter=id eq 1&$select=name,email")
    */
   fromString<T>(queryString: string): ODataQuery<T>
-}
-
-export type QueryObject = {
-  $apply?: string
-  $compute?: string
-  $count?: string
-  $expand?: string
-  $filter?: string
-  $orderby?: string
-  $select?: string
-  $skip?: string
-  $top?: string
 }

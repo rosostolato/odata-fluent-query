@@ -207,7 +207,7 @@ describe('testing ODataQuery fromString', () => {
 
     it('should parse query with compute and other operations', () => {
       const queryString =
-        '$filter=id gt 1&$select=id,fullName&$orderby=fullName asc&$compute=firstName concat lastName as fullName'
+        '$filter=id gt 1&$select=id,fullName&$orderby=fullName asc&$compute=givenName concat surname as fullName'
       const query = odataQuery.fromString<User>(queryString)
       const actual = query.toString()
       expect(actual).toBe(queryString)
@@ -357,13 +357,13 @@ describe('testing ODataQuery fromString', () => {
 
     it('should handle compute operations in toObject', () => {
       const queryString =
-        '$compute=firstName concat lastName as fullName&$select=id,fullName&$filter=id gt 1'
+        '$compute=givenName concat surname as fullName&$select=id,fullName&$filter=id gt 1'
       const query = odataQuery.fromString<User>(queryString)
       const actual = query.toObject()
       const expected = {
         $filter: 'id gt 1',
         $select: 'id,fullName',
-        $compute: 'firstName concat lastName as fullName',
+        $compute: 'givenName concat surname as fullName',
       }
       expect(actual).toEqual(expected)
     })

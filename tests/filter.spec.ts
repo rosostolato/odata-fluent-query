@@ -70,15 +70,15 @@ describe('test odataQuery filter by string', () => {
 
   it('isNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.email.isNull()).toString()
-    const expected = '$filter=email eq null'
+    const actual = query.filter(q => q.surname.isNull()).toString()
+    const expected = '$filter=surname eq null'
     expect(actual).toBe(expected)
   })
 
   it('notNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.email.notNull()).toString()
-    const expected = '$filter=email ne null'
+    const actual = query.filter(q => q.surname.notNull()).toString()
+    const expected = '$filter=surname ne null'
     expect(actual).toBe(expected)
   })
 
@@ -175,7 +175,7 @@ describe('test odataQuery filter by string', () => {
 })
 
 // guid
-describe('testodataQuery filter by guid', () => {
+describe('test odataQuery filter by guid', () => {
   it('equals', () => {
     const query = odataQuery<User>()
     const guid = '003b63b4-e0b0-40db-8d5f-fb388bf0eabc'
@@ -204,7 +204,7 @@ describe('testodataQuery filter by guid', () => {
 })
 
 // number
-describe('testodataQuery filter by number', () => {
+describe('test odataQuery filter by number', () => {
   it('biggerThan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.id.biggerThan(5)).toString()
@@ -249,15 +249,15 @@ describe('testodataQuery filter by number', () => {
 
   it('isNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.id.isNull()).toString()
-    const expected = '$filter=id eq null'
+    const actual = query.filter(q => q.age.isNull()).toString()
+    const expected = '$filter=age eq null'
     expect(actual).toBe(expected)
   })
 
   it('notNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.id.notNull()).toString()
-    const expected = '$filter=id ne null'
+    const actual = query.filter(q => q.age.notNull()).toString()
+    const expected = '$filter=age ne null'
     expect(actual).toBe(expected)
   })
 
@@ -270,7 +270,7 @@ describe('testodataQuery filter by number', () => {
 })
 
 // boolean
-describe('testodataQuery filter by boolean', () => {
+describe('test odataQuery filter by boolean', () => {
   it('equals', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.accountEnabled.equals(true)).toString()
@@ -289,7 +289,7 @@ describe('testodataQuery filter by boolean', () => {
 })
 
 // Date
-describe('testodataQuery filter by Date', () => {
+describe('test odataQuery filter by Date', () => {
   it('inTimeSpan', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.createDate.inTimeSpan(2020)).toString()
@@ -372,21 +372,21 @@ describe('testodataQuery filter by Date', () => {
 
   it('isNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.createDate.isNull()).toString()
-    const expected = '$filter=createDate eq null'
+    const actual = query.filter(q => q.lastLogin.isNull()).toString()
+    const expected = '$filter=lastLogin eq null'
     expect(actual).toBe(expected)
   })
 
   it('notNull', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.createDate.notNull()).toString()
-    const expected = '$filter=createDate ne null'
+    const actual = query.filter(q => q.lastLogin.notNull()).toString()
+    const expected = '$filter=lastLogin ne null'
     expect(actual).toBe(expected)
   })
 })
 
 // object
-describe('testodataQuery filter by object', () => {
+describe('test odataQuery filter by object', () => {
   it('filter by nested property', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.address.code.biggerThan(5)).toString()
@@ -403,21 +403,21 @@ describe('testodataQuery filter by object', () => {
 
   it('filter by null object property', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.address2.isNull()).toString()
-    const expected = '$filter=address2 eq null'
+    const actual = query.filter(q => q.surname.isNull()).toString()
+    const expected = '$filter=surname eq null'
     expect(actual).toBe(expected)
   })
 
   it('filter by not null object property', () => {
     const query = odataQuery<User>()
-    const actual = query.filter(q => q.address2.notNull()).toString()
-    const expected = '$filter=address2 ne null'
+    const actual = query.filter(q => q.lastLogin.notNull()).toString()
+    const expected = '$filter=lastLogin ne null'
     expect(actual).toBe(expected)
   })
 })
 
 // array
-describe('testodataQuery filter by array', () => {
+describe('test odataQuery filter by array', () => {
   it('filter by empty array', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.phoneNumbers.empty()).toString()
@@ -511,7 +511,7 @@ describe('testodataQuery filter by array', () => {
 })
 
 // by another key
-describe('testodataQuery filter by another key', () => {
+describe('test odataQuery filter by another key', () => {
   it('string', () => {
     const query = odataQuery<User>()
     const actual = query.filter(q => q.givenName.contains(q.surname)).toString()
@@ -546,7 +546,7 @@ describe('testodataQuery filter by another key', () => {
 })
 
 // composed
-describe('testodataQuery filter composed', () => {
+describe('test odataQuery filter composed', () => {
   it('and [inline]', () => {
     const query = odataQuery<User>()
     const actual = query
@@ -637,7 +637,7 @@ describe('testodataQuery filter composed', () => {
 })
 
 // alt
-describe('testodataQuery filter alt', () => {
+describe('test odataQuery filter alt', () => {
   it('alt', () => {
     const query = odataQuery<User>()
     const actual = query.filter('email', q => q.startsWith('test')).toString()
@@ -804,9 +804,9 @@ describe('test dateToObject function', () => {
 describe('test odataQuery filter with nullable values', () => {
   it('should allow null value for nullable string property', () => {
     const query = odataQuery<User>()
-    const queryEmail: string | null = null
-    const actual = query.filter(q => q.email.equals(queryEmail)).toString()
-    const expected = '$filter=email eq null'
+    const querySurname: string | null = null
+    const actual = query.filter(q => q.surname.equals(querySurname)).toString()
+    const expected = '$filter=surname eq null'
     expect(actual).toBe(expected)
   })
 
@@ -820,9 +820,9 @@ describe('test odataQuery filter with nullable values', () => {
 
   it('should allow null value for nullable number property', () => {
     const query = odataQuery<User>()
-    const queryId: number | null = null
-    const actual = query.filter(q => q.id.equals(queryId)).toString()
-    const expected = '$filter=id eq null'
+    const queryNumber: number | null = null
+    const actual = query.filter(q => q.age.equals(queryNumber)).toString()
+    const expected = '$filter=age eq null'
     expect(actual).toBe(expected)
   })
 
@@ -837,8 +837,8 @@ describe('test odataQuery filter with nullable values', () => {
   it('should allow null value for nullable date property', () => {
     const query = odataQuery<User>()
     const queryDate: Date | null = null
-    const actual = query.filter(q => q.createDate.equals(queryDate)).toString()
-    const expected = '$filter=createDate eq null'
+    const actual = query.filter(q => q.lastLogin.equals(queryDate)).toString()
+    const expected = '$filter=lastLogin eq null'
     expect(actual).toBe(expected)
   })
 
@@ -852,9 +852,9 @@ describe('test odataQuery filter with nullable values', () => {
 
   it('should allow null value with notEquals for nullable property', () => {
     const query = odataQuery<User>()
-    const queryEmail: string | null = null
-    const actual = query.filter(q => q.email.notEquals(queryEmail)).toString()
-    const expected = '$filter=email ne null'
+    const queryStr: string | null = null
+    const actual = query.filter(q => q.surname.notEquals(queryStr)).toString()
+    const expected = '$filter=surname ne null'
     expect(actual).toBe(expected)
   })
 
@@ -874,27 +874,27 @@ describe('test odataQuery filter with nullable values', () => {
 
   it('should work with mixed null and non-null values', () => {
     const query = odataQuery<User>()
-    const searchEmail: string | null = null
+    const searchStr: string | null = null
     const isEnabled: boolean = true
 
     const actual = query
-      .filter(q => q.email.equals(searchEmail))
+      .filter(q => q.surname.equals(searchStr))
       .filter(q => q.accountEnabled.equals(isEnabled))
       .toString()
 
-    const expected = '$filter=email eq null and accountEnabled eq true'
+    const expected = '$filter=surname eq null and accountEnabled eq true'
     expect(actual).toBe(expected)
   })
 
   // Test the exact code from the user's issue
   it('should work with the original problematic code from user', () => {
     const query = odataQuery<User>()
-    const queryEmail: string | null = null
+    const queryStr: string | null = null
     // This was the original problem - should now work without needing isNull()
-    const filteredQuery = query.filter(q => q.email.equals(queryEmail))
+    const filteredQuery = query.filter(q => q.surname.equals(queryStr))
 
     const actual = filteredQuery.toString()
-    const expected = '$filter=email eq null'
+    const expected = '$filter=surname eq null'
     expect(actual).toBe(expected)
   })
 })

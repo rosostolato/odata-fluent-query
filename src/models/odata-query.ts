@@ -173,21 +173,22 @@ export interface ODataQuery<T> {
 
   /**
    * Adds $search operator in the OData query.
-   * Enables free-text search across the collection.
-   * If both $search and $filter are specified, only entities satisfying both criteria are returned.
+   * Enables free-text search across the collection with automatic quoting.
+   * Simple text remains unquoted, while numbers, booleans, and special characters are quoted.
    *
    * @param exp Expression that builds a search expression from the builder
    *
    * @example
    * // Basic search
-   * q.search(s => s.phrase('bike'))
+   * q.search(s => s.token('bike'))        // → $search=bike
+   * q.search(s => s.token(2023))          // → $search="2023"
    * 
    * // Search with logical operators
-   * q.search(s => s.phrase('mountain').and('bike'))
-   * q.search(s => s.phrase('bike').or('car'))
+   * q.search(s => s.token('mountain').and('bike'))  // → $search=mountain AND bike
+   * q.search(s => s.token('bike').or(2022))         // → $search=bike OR "2022"
    * 
    * // Negation
-   * q.search(s => s.phrase('clothing').not())
+   * q.search(s => s.token('clothing').not())        // → $search=NOT clothing
    */
   search(exp: (builder: SearchBuilder) => SearchExpression): ODataQuery<T>
 

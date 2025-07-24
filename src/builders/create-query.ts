@@ -5,6 +5,7 @@ import { createFilter } from './create-filter'
 import { createGroupby } from './create-groupby'
 import { createOrderby } from './create-orderby'
 import { createPaginate } from './create-paginate'
+import { createSearch } from './create-search'
 import { createSelect } from './create-select'
 import { makeQuery } from './query-builder'
 
@@ -29,6 +30,7 @@ export function createQuery(descriptor: QueryDescriptor): any {
     groupBy: createGroupby(descriptor),
     orderBy: createOrderby(descriptor),
     paginate: createPaginate(descriptor),
+    search: createSearch(descriptor),
     select: createSelect(descriptor),
     compute: createCompute(descriptor),
     count() {

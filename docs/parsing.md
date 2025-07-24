@@ -24,7 +24,7 @@ The `fromString()` method supports all OData query parameters:
 
 ```ts
 // All supported parameters
-const queryString = "$filter=isActive eq true&$select=id,name,email&$orderby=name desc&$expand=posts($select=title)&$skip=10&$top=5&$count=true&$compute=firstName concat lastName as fullName"
+const queryString = "$filter=isActive eq true&$select=id,name,email&$orderby=name desc&$expand=posts($select=title)&$skip=10&$top=5&$count=true&$compute=firstName concat lastName as fullName&$search=bike AND mountain"
 
 const query = odataQuery.fromString<User>(queryString)
 

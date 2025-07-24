@@ -58,6 +58,34 @@ describe('testing ODataQuery fromString', () => {
       const actual = query.toString()
       expect(actual).toBe(queryString)
     })
+
+    it('should parse $search with simple text', () => {
+      const queryString = '$search=bike'
+      const query = odataQuery.fromString<User>(queryString)
+      const actual = query.toString()
+      expect(actual).toBe(queryString)
+    })
+
+    it('should parse $search with quoted value', () => {
+      const queryString = '$search="2022"'
+      const query = odataQuery.fromString<User>(queryString)
+      const actual = query.toString()
+      expect(actual).toBe(queryString)
+    })
+
+    it('should parse $search with logical operators', () => {
+      const queryString = '$search=bike AND mountain'
+      const query = odataQuery.fromString<User>(queryString)
+      const actual = query.toString()
+      expect(actual).toBe(queryString)
+    })
+
+    it('should parse $search with NOT operator', () => {
+      const queryString = '$search=NOT clothing'
+      const query = odataQuery.fromString<User>(queryString)
+      const actual = query.toString()
+      expect(actual).toBe(queryString)
+    })
   })
 
   describe('simple $expand', () => {
@@ -120,6 +148,13 @@ describe('testing ODataQuery fromString', () => {
     it('should parse expand with compute', () => {
       const queryString =
         '$expand=posts($compute=title concat author as fullTitle)'
+      const query = odataQuery.fromString<User>(queryString)
+      const actual = query.toString()
+      expect(actual).toBe(queryString)
+    })
+
+    it('should parse expand with search', () => {
+      const queryString = '$expand=posts($search=technology)'
       const query = odataQuery.fromString<User>(queryString)
       const actual = query.toString()
       expect(actual).toBe(queryString)

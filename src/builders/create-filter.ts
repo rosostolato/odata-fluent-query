@@ -1,4 +1,4 @@
-import isUUID from 'validator/lib/isUUID'
+import { validate as isUUID } from 'uuid'
 import { QueryDescriptor, StringOptions } from '../models'
 import { createQuery } from './create-query'
 

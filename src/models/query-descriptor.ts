@@ -4,6 +4,7 @@ export interface QueryDescriptor {
   expands: QueryDescriptor[]
   filters: string[]
   groupby: string[]
+  search?: string | undefined
   orderby: string[]
   select: string[]
   aggregator?: string

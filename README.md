@@ -18,7 +18,7 @@
 - 🎯 **Full TypeScript support** with built-in type definitions
 - 🔒 **Type-safe queries** with IntelliSense support
 - 🚀 **Modern ES2022** target for optimal performance
-- ✅ **100% test coverage** with 294 comprehensive tests
+- ✅ **100% test coverage** with 319 comprehensive tests
 - 📦 **Minimal dependencies** with only validator as a runtime dependency
 - 🔧 **Fluent API** for readable query building
 - 🔄 **Parse existing query strings** with `fromString()` method
@@ -100,7 +100,11 @@ function getActiveUsers() {
 - **[Ordering](docs/ordering.md)** - Sort results with complex ordering rules
 - **[Expanding](docs/expanding.md)** - Include related data with nested queries
 - **[Computing](docs/computing.md)** - Create computed properties with type safety
+<<<<<<< HEAD
 - **[Type Inference](docs/type-inference.md)** - Get TypeScript types for query results
+=======
+- **[Searching](docs/searching.md)** - Full-text search with automatic quoting
+>>>>>>> master
 - **[Grouping](docs/grouping.md)** - Group data with aggregations
 - **[Pagination](docs/pagination.md)** - Handle large datasets with pagination
 - **[Parsing](docs/parsing.md)** - Parse existing query strings back to objects

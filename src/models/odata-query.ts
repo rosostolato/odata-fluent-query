@@ -11,6 +11,7 @@ import {
 } from './query-filter'
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
+import { SearchBuilder, SearchExpression } from './query-search'
 import { SelectParams } from './query-select'
 import {
   ExpandedOptionalProperties,
@@ -278,6 +279,27 @@ export interface ODataQuery<
     TComputed & Record<K, InferComputeType<V>>,
     TExpanded
   >
+
+  /**
+   * Adds $search operator in the OData query.
+   * Enables free-text search across the collection with automatic quoting.
+   * Simple text remains unquoted, while numbers, booleans, and special characters are quoted.
+   *
+   * @param exp Expression that builds a search expression from the builder
+   *
+   * @example
+   * // Basic search
+   * q.search(s => s.token('bike'))        // → $search=bike
+   * q.search(s => s.token(2023))          // → $search="2023"
+   * 
+   * // Search with logical operators
+   * q.search(s => s.token('mountain').and('bike'))  // → $search=mountain AND bike
+   * q.search(s => s.token('bike').or(2022))         // → $search=bike OR "2022"
+   * 
+   * // Negation
+   * q.search(s => s.token('clothing').not())        // → $search=NOT clothing
+   */
+  search(exp: (builder: SearchBuilder) => SearchExpression): ODataQuery<T>
 
   /**
    * Exports the query to an object with key/value pairs.

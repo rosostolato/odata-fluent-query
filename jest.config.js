@@ -8,8 +8,12 @@ module.exports = {
     '**/tests/**/*.test.+(ts|tsx|js)',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/tests/data/'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(uuid)/)',
+  ],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.js$': 'ts-jest',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

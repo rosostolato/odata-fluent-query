@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { createQueryDescriptor } from './create-query'
 
 /**

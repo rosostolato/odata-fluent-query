@@ -1,9 +1,10 @@
 import {
   ComputeBuilder,
   ComputeExpressionWithAlias,
-  InferComputeType,
 } from './query-compute'
-import { ExpandKey, ExpandParam, ExpandQueryComplex } from './query-expand'
+import { InferComputeType } from './internal/compute-internal'
+import { ExpandParam } from './query-expand'
+import { ExpandKey, ExpandQueryComplex } from './internal/expand-internal'
 import {
   FilterBuilder,
   FilterBuilderProp,

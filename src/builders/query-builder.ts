@@ -1,4 +1,4 @@
-import { KeyValue, QueryDescriptor } from '../models'
+import { KeyValue, QueryDescriptor } from '../models/internal/common-internal'
 
 export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   const params: {

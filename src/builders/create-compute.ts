@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString, ComputeBoolean } from '../models/query-compute'
 import { createQuery } from './create-query'
 

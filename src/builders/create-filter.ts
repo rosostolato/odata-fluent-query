@@ -1,21 +1,17 @@
 import { validate as isUUID } from 'uuid'
-import { AnyObjectOfHandlers, FilterBuilder, QueryDescriptor, StringOptions } from '../models'
+import { FilterBuilder, StringOptions } from '../models'
+import {
+  ExpressionWithGet,
+  FilterWithKey,
+  FilterValue,
+  FilterFunction,
+} from '../models/internal/filter-internal'
 import { createQuery } from './create-query'
+import { AnyFunction, AnyObjectOfHandlers, QueryDescriptor } from '../models/internal/common-internal'
 
-// Helper types for internal filter structures
-interface ExpressionWithGet {
-  _get(checkParentheses?: boolean): string
-}
-
-interface FilterWithKey {
-  _key: string
-  getPropName?: boolean
-}
-
-type FilterValue = string | number | boolean | Date | FilterWithKey | null
-
-export function getFuncArgs(func: Function): string[] {
+export function getFuncArgs(func: AnyFunction): string[] {
   const [, , paramStr] = /(function)?(.*?)(?=[={])/.exec(func.toString()) ?? []
+
   return (paramStr ?? '')
     .replace('=>', '')
     .replace('(', '')
@@ -59,7 +55,7 @@ export function makeExp(exp: string): AnyObjectOfHandlers {
 }
 
 function filterBuilder(key: string): FilterBuilder<unknown> {
-  const arrFuncBuilder = (method: 'any' | 'all') => (exp: Function) => {
+  const arrFuncBuilder = (method: 'any' | 'all') => (exp: AnyFunction) => {
     const [arg] = getFuncArgs(exp)
     const builder = exp(makeFilter(arg))
     const expr = builder._get()
@@ -235,10 +231,8 @@ function makeFilter(prefix = ''): FilterBuilder<unknown> {
           : makeFilter(String(key))
       },
     }
-  )
+  ) as FilterBuilder<unknown>
 }
-
-type FilterFunction = (builder: FilterBuilder<unknown>) => ExpressionWithGet
 
 export function createFilter(descriptor: QueryDescriptor) {
   return (

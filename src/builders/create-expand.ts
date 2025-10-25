@@ -1,4 +1,4 @@
-import { AnyFunction, QueryDescriptor } from '../models'
+import { AnyFunction, QueryDescriptor } from '../models/internal/common-internal'
 import { ExpandBuilder } from '../models/query-expand'
 import { createQuery, createQueryDescriptor } from './create-query'
 

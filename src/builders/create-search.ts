@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { SearchBuilder, SearchExpression, SearchExpressionInternal } from '../models/query-search'
 import { createQuery } from './create-query'
 

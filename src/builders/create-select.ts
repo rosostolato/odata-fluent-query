@@ -1,4 +1,4 @@
-import { ProxyInstance, QueryDescriptor } from '../models'
+import { ProxyInstance, QueryDescriptor } from '../models/internal/common-internal'
 import { createQuery } from './create-query'
 
 function makeSelect(key = ''): ProxyInstance {
@@ -24,7 +24,8 @@ export function createSelect(descriptor: QueryDescriptor) {
           return String(keyOrExp)
         }
       })
-      .filter((k, i, arr) => arr.indexOf(k) === i) // unique
+      .filter((k, i, arr) => arr.indexOf(k) === i)
+
     return createQuery({
       ...descriptor,
       select: _keys,

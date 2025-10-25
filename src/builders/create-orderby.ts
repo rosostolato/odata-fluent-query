@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { createQuery } from './create-query'
 
 function makeOrderby(key = ''): InstanceType<typeof Proxy> {

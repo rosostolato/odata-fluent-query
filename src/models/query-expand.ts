@@ -1,9 +1,15 @@
-import { ODataQuery } from './odata-query'
-
 type Primitive = number | string | boolean | Date | Uint8Array
 
+/**
+ * Type for expand parameter callbacks
+ * Used to specify expand paths using type-safe builder syntax
+ */
 export type ExpandParam<T, U> = (exp: ExpandBuilder<T>) => ExpandBuilder<U>
 
+/**
+ * Builder type for specifying expand paths in a type-safe way
+ * Only non-primitive properties can be expanded
+ */
 export type ExpandBuilder<T> = {
   [K in keyof T as NonNullable<T[K]> extends Primitive
     ? never
@@ -14,27 +20,8 @@ export type ExpandBuilder<T> = {
     : ExpandBuilder<NonNullable<T[K]>>
 }
 
+/**
+ * Marker interface for expand expressions
+ * Used to identify completed expand builder chains
+ */
 export interface ExpandExpression {}
-
-export type ExpandKey<T> = Pick<
-  T,
-  {
-    [K in keyof T]: NonNullable<Required<T>[K]> extends
-      | number
-      | string
-      | boolean
-      | Date
-      | Uint8Array
-      ? never
-      : K
-  }[keyof T]
->
-
-export type ExpandQueryComplex<T> = T extends Array<infer U>
-  ? ExpandArrayQuery<U>
-  : T extends object
-  ? ExpandObjectQuery<T>
-  : never
-
-export type ExpandObjectQuery<T> = Pick<ODataQuery<T>, 'select' | 'expand'>
-export type ExpandArrayQuery<T> = ODataQuery<T, any, any, any>

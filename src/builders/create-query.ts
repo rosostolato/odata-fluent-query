@@ -1,4 +1,5 @@
-import { QueryDescriptor, QueryObject } from '../models'
+import { QueryObject } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { createCompute } from './create-compute'
 import { createExpand } from './create-expand'
 import { createFilter } from './create-filter'

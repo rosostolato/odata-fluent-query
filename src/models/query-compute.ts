@@ -22,16 +22,6 @@ export interface ComputeExpressionWithAlias<
   readonly _type: TAliasValue
 }
 
-export type InferComputeType<T> = T extends ComputeNumber
-  ? number
-  : T extends ComputeString
-  ? string
-  : T extends ComputeBoolean
-  ? boolean
-  : T extends ComputeDate
-  ? Date
-  : unknown
-
 export interface ComputeNumber extends ComputeExpression {
   /**
    * Multiplies this number by another number or compute expression

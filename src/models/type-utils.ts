@@ -1,13 +1,14 @@
-// General utility types
-export interface KeyValue<T> {
-  key: string
-  value: T
-}
+// Public type utilities for end users working with query result types
+
+/**
+ * Helper type to exclude undefined from a type
+ */
 export type Defined<T> = Exclude<T, undefined>
+
+/**
+ * Helper type to extract null from a union type
+ */
 export type ExtractNull<T> = Extract<null, T>
-export type ProxyInstance = InstanceType<typeof Proxy>
-export type AnyObjectOfHandlers = Record<string, (...args: any[]) => unknown>
-export type AnyFunction = (...args: any[]) => any
 
 // Type utilities for result type inference
 export type Prettify<T> = {

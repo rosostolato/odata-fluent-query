@@ -14,9 +14,8 @@ export type RequiredProperties<T> = {
 }
 
 // Extract optional properties (navigation properties - only included if expanded)
-// Uses Pick to detect optional properties, which works with exactOptionalPropertyTypes
 export type OptionalProperties<T> = {
-  [K in keyof T as {} extends Pick<T, K> ? K : never]: T[K]
+  [K in keyof T as {} extends Pick<T, K> ? K : never]: Required<Pick<T, K>>[K] | undefined
 }
 
 // Helper to ensure we get the right intersection types
@@ -28,13 +27,10 @@ export type SelectedProperties<T, TSelected extends keyof T> = {
 }
 
 // Helper to create expanded optional properties
+// Removes undefined from optional properties when they are expanded
 export type ExpandedOptionalProperties<
   T,
   TExpanded extends keyof OptionalProperties<T>
 > = {
-  [K in TExpanded]: K extends keyof OptionalProperties<T>
-    ? OptionalProperties<T>[K] extends infer U | undefined
-      ? U
-      : never
-    : never
+  [K in TExpanded]-?: Required<Pick<T, K>>[K]
 }

@@ -47,6 +47,20 @@ module.exports = tseslint.config(
     ...tseslint.configs.disableTypeChecked,
   },
   {
+    // Special rules for type test files
+    files: ['tests/**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^(test_|Test|Result|Expected|Type)', // TypeScript type tests
+          argsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  {
     ignores: ['dist/', 'coverage/', 'node_modules/', '*.config.js'],
   }
 )

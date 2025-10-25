@@ -109,12 +109,10 @@ function filterBuilder(key: string): FilterBuilder<unknown> {
       default:
         if (val instanceof Date) {
           return makeExp(`${key} ${t} ${val.toISOString()}`)
-        } else if (val && typeof val === 'object' && '_key' in val && opt?.caseInsensitive) {
-          return makeExp(`tolower(${key}) ${t} tolower(${val._key})`)
-        } else if (val && typeof val === 'object' && '_key' in val) {
-          return makeExp(`${key} ${t} ${val._key}`)
+        } else if (val && opt?.caseInsensitive) {
+          return makeExp(`tolower(${key}) ${t} tolower(${(val as { _key: string })._key})`)
         } else {
-          return makeExp(`${key} ${t} null`)
+          return makeExp(`${key} ${t} ${(val as { _key: string })?._key || null}`)
         }
     }
   }

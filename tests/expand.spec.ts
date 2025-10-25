@@ -2,7 +2,6 @@ import { odataQuery } from '../src'
 import { User } from './data/user'
 
 describe('testing ODataQuery expand', () => {
-  // one2one relation
   it('expand', () => {
     const query = odataQuery<User>()
     const actual = query.expand('manager').toString()
@@ -35,7 +34,6 @@ describe('testing ODataQuery expand', () => {
     expect(actual).toBe(expected)
   })
 
-  // one2many relation
   it('expand and filter', () => {
     const query = odataQuery<User>()
     const actual = query
@@ -120,7 +118,6 @@ describe('testing ODataQuery expand', () => {
 })
 
 describe('testing ODataQuery expand with key query', () => {
-  // one2one relation
   it('expand', () => {
     const query = odataQuery<User>()
     const actual = query.expand(u => u.manager).toString()

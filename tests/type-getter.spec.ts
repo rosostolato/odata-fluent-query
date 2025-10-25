@@ -1,6 +1,7 @@
 import { odataQuery } from '../src'
 import { Library, LibraryBranch } from './data/library'
 import { User } from './data/user'
+import { Equal, Expect } from 'type-testing'
 
 describe('Type Getter with Enhanced TypeScript Testing', () => {
   it('should have type property available', () => {
@@ -15,7 +16,6 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
   describe('Real-world Usage Pattern Tests', () => {
     it('should work with service functions that use type inference', () => {
-      // Test realistic service function pattern
       function createLibraryService() {
         const getLibrarySummary = () => {
           const query = odataQuery<Library>().select(
@@ -25,8 +25,29 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
             'address'
           )
 
-          // This type alias works and is how developers will use it
           type LibrarySummary = typeof query.type
+
+          // Type tests: validate that .type correctly infers selected properties
+          type test_has_id = Expect<Equal<LibrarySummary['id'], string>>
+          type test_has_name = Expect<Equal<LibrarySummary['name'], string>>
+          type test_has_type = Expect<
+            Equal<LibrarySummary['type'], 'public' | 'academic' | 'special'>
+          >
+          type test_has_address = Expect<
+            Equal<
+              LibrarySummary['address'],
+              {
+                street: string
+                city: string
+                state: string
+                zipCode: string
+              }
+            >
+          >
+
+          type LibraryKeys = keyof LibrarySummary
+          type BooksNotInKeys = 'books' extends LibraryKeys ? false : true
+          type test_no_books = Expect<BooksNotInKeys>
 
           const processLibraries = (libraries: LibrarySummary[]): string[] => {
             return libraries.map(
@@ -43,6 +64,28 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
             .expand('books')
 
           type LibraryWithBooks = typeof query.type
+
+          // Type tests: validate expanded navigation properties are included without undefined
+          type test_has_id = Expect<Equal<LibraryWithBooks['id'], string>>
+          type test_has_name = Expect<Equal<LibraryWithBooks['name'], string>>
+          type test_has_books = Expect<
+            Equal<
+              LibraryWithBooks['books'],
+              Array<{
+                id: string
+                title: string
+                author: string
+                isbn: string
+                isAvailable: boolean
+              }>
+            >
+          >
+
+          type LibraryWithBooksKeys = keyof LibraryWithBooks
+          type AddressNotInKeys = 'address' extends LibraryWithBooksKeys
+            ? false
+            : true
+          type test_no_address = Expect<AddressNotInKeys>
 
           const calculateTotalBooks = (
             libraries: LibraryWithBooks[]
@@ -77,7 +120,6 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
     })
 
     it('should support API response typing patterns', () => {
-      // Test API wrapper function pattern
       function createLibraryApiClient() {
         const fetchLibraryProfile = () => {
           const query = odataQuery<LibraryBranch>().select(
@@ -90,7 +132,6 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
           type BranchProfile = typeof query.type
 
           const mockFetch = async (): Promise<BranchProfile[]> => {
-            // Simulate API response - in real code this would be HTTP fetch
             return [
               {
                 id: 'branch-1',
@@ -166,6 +207,16 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
           type LibraryDisplay = typeof query.type
 
+          // Type tests: validate computed fields are included in result type
+          type test_has_id = Expect<Equal<LibraryDisplay['id'], string>>
+          type test_has_displayName = Expect<
+            Equal<LibraryDisplay['displayName'], string>
+          >
+
+          type LibraryDisplayKeys = keyof LibraryDisplay
+          type NameNotInKeys = 'name' extends LibraryDisplayKeys ? false : true
+          type test_no_name = Expect<NameNotInKeys>
+
           const formatLibraries = (libraries: LibraryDisplay[]): string => {
             return libraries
               .map(library => `ID: ${library.id}, Name: ${library.displayName}`)
@@ -215,7 +266,6 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
     it('should allow only valid expand operations at compile time', () => {
       const query = odataQuery<Library>()
 
-      // These compile successfully (optional properties)
       const validExpands = [
         query.expand('books'),
         query.expand('members'),
@@ -241,7 +291,29 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
         type ChainedResult = typeof complexQuery.type
 
-        // Test that we can create a processor function with proper typing
+        // Type tests: chained operations preserve correct types
+        type test_has_id = Expect<Equal<ChainedResult['id'], string>>
+        type test_has_name = Expect<Equal<ChainedResult['name'], string>>
+        type test_has_type = Expect<
+          Equal<ChainedResult['type'], 'public' | 'academic' | 'special'>
+        >
+        type test_has_members = Expect<
+          Equal<
+            ChainedResult['members'],
+            Array<{
+              id: string
+              name: string
+              email: string
+              joinDate: Date
+              isActive: boolean
+            }>
+          >
+        >
+
+        type ChainedResultKeys = keyof ChainedResult
+        type BooksNotInKeys = 'books' extends ChainedResultKeys ? false : true
+        type test_no_books = Expect<BooksNotInKeys>
+
         const processChainedResult = (result: ChainedResult): string => {
           return `Library ${result.id}: ${result.name} (${result.type})`
         }
@@ -336,22 +408,59 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
     })
 
     it('should handle edge cases gracefully', () => {
-      // Test empty query
       const emptyQuery = odataQuery<Library>()
+      type EmptyResult = typeof emptyQuery.type
+
+      type test_empty_has_id = Expect<Equal<EmptyResult['id'], string>>
+      type test_empty_has_name = Expect<Equal<EmptyResult['name'], string>>
+
+      type EmptyResultKeys = keyof EmptyResult
+      type EmptyBooksNotInKeys = 'books' extends EmptyResultKeys ? false : true
+      type test_empty_no_books = Expect<EmptyBooksNotInKeys>
+
       expect(typeof emptyQuery.type).toBe('object')
       expect(emptyQuery.toString()).toBe('')
 
-      // Test single operations
       const selectOnlyQuery = odataQuery<Library>().select('id')
+      type SelectOnlyResult = typeof selectOnlyQuery.type
+
+      type test_select_has_id = Expect<Equal<SelectOnlyResult['id'], string>>
+
+      type SelectOnlyResultKeys = keyof SelectOnlyResult
+      type SelectNameNotInKeys = 'name' extends SelectOnlyResultKeys
+        ? false
+        : true
+      type test_select_no_name = Expect<SelectNameNotInKeys>
+
       expect(typeof selectOnlyQuery.type).toBe('object')
       expect(selectOnlyQuery.toString()).toBe('$select=id')
 
       const expandOnlyQuery = odataQuery<Library>().expand('books')
+      type ExpandOnlyResult = typeof expandOnlyQuery.type
+
+      type test_expand_has_id = Expect<Equal<ExpandOnlyResult['id'], string>>
+      type test_expand_has_books = Expect<
+        Equal<
+          ExpandOnlyResult['books'],
+          Array<{
+            id: string
+            title: string
+            author: string
+            isbn: string
+            isAvailable: boolean
+          }>
+        >
+      >
+
       expect(typeof expandOnlyQuery.type).toBe('object')
       expect(expandOnlyQuery.toString()).toBe('$expand=books')
 
-      // Test count operations preserve type inference
       const countQuery = odataQuery<Library>().select('id', 'name').count()
+      type CountResult = typeof countQuery.type
+
+      type test_count_has_id = Expect<Equal<CountResult['id'], string>>
+      type test_count_has_name = Expect<Equal<CountResult['name'], string>>
+
       expect(typeof countQuery.type).toBe('object')
       expect(countQuery.toString()).toBe('$select=id,name&$count=true')
     })
@@ -359,9 +468,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
   describe('Developer Experience Tests', () => {
     it('should provide helpful IntelliSense in realistic scenarios', () => {
-      // This test verifies that the type system provides good developer experience
       function demonstrateIntelliSense() {
-        // Scenario 1: Building a library dashboard query
         const dashboardQuery = odataQuery<Library>()
           .select('id', 'name', 'type', 'info')
           .filter(l => l.isOpen.equals(true))
@@ -370,7 +477,6 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
         type DashboardLibrary = typeof dashboardQuery.type
 
-        // Scenario 2: Building a detailed library view with relations
         const detailQuery = odataQuery<Library>()
           .expand('books')
           .expand('members')
@@ -378,7 +484,6 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
         type DetailedLibrary = typeof detailQuery.type
 
-        // These functions demonstrate how developers will use the types
         const renderDashboard = (libraries: DashboardLibrary[]) =>
           libraries.length
         const renderDetails = (library: DetailedLibrary) =>

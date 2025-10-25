@@ -89,7 +89,7 @@ describe('testing odataQuery select', () => {
     const actual = query
       .expand('address')
       .expand('posts')
-      .select('email') // This should not remove address or posts expands
+      .select('email')
       .toString()
     const expected = '$expand=address,posts&$select=email'
     expect(actual).toBe(expected)

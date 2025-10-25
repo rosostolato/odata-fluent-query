@@ -276,7 +276,6 @@ describe('testing ODataQuery fromString', () => {
     })
 
     it('should be round-trip compatible', () => {
-      // Test that fromString -> toString -> fromString produces the same result
       const originalQuery = odataQuery<User>()
         .filter(u => u.id.equals(1))
         .select('id', 'email')
@@ -296,7 +295,6 @@ describe('testing ODataQuery fromString', () => {
     it('should handle malformed expand gracefully', () => {
       const queryString = '$expand=address('
       const query = odataQuery.fromString<User>(queryString)
-      // Should not throw, but may not parse the malformed expand correctly
       expect(() => query.toString()).not.toThrow()
     })
 
@@ -304,7 +302,6 @@ describe('testing ODataQuery fromString', () => {
       const queryString = '$skip=invalid&$top=notanumber'
       const query = odataQuery.fromString<User>(queryString)
       const actual = query.toString()
-      // NaN should be handled gracefully
       expect(actual).toBe('')
     })
 
@@ -323,7 +320,6 @@ describe('testing ODataQuery fromString', () => {
     })
 
     it('should handle malformed query parameters', () => {
-      // Test parameters with missing keys or values
       const query = odataQuery.fromString<User>(
         '=value&key=&$select=id&=&invalid'
       )
@@ -332,7 +328,6 @@ describe('testing ODataQuery fromString', () => {
     })
 
     it('should handle empty expand parts', () => {
-      // Test empty expand parts that would make trimmed falsy
       const query = odataQuery.fromString<User>(
         '$expand=,posts($select=title),'
       )
@@ -341,7 +336,6 @@ describe('testing ODataQuery fromString', () => {
     })
 
     it('should handle nested query with empty values', () => {
-      // Test nested query with empty parameter values
       const query = odataQuery.fromString<User>(
         '$expand=posts($select=;$filter=)'
       )
@@ -350,7 +344,6 @@ describe('testing ODataQuery fromString', () => {
     })
 
     it('should handle expand with key and nested parameters', () => {
-      // This should trigger the rqd.key branch in makeRelationQuery
       const query = odataQuery.fromString<User>(
         '$expand=posts($select=title,content)&$select=id,name'
       )
@@ -414,10 +407,8 @@ describe('testing ODataQuery fromString', () => {
       const originalQuery =
         '$filter=isActive eq true&$select=id,name&$orderby=name asc'
 
-      // Parse original query
       const parsedQuery = odataQuery.fromString<User>(originalQuery)
 
-      // Convert to object
       const queryObject = parsedQuery.toObject()
       expect(queryObject).toEqual({
         $filter: 'isActive eq true',
@@ -425,10 +416,8 @@ describe('testing ODataQuery fromString', () => {
         $orderby: 'name asc',
       })
 
-      // Convert object back to query string for comparison
       const reconstructedQuery = parsedQuery.toString()
 
-      // Should be functionally equivalent (parameter order may differ per OData spec)
       expect(reconstructedQuery).toContain('$filter=isActive eq true')
       expect(reconstructedQuery).toContain('$select=id,name')
       expect(reconstructedQuery).toContain('$orderby=name asc')

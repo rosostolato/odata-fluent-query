@@ -1,7 +1,7 @@
 import { QueryDescriptor } from '../models'
 import { createQuery, createQueryDescriptor } from './create-query'
 
-function makeExpand(key = ''): any {
+function makeExpand(key = ''): InstanceType<typeof Proxy> {
   return new Proxy(
     {},
     {
@@ -17,7 +17,7 @@ export function createExpand(descriptor: QueryDescriptor) {
   return (keyOrExp: string | Function, query?: Function) => {
     let key: string = ''
     if (typeof keyOrExp === 'function') {
-      const exp: any = keyOrExp(makeExpand())
+      const exp = keyOrExp(makeExpand())
       key = exp._key
     } else {
       key = String(keyOrExp)

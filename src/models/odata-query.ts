@@ -11,6 +11,7 @@ import {
 } from './query-filter'
 import { GroupbyBuilder } from './query-groupby'
 import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
+import { CreatePaginateParams } from './query-paginate'
 import { SearchBuilder, SearchExpression } from './query-search'
 import { SelectParams } from './query-select'
 import {
@@ -33,23 +34,23 @@ export type QueryObject = {
   $top?: string
 }
 
-// Main result type that combines all transformations
+/**
+ * Result type for any ODataQuery instance that can be accessed via `typeof query.type`
+ */
 export type QueryResultType<
   T,
   TSelected extends keyof T | keyof TComputed | never = never,
   TComputed = {},
   TExpanded extends keyof OptionalProperties<T> = never
 > = [TSelected] extends [never]
-  ? // No select applied - include all required properties + expanded navigation properties + computed fields
-    IntersectTypes<
+  ? IntersectTypes<
       IntersectTypes<
         RequiredProperties<T>,
         ExpandedOptionalProperties<T, TExpanded>
       >,
       TComputed
     >
-  : // Select applied - create intersection of selected properties
-    IntersectTypes<
+  : IntersectTypes<
       IntersectTypes<
         SelectedProperties<T, TSelected & keyof RequiredProperties<T>>,
         ExpandedOptionalProperties<T, TSelected & TExpanded>
@@ -71,7 +72,7 @@ export interface ODataQuery<
    * @example
    * ODataQuery.fromString<User>("$filter=id eq 1&$select=name,email")
    */
-  fromString?: never // This makes fromString unavailable on instances
+  fromString?: never
 
   /**
    * Sets $count=true in the OData query.
@@ -198,11 +199,7 @@ export interface ODataQuery<
    * @example
    * q.paginate({ pagesize: 50, page: 0, count: false })
    */
-  paginate(options: {
-    pagesize: number
-    page?: number
-    count?: boolean
-  }): ODataQuery<T, TSelected, TComputed, TExpanded>
+  paginate(options: CreatePaginateParams): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Adds $select operator in the OData query.

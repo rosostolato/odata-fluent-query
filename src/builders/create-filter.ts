@@ -27,7 +27,7 @@ export function dateToObject(d: Date) {
   }
 }
 
-export function makeExp(exp: string): any {
+export function makeExp(exp: string): object {
   const _get = (checkParetheses = false) => {
     if (!checkParetheses) {
       return exp

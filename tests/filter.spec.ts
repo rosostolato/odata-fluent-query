@@ -886,7 +886,6 @@ describe('test odataQuery filter with nullable values', () => {
     expect(actual).toBe(expected)
   })
 
-  // Test the exact code from the user's issue
   it('should work with the original problematic code from user', () => {
     const query = odataQuery<User>()
     const queryStr: string | null = null
@@ -900,7 +899,6 @@ describe('test odataQuery filter with nullable values', () => {
 })
 
 describe('undefined value rejection', () => {
-  // Test that undefined values are rejected
   it('should throw error when trying to filter by undefined value', () => {
     const query = odataQuery<User>()
     const undefinedValue: any = undefined

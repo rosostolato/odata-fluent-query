@@ -1,6 +1,7 @@
 // General utility types
 export type Defined<T> = Exclude<T, undefined>
 export type ExtractNull<T> = Extract<null, T>
+export type ProxyInstance = InstanceType<typeof Proxy>
 
 // Type utilities for result type inference
 export type Prettify<T> = {

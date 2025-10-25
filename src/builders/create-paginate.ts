@@ -1,13 +1,11 @@
 import { QueryDescriptor } from '../models'
+import { CreatePaginateParams } from '../models/query-paginate'
 import { createQuery } from './create-query'
 
 export function createPaginate(descriptor: QueryDescriptor) {
-  return (sizeOrOptions: any, page: number) => {
-    let data: {
-      page: number
-      count?: boolean
-      pagesize: number
-    }
+  return (sizeOrOptions: CreatePaginateParams | number, page: number) => {
+    let data: CreatePaginateParams
+
     if (typeof sizeOrOptions === 'number') {
       data = {
         page: page,

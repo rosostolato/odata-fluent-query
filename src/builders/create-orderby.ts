@@ -1,12 +1,12 @@
 import { QueryDescriptor } from '../models'
 import { createQuery } from './create-query'
 
-function makeOrderby(key = ''): any {
+function makeOrderby(key = ''): InstanceType<typeof Proxy> {
   if (key[0] === '/') {
     key = key.slice(1)
   }
 
-  const methods: any = {
+  const methods = {
     _key: key,
     asc: () => makeOrderby(`${key} asc`),
     desc: () => makeOrderby(`${key} desc`),
@@ -16,7 +16,7 @@ function makeOrderby(key = ''): any {
     {},
     {
       get(_, prop) {
-        return methods[prop] || makeOrderby(`${key}/${String(prop)}`)
+        return methods[prop as keyof typeof methods] || makeOrderby(`${key}/${String(prop)}`)
       },
     }
   )

@@ -3,24 +3,18 @@ import { QueryResultType } from '../src/models/odata-query'
 import { Library, LibraryBranch } from './data/library'
 import { User, Post } from './data/user'
 
-/**
- * Type Tests for QueryResultType
- *
- * This file uses the type-testing library to validate that QueryResultType
- * correctly infers the result types based on select, expand, and compute operations.
- * These tests ensure type safety at compile time.
- *
- * Note: We don't test that properties equal `never` because Equal<never, never> returns false.
- * Instead, we test the complete result type or verify properties that DO exist.
- */
+// This file uses the type-testing library to validate that QueryResultType
+// correctly infers the result types based on select, expand, and compute operations.
+// These tests ensure type safety at compile time.
+//
+// Note: We don't test that properties equal `never` because Equal<never, never> returns false.
+// Instead, we test the complete result type or verify properties that DO exist.
 
 describe('QueryResultType Type Tests', () => {
   describe('Basic Type Inference - No Operations', () => {
     it('should include all required properties when no operations are applied', () => {
-      // When no operations are applied, only required properties should be included
       type Result = QueryResultType<Library>
 
-      // Should include required properties
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
       type test_has_type = Expect<Equal<Result['type'], 'public' | 'academic' | 'special'>>
@@ -29,8 +23,6 @@ describe('QueryResultType Type Tests', () => {
       type test_has_address = Expect<Equal<Result['address'], Library['address']>>
       type test_has_info = Expect<Equal<Result['info'], Library['info']>>
 
-      // Verify books is not in the result (TypeScript will error if we try to access it without SafeGet)
-      // This is validated at compile time - if books were in the type, this would error
       type ResultKeys = keyof Result
       type BooksNotInKeys = 'books' extends ResultKeys ? false : true
       type test_no_books = Expect<BooksNotInKeys>
@@ -39,13 +31,11 @@ describe('QueryResultType Type Tests', () => {
     it('should work with User entity', () => {
       type Result = QueryResultType<User>
 
-      // Should include required properties
       type test_has_id = Expect<Equal<Result['id'], number>>
       type test_has_email = Expect<Equal<Result['email'], string>>
       type test_has_address = Expect<Equal<Result['address'], User['address']>>
       type test_has_phoneNumbers = Expect<Equal<Result['phoneNumbers'], string[]>>
 
-      // Verify posts is not in the result
       type ResultKeys = keyof Result
       type PostsNotInKeys = 'posts' extends ResultKeys ? false : true
       type test_no_posts = Expect<PostsNotInKeys>
@@ -56,7 +46,6 @@ describe('QueryResultType Type Tests', () => {
     it('should only include selected properties when select is applied', () => {
       type Result = QueryResultType<Library, 'id' | 'name'>
 
-      // Test the exact result type
       type test_exact = Expect<Equal<Result, { id: string; name: string }>>
     })
 
@@ -85,12 +74,10 @@ describe('QueryResultType Type Tests', () => {
     it('should include expanded navigation properties', () => {
       type Result = QueryResultType<Library, never, {}, 'books'>
 
-      // Should include all required properties AND expanded books
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
       type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
 
-      // Verify members is not in the result
       type ResultKeys = keyof Result
       type MembersNotInKeys = 'members' extends ResultKeys ? false : true
       type test_no_members = Expect<MembersNotInKeys>
@@ -102,7 +89,6 @@ describe('QueryResultType Type Tests', () => {
       type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
       type test_has_members = Expect<Equal<Result['members'], NonNullable<Library['members']>>>
 
-      // Verify librarians is not in the result
       type ResultKeys = keyof Result
       type LibrariansNotInKeys = 'librarians' extends ResultKeys ? false : true
       type test_no_librarians = Expect<LibrariansNotInKeys>
@@ -111,7 +97,6 @@ describe('QueryResultType Type Tests', () => {
     it('should work with User navigation properties', () => {
       type Result = QueryResultType<User, never, {}, 'posts'>
 
-      // posts is Post[] | null | undefined, after expand should be Post[] | null
       type test_has_posts = Expect<Equal<Result['posts'], Post[] | null>>
     })
   })
@@ -120,11 +105,8 @@ describe('QueryResultType Type Tests', () => {
     it('should add computed fields to the result type', () => {
       type Result = QueryResultType<Library, never, { displayName: string }>
 
-      // Should include all required properties
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-
-      // Should include computed field
       type test_has_computed = Expect<Equal<Result['displayName'], string>>
     })
 
@@ -156,12 +138,10 @@ describe('QueryResultType Type Tests', () => {
     it('should handle select + expand', () => {
       type Result = QueryResultType<Library, 'id' | 'name' | 'books', {}, 'books'>
 
-      // Should only include selected properties
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
       type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
 
-      // Verify address is not in the result
       type ResultKeys = keyof Result
       type AddressNotInKeys = 'address' extends ResultKeys ? false : true
       type test_no_address = Expect<AddressNotInKeys>
@@ -199,17 +179,11 @@ describe('QueryResultType Type Tests', () => {
         'books'
       >
 
-      // Should have selected properties
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-
-      // Should have expanded property
       type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
-
-      // Should have computed property
       type test_has_bookCount = Expect<Equal<Result['bookCount'], number>>
 
-      // Verify address is not in the result
       type ResultKeys = keyof Result
       type AddressNotInKeys = 'address' extends ResultKeys ? false : true
       type test_no_address = Expect<AddressNotInKeys>
@@ -232,8 +206,6 @@ describe('QueryResultType Type Tests', () => {
 
   describe('Edge Cases', () => {
     it('should handle selecting a navigation property without expanding it', () => {
-      // When you select a navigation property but don't expand it,
-      // it shouldn't be included in the result type
       type Result = QueryResultType<Library, 'id' | 'books'>
 
       type Expected = { id: string }
@@ -241,7 +213,6 @@ describe('QueryResultType Type Tests', () => {
     })
 
     it('should handle expanding a property and selecting it', () => {
-      // When you both select and expand a property, it should be included
       type Result = QueryResultType<Library, 'id' | 'books', {}, 'books'>
 
       type test_has_id = Expect<Equal<Result['id'], string>>
@@ -253,7 +224,6 @@ describe('QueryResultType Type Tests', () => {
       type NoCompute = QueryResultType<Library, never, {}>
       type NoExpand = QueryResultType<Library, never, {}, never>
 
-      // All should be equivalent and include all required properties
       type test_1 = Expect<Equal<NoSelect, NoCompute>>
       type test_2 = Expect<Equal<NoCompute, NoExpand>>
     })
@@ -272,7 +242,6 @@ describe('QueryResultType Type Tests', () => {
     })
 
     it('should preserve nullable types correctly', () => {
-      // User has nullable properties like surname and age
       type Result = QueryResultType<User, 'id' | 'surname' | 'age'>
 
       type test_has_surname = Expect<Equal<Result['surname'], string | null>>
@@ -282,11 +251,9 @@ describe('QueryResultType Type Tests', () => {
 
   describe('Type Safety and Constraints', () => {
     it('should not allow invalid type combinations', () => {
-      // TSelected should be a valid key of T
       type ValidResult = QueryResultType<Library, 'id' | 'name'>
       type test_valid = Expect<Equal<ValidResult['id'], string>>
 
-      // TExpanded should be a valid optional property key
       type ValidExpand = QueryResultType<Library, never, {}, 'books'>
       type test_valid_expand = Expect<Equal<ValidExpand['books'], NonNullable<Library['books']>>>
     })
@@ -295,14 +262,12 @@ describe('QueryResultType Type Tests', () => {
       type LibraryResult = QueryResultType<Library, 'id'>
       type UserResult = QueryResultType<User, 'id'>
 
-      // These should not be equal because id types differ
       type test_not_equal = Expect<NotEqual<LibraryResult, UserResult>>
     })
 
     it('should handle complex nested structures', () => {
       type Result = QueryResultType<Library, 'id' | 'address'>
 
-      // Should properly preserve nested structure
       type AddressType = Result['address']
       type test_address_street = Expect<Equal<AddressType['street'], string>>
       type test_address_city = Expect<Equal<AddressType['city'], string>>
@@ -311,7 +276,6 @@ describe('QueryResultType Type Tests', () => {
 
   describe('Real-World Scenarios', () => {
     it('should support API response typing pattern', () => {
-      // Simulating a common API pattern
       type ListQuery = QueryResultType<Library, 'id' | 'name' | 'type'>
       type DetailQuery = QueryResultType<
         Library,

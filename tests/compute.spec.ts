@@ -377,7 +377,7 @@ describe('testing compute operations', () => {
     })
   })
 
-  // AVJ: these optional prop tests are more specifically for ensuring type errors don't occur
+  // These tests ensure type errors don't occur when using compute operations on optional properties
   describe('optional properties', () => {
     it('should handle compute operations on optional string properties', () => {
       const query = odataQuery<OptionalEntity>()

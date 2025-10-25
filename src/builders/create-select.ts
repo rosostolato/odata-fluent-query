@@ -1,7 +1,7 @@
-import { QueryDescriptor } from '../models'
+import { ProxyInstance, QueryDescriptor } from '../models'
 import { createQuery } from './create-query'
 
-function makeSelect(key = ''): any {
+function makeSelect(key = ''): ProxyInstance {
   return new Proxy(
     {},
     {
@@ -14,11 +14,11 @@ function makeSelect(key = ''): any {
 }
 
 export function createSelect(descriptor: QueryDescriptor) {
-  return (...keys: any[]) => {
+  return (...keys: any[]  ) => {
     const _keys = keys
       .map(keyOrExp => {
         if (typeof keyOrExp === 'function') {
-          const exp: any = keyOrExp(makeSelect())
+          const exp = keyOrExp(makeSelect())
           return exp._key
         } else {
           return String(keyOrExp)

@@ -247,7 +247,7 @@ describe('test odataQuery search functionality', () => {
   })
 
   describe('complex search expressions', () => {
-    it('handles OData operator precedence correctly', () => {
+    it('handles OData operator precedence', () => {
       const query = odataQuery<User>()
       const actual = query.search(s => s.token('bike').or('car').and('red')).toString()
       const expected = '$search=bike OR car AND red'

@@ -41,11 +41,11 @@ describe('testing compute alias integration', () => {
     expect(query).toBe('$filter=totalPrice gt 50&$select=id,totalPrice,shortName&$orderby=shortName&$compute=price mul quantity as totalPrice,substring(name,0,5) as shortName')
   })
 
-  // AVJ: This section is primarily for TypeScript compilation - if these compile, types are correct
+  // This section is primarily for TypeScript compilation - if these compile, types are correct
   it('should infer correct types for computed aliases', () => {
     const query = odataQuery<Product>()
-      .compute(c => c.price.multiply(c.quantity).as('totalPrice')) // Should add totalPrice: number
-      .compute(c => c.name.substring(0, 5).as('shortName')) // Should add shortName: string
+      .compute(c => c.price.multiply(c.quantity).as('totalPrice'))
+      .compute(c => c.name.substring(0, 5).as('shortName'))
     
     // These should all compile without TypeScript errors:
     query.select('id', 'name', 'totalPrice', 'shortName')

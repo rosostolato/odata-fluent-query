@@ -1,9 +1,4 @@
-import { QueryDescriptor } from '../models'
-
-export interface KeyValue<T> {
-  key: string
-  value: T
-}
+import { KeyValue, QueryDescriptor } from '../models'
 
 export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   const params: {
@@ -11,12 +6,10 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
     value: string
   }[] = []
 
-  // Helper function to add a parameter
   const addParam = (key: string, value: string) => {
     params.push({ key, value })
   }
 
-  // Use consistent order regardless of input order (since OData spec says order is insignificant)
   if (qd.filters.length) {
     if (qd.filters.length > 1) {
       addParam(
@@ -83,6 +76,7 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
   if (!rqd.key) {
     throw new Error('Query descriptor for expand must have a key')
   }
+  
   let expand: string = rqd.key
 
   if (

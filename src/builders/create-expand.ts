@@ -1,7 +1,8 @@
-import { QueryDescriptor } from '../models'
+import { AnyFunction, QueryDescriptor } from '../models'
+import { ExpandBuilder } from '../models/query-expand'
 import { createQuery, createQueryDescriptor } from './create-query'
 
-function makeExpand(key = ''): InstanceType<typeof Proxy> {
+function makeExpand(key = ''): ExpandBuilder<unknown> {
   return new Proxy(
     {},
     {
@@ -13,21 +14,24 @@ function makeExpand(key = ''): InstanceType<typeof Proxy> {
   )
 }
 
-export function createExpand(descriptor: QueryDescriptor) {
-  return (keyOrExp: string | Function, query?: Function) => {
+export function createExpand(descriptor: QueryDescriptor): ExpandBuilder<unknown> {
+  return (keyOrExp: string | AnyFunction, query?: Function) => {
     let key: string = ''
+
     if (typeof keyOrExp === 'function') {
       const exp = keyOrExp(makeExpand())
       key = exp._key
     } else {
       key = String(keyOrExp)
     }
+
     const expand = createQuery(createQueryDescriptor(key))
     const result = query?.(expand) || expand
     const newDescriptor: QueryDescriptor = {
       ...descriptor,
       expands: descriptor.expands.concat(result._descriptor),
     }
+    
     return createQuery(newDescriptor)
   }
 }

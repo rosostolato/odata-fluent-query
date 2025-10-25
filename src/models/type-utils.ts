@@ -1,7 +1,13 @@
 // General utility types
+export interface KeyValue<T> {
+  key: string
+  value: T
+}
 export type Defined<T> = Exclude<T, undefined>
 export type ExtractNull<T> = Extract<null, T>
 export type ProxyInstance = InstanceType<typeof Proxy>
+export type AnyObjectOfHandlers = Record<string, (...args: any[]) => unknown>
+export type AnyFunction = (...args: any[]) => any
 
 // Type utilities for result type inference
 export type Prettify<T> = {

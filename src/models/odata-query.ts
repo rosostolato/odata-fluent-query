@@ -35,7 +35,7 @@ export type QueryObject = {
 // Main result type that combines all transformations
 export type QueryResultType<
   T,
-  TSelected extends keyof T | never = never,
+  TSelected extends keyof T | keyof TComputed | never = never,
   TComputed = {},
   TExpanded extends keyof OptionalProperties<T> = never
 > = [TSelected] extends [never]
@@ -53,12 +53,12 @@ export type QueryResultType<
         SelectedProperties<T, TSelected & keyof RequiredProperties<T>>,
         ExpandedOptionalProperties<T, TSelected & TExpanded>
       >,
-      TComputed
+      SelectedProperties<TComputed, TSelected & keyof TComputed>
     >
 
 export interface ODataQuery<
   T,
-  TSelected extends keyof T | never = never,
+  TSelected extends keyof T | keyof TComputed | never = never,
   TComputed = {},
   TExpanded extends keyof OptionalProperties<T> = never
 > {

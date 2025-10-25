@@ -8,13 +8,15 @@ export type Prettify<T> = {
 } & {}
 
 // Extract required properties (complex types - always included)
+// Uses Pick to detect optional properties, which works with exactOptionalPropertyTypes
 export type RequiredProperties<T> = {
-  [K in keyof T as undefined extends T[K] ? never : K]: T[K]
+  [K in keyof T as {} extends Pick<T, K> ? never : K]: T[K]
 }
 
 // Extract optional properties (navigation properties - only included if expanded)
+// Uses Pick to detect optional properties, which works with exactOptionalPropertyTypes
 export type OptionalProperties<T> = {
-  [K in keyof T as undefined extends T[K] ? K : never]: T[K]
+  [K in keyof T as {} extends Pick<T, K> ? K : never]: T[K]
 }
 
 // Helper to ensure we get the right intersection types

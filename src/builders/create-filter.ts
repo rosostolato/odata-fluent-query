@@ -5,11 +5,12 @@ import {
   FilterWithKey,
   FilterValue,
   FilterFunction,
+  IntrospectableFunction,
 } from '../models/internal/filter-internal'
 import { createQuery } from './create-query'
-import { AnyFunction, AnyObjectOfHandlers, QueryDescriptor } from '../models/internal/common-internal'
+import { QueryDescriptor } from '../models/internal/common-internal'
 
-export function getFuncArgs(func: AnyFunction): string[] {
+export function getFuncArgs(func: IntrospectableFunction): string[] {
   const [, , paramStr] = /(function)?(.*?)(?=[={])/.exec(func.toString()) ?? []
 
   return (paramStr ?? '')
@@ -35,7 +36,7 @@ export function dateToObject(d: Date) {
   }
 }
 
-export function makeExp(exp: string): AnyObjectOfHandlers {
+export function makeExp(exp: string): ExpressionWithGet {
   const _get = (checkParetheses = false) => {
     if (!checkParetheses) {
       return exp
@@ -55,9 +56,9 @@ export function makeExp(exp: string): AnyObjectOfHandlers {
 }
 
 function filterBuilder(key: string): FilterBuilder<unknown> {
-  const arrFuncBuilder = (method: 'any' | 'all') => (exp: AnyFunction) => {
+  const arrFuncBuilder = (method: 'any' | 'all') => (exp: IntrospectableFunction) => {
     const [arg] = getFuncArgs(exp)
-    const builder = exp(makeFilter(arg))
+    const builder = exp(makeFilter(arg)) as ExpressionWithGet
     const expr = builder._get()
 
     return makeExp(`${key}/${method}(${arg}: ${expr})`)

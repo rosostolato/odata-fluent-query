@@ -4,11 +4,20 @@
 import { FilterBuilder } from '../query-filter'
 
 /**
+ * Generic function type for runtime introspection
+ * Used to parse function parameter names via toString()
+ */
+export type IntrospectableFunction = (...args: unknown[]) => unknown
+
+/**
  * Internal interface for filter expressions that have a _get method
- * Used internally to retrieve the OData query string
+ * Used internally to retrieve the OData query string and combine expressions
  */
 export interface ExpressionWithGet {
   _get(checkParentheses?: boolean): string
+  not(): ExpressionWithGet
+  and(otherExp: ExpressionWithGet): ExpressionWithGet
+  or(otherExp: ExpressionWithGet): ExpressionWithGet
 }
 
 /**

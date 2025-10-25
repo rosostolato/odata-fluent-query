@@ -1,5 +1,5 @@
-import { AnyFunction, QueryDescriptor } from '../models/internal/common-internal'
-import { ExpandBuilder } from '../models/query-expand'
+import { QueryDescriptor } from '../models/internal/common-internal'
+import { ExpandBuilder, ExpandExpression } from '../models/query-expand'
 import { createQuery, createQueryDescriptor } from './create-query'
 
 function makeExpand(key = ''): ExpandBuilder<unknown> {
@@ -15,11 +15,11 @@ function makeExpand(key = ''): ExpandBuilder<unknown> {
 }
 
 export function createExpand(descriptor: QueryDescriptor): ExpandBuilder<unknown> {
-  return (keyOrExp: string | AnyFunction, query?: Function) => {
+  return (keyOrExp: string | ((exp: ExpandBuilder<unknown>) => ExpandExpression & { _key: string }), query?: Function) => {
     let key: string = ''
 
     if (typeof keyOrExp === 'function') {
-      const exp = keyOrExp(makeExpand())
+      const exp = keyOrExp(makeExpand()) as ExpandExpression & { _key: string }
       key = exp._key
     } else {
       key = String(keyOrExp)

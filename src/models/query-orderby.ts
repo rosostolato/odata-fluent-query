@@ -12,6 +12,8 @@ export type OrderByBuilderTyped<T> = T extends Array<infer R>
   ? OrderByBuilder<T>
   : never
 
+export type OrderByParam<T> = keyof T | ((exp: OrderByBuilder<T>) => OrderBy | OrderByExpression)
+
 export interface OrderBy {
   /**
    * Orders the results in ascending order

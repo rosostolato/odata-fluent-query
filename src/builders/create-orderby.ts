@@ -1,7 +1,8 @@
+import { OrderByProxy } from '../models/internal/orderby-internal'
 import { QueryDescriptor } from '../models/internal/common-internal'
 import { createQuery } from './create-query'
 
-function makeOrderby(key = ''): InstanceType<typeof Proxy> {
+function makeOrderby(key = ''): OrderByProxy {
   if (key[0] === '/') {
     key = key.slice(1)
   }
@@ -13,7 +14,7 @@ function makeOrderby(key = ''): InstanceType<typeof Proxy> {
   }
 
   return new Proxy(
-    {},
+    {} as OrderByProxy,
     {
       get(_, prop) {
         return methods[prop as keyof typeof methods] || makeOrderby(`${key}/${String(prop)}`)
@@ -23,11 +24,11 @@ function makeOrderby(key = ''): InstanceType<typeof Proxy> {
 }
 
 export function createOrderby(descriptor: QueryDescriptor) {
-  return (keyOrExp: any, order?: 'asc' | 'desc') => {
+  return (keyOrExp: string | number | symbol | ((exp: OrderByProxy) => OrderByProxy), order?: 'asc' | 'desc') => {
     let expr =
       typeof keyOrExp === 'string'
         ? makeOrderby(keyOrExp)
-        : keyOrExp(makeOrderby())
+        : (keyOrExp as (exp: OrderByProxy) => OrderByProxy)(makeOrderby())
 
     if (order) {
       expr = expr[order]()
@@ -35,7 +36,7 @@ export function createOrderby(descriptor: QueryDescriptor) {
 
     return createQuery({
       ...descriptor,
-      orderby: descriptor.orderby.concat(expr['_key']),
+      orderby: descriptor.orderby.concat(expr._key),
     })
   }
 }

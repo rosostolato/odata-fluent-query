@@ -40,5 +40,6 @@ export type ExpandObjectQuery<T> = Pick<ODataQuery<T>, 'select' | 'expand'>
 /**
  * Internal type for queries on expanded array properties
  * Array expansions have full query capabilities
+ * Starts with no selections (never), no computed properties ({}), and no expansions (never)
  */
-export type ExpandArrayQuery<T> = ODataQuery<T, any, any, any>
+export type ExpandArrayQuery<T> = ODataQuery<T, never, {}, never>

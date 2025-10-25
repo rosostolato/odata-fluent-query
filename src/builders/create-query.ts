@@ -23,6 +23,9 @@ export function createQueryDescriptor(key?: string): QueryDescriptor {
   }
 }
 
+/**
+ * Creates a query object implementing the ODataQuery interface.
+ */
 export function createQuery(descriptor: QueryDescriptor): any {
   return {
     _descriptor: descriptor,

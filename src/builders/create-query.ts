@@ -1,4 +1,5 @@
-import { QueryDescriptor, QueryObject } from '../models'
+import { QueryObject } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { createCompute } from './create-compute'
 import { createExpand } from './create-expand'
 import { createFilter } from './create-filter'
@@ -22,6 +23,9 @@ export function createQueryDescriptor(key?: string): QueryDescriptor {
   }
 }
 
+/**
+ * Creates a query object implementing the ODataQuery interface.
+ */
 export function createQuery(descriptor: QueryDescriptor): any {
   return {
     _descriptor: descriptor,
@@ -39,9 +43,10 @@ export function createQuery(descriptor: QueryDescriptor): any {
         count: true,
       })
     },
+    type: {}, // Empty object for TypeScript type inference only
     toObject(): QueryObject {
-      return makeQuery(descriptor).reduce((obj, x) => {
-        obj[x.key as keyof QueryObject] = x.value
+      return makeQuery(descriptor).reduce((obj, keyVal) => {
+        obj[keyVal.key as keyof QueryObject] = keyVal.value
         return obj
       }, {} as QueryObject)
     },

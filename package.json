@@ -14,16 +14,8 @@
   "bugs": {
     "url": "https://github.com/rosostolato/odata-fluent-query/issues"
   },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "odata",
-    "query",
-    "builder",
-    "fluent",
-    "typescript"
-  ],
+  "files": ["dist"],
+  "keywords": ["odata", "query", "builder", "fluent", "typescript"],
   "engines": {
     "node": ">=18"
   },
@@ -37,24 +29,23 @@
     "test:coverage": "jest --coverage",
     "test:coverage:json": "jest --coverage --json --testLocationInResults --outputFile=coverage/report.json",
     "ci": "npm run build && npm run test:coverage && npm run test:coverage:json",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "check": "biome check --write .",
     "prepare": "npm run build",
     "prepublishOnly": "npm run ci"
   },
   "devDependencies": {
-    "@eslint/js": "^9.15.0",
+    "@biomejs/biome": "2.3.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.1",
-    "@typescript-eslint/eslint-plugin": "^8.15.0",
-    "@typescript-eslint/parser": "^8.15.0",
-    "eslint": "^9.15.0",
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "^8.15.0"
+    "type-testing": "^0.2.0",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "uuid": "^13.0.0"

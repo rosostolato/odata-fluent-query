@@ -61,10 +61,10 @@ describe('testing ODataQuery orderby', () => {
   it('orderby multiple', () => {
     const query = odataQuery<User>()
     const actual = query
-      .orderBy(q => q.address.street.asc())
-      .orderBy(q => q.address2.street.desc())
+      .orderBy(q => q.personalInfo.department.asc())
+      .orderBy(q => q.address.street.desc())
       .toString()
-    const expected = '$orderby=address/street asc, address2/street desc'
+    const expected = '$orderby=personalInfo/department asc, address/street desc'
     expect(actual).toBe(expected)
   })
 })

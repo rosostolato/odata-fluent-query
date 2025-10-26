@@ -7,10 +7,14 @@ export type OrderByBuilderTyped<T> = T extends Array<infer R>
     ? OrderByBuilder<R>
     : never
   : T extends number | string | boolean | Date | Uint8Array
-  ? OrderBy
-  : T extends object
-  ? OrderByBuilder<T>
-  : never
+    ? OrderBy
+    : T extends object
+      ? OrderByBuilder<T>
+      : never
+
+export type OrderByParam<T> =
+  | keyof T
+  | ((exp: OrderByBuilder<T>) => OrderBy | OrderByExpression)
 
 export interface OrderBy {
   /**

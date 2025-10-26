@@ -1,9 +1,4 @@
-import { QueryDescriptor } from '../models'
-
-export interface KeyValue<T> {
-  key: string
-  value: T
-}
+import { KeyValue, QueryDescriptor } from '../models/internal/common-internal'
 
 export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
   const params: {
@@ -11,17 +6,15 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
     value: string
   }[] = []
 
-  // Helper function to add a parameter
   const addParam = (key: string, value: string) => {
     params.push({ key, value })
   }
 
-  // Use consistent order regardless of input order (since OData spec says order is insignificant)
   if (qd.filters.length) {
     if (qd.filters.length > 1) {
       addParam(
         '$filter',
-        `${qd.filters.map(makeQueryParentheses).join(' and ')}`
+        `${qd.filters.map(makeQueryParentheses).join(' and ')}`,
       )
     } else {
       addParam('$filter', `${qd.filters.join()}`)
@@ -30,9 +23,11 @@ export function makeQuery(qd: QueryDescriptor): KeyValue<string>[] {
 
   if (qd.groupby.length) {
     let group = `groupby((${qd.groupby.join(', ')})`
+
     if (qd.aggregator) {
       group += `, aggregate(${qd.aggregator})`
     }
+
     addParam('$apply', group + ')')
   }
 
@@ -83,6 +78,7 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
   if (!rqd.key) {
     throw new Error('Query descriptor for expand must have a key')
   }
+
   let expand: string = rqd.key
 
   if (
@@ -123,7 +119,7 @@ export function makeRelationQuery(rqd: QueryDescriptor): string {
     if (rqd.filters.length) {
       if (rqd.filters.length > 1) {
         operators.push(
-          `$filter=${rqd.filters.map(makeQueryParentheses).join(' and ')}`
+          `$filter=${rqd.filters.map(makeQueryParentheses).join(' and ')}`,
         )
       } else {
         operators.push(`$filter=${rqd.filters.join()}`)

@@ -7,13 +7,13 @@ export interface ComputeExpression {
    * .select('name', 'totalValue')
    */
   as<TAlias extends string>(
-    alias: TAlias
+    alias: TAlias,
   ): ComputeExpressionWithAlias<TAlias, this>
 }
 
 export interface ComputeExpressionWithAlias<
   TAliasKey extends string,
-  TAliasValue
+  TAliasValue,
 > {
   // AVJ: These properties are not used at runtime but are
   // purely for type inference as the compute expression gets chained
@@ -21,16 +21,6 @@ export interface ComputeExpressionWithAlias<
   readonly _alias: TAliasKey
   readonly _type: TAliasValue
 }
-
-export type InferComputeType<T> = T extends ComputeNumber
-  ? number
-  : T extends ComputeString
-  ? string
-  : T extends ComputeBoolean
-  ? boolean
-  : T extends ComputeDate
-  ? Date
-  : unknown
 
 export interface ComputeNumber extends ComputeExpression {
   /**
@@ -192,16 +182,16 @@ export interface ComputeDate extends ComputeExpression {
 export type ComputeBuilderType<T> = T extends string
   ? ComputeString
   : T extends number
-  ? ComputeNumber
-  : T extends boolean
-  ? ComputeBoolean
-  : T extends Date
-  ? ComputeDate
-  : T extends (infer U)[]
-  ? ComputeBuilder<U>
-  : T extends object
-  ? ComputeBuilder<T>
-  : ComputeExpression
+    ? ComputeNumber
+    : T extends boolean
+      ? ComputeBoolean
+      : T extends Date
+        ? ComputeDate
+        : T extends (infer U)[]
+          ? ComputeBuilder<U>
+          : T extends object
+            ? ComputeBuilder<T>
+            : ComputeExpression
 
 export type ComputeBuilder<T> = {
   [P in keyof T]-?: ComputeBuilderType<NonNullable<T[P]>>

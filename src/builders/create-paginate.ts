@@ -1,13 +1,11 @@
-import { QueryDescriptor } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
+import { CreatePaginateParams } from '../models/query-paginate'
 import { createQuery } from './create-query'
 
 export function createPaginate(descriptor: QueryDescriptor) {
-  return (sizeOrOptions: any, page: number) => {
-    let data: {
-      page: number
-      count?: boolean
-      pagesize: number
-    }
+  return (sizeOrOptions: CreatePaginateParams | number, page: number) => {
+    let data: CreatePaginateParams
+
     if (typeof sizeOrOptions === 'number') {
       data = {
         page: page,
@@ -21,15 +19,18 @@ export function createPaginate(descriptor: QueryDescriptor) {
         data.count = true
       }
     }
+
     const queryDescriptor: QueryDescriptor = {
       ...descriptor,
       take: data.pagesize,
       skip: data.pagesize * data.page,
       count: data.count ?? false,
     }
+
     if (!queryDescriptor.skip) {
       delete queryDescriptor.skip
     }
+
     return createQuery(queryDescriptor)
   }
 }

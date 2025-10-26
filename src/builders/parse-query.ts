@@ -1,4 +1,4 @@
-import { QueryDescriptor } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import { createQueryDescriptor } from './create-query'
 
 /**
@@ -13,21 +13,19 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
 
   const descriptor = createQueryDescriptor()
 
-  // Remove leading ? if present
   const cleanQueryString = queryString.startsWith('?')
     ? queryString.slice(1)
     : queryString
 
-  // Split by & to get individual parameters
   const params = cleanQueryString.split('&')
 
   for (const param of params) {
     const [key, ...valueParts] = param.split('=')
     if (!key || valueParts.length === 0) continue
 
-    const value = valueParts.join('=') // Rejoin in case there were = in the value
+    const value = valueParts.join('=')
     const trimmedValue = decodeURIComponent(value).trim()
-    if (!trimmedValue) continue // Skip empty values
+    if (!trimmedValue) continue
 
     switch (key) {
       case '$filter':
@@ -74,7 +72,7 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
           .map(s => s.trim())
           .filter(s => s.length > 0)
         break
-        
+
       case '$search':
         descriptor.search = trimmedValue
         break
@@ -86,7 +84,6 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
       case '$apply':
         parseApply(trimmedValue, descriptor)
         break
-
     }
   }
 
@@ -111,14 +108,12 @@ function parseExpand(expandValue: string): QueryDescriptor[] {
     const openParenIndex = trimmed.indexOf('(')
 
     if (openParenIndex === -1) {
-      // Simple expand without nested query
       expands.push(createQueryDescriptor(trimmed))
     } else {
-      // Expand with nested query
       const key = trimmed.substring(0, openParenIndex).trim()
       const nestedQuery = trimmed.substring(
         openParenIndex + 1,
-        trimmed.lastIndexOf(')')
+        trimmed.lastIndexOf(')'),
       )
 
       const nestedDescriptor = parseNestedQuery(nestedQuery)
@@ -176,17 +171,16 @@ function parseNestedQuery(nestedQuery: string): QueryDescriptor {
     return descriptor
   }
 
-  // Split by semicolon to get individual parameters, but handle nested parentheses
   const params = splitNestedParams(nestedQuery)
 
   for (const param of params) {
     const [key, ...valueParts] = param.split('=')
     if (!key || valueParts.length === 0) continue
 
-    const value = valueParts.join('=') // Rejoin in case there were = in the value
+    const value = valueParts.join('=')
     const trimmedKey = key.trim()
     const trimmedValue = value.trim()
-    if (!trimmedValue) continue // Skip empty values
+    if (!trimmedValue) continue
 
     switch (trimmedKey) {
       case '$filter':
@@ -286,17 +280,14 @@ function splitNestedParams(nestedQuery: string): string[] {
  * @param descriptor The descriptor to modify
  */
 function parseApply(applyValue: string, descriptor: QueryDescriptor): void {
-  // Parse groupby syntax: groupby((field1, field2), aggregate(...))
   const groupbyMatch = applyValue.match(
-    /groupby\(\(([^)]+)\)(?:,\s*aggregate\(([^)]+)\))?\)/
+    /groupby\(\(([^)]+)\)(?:,\s*aggregate\(([^)]+)\))?\)/,
   )
 
   if (groupbyMatch && groupbyMatch[1]) {
-    // Parse groupby fields
     const fields = groupbyMatch[1].split(',').map(f => f.trim())
     descriptor.groupby = fields
 
-    // Parse aggregator if present
     if (groupbyMatch[2]) {
       descriptor.aggregator = groupbyMatch[2].trim()
     }

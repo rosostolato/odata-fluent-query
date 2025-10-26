@@ -1,3 +1,6 @@
+/**
+ * Describes the structure of an OData query with all possible query options.
+ */
 export interface QueryDescriptor {
   key: string | null
   compute: string[]

@@ -1,15 +1,22 @@
-import { QueryDescriptor } from '../models'
-import { ComputeBuilder, ComputeExpression, ComputeNumber, ComputeString, ComputeBoolean } from '../models/query-compute'
+import { QueryDescriptor } from '../models/internal/common-internal'
+import {
+  ComputeBoolean,
+  ComputeBuilder,
+  ComputeExpression,
+  ComputeNumber,
+  ComputeString,
+} from '../models/query-compute'
 import { createQuery } from './create-query'
 
-function computeBuilder(propertyPath: string): Record<string, (...args: any[]) => unknown> {
+function computeBuilder(propertyPath: string): ComputeBuilder<unknown> {
   return {
     as: <TAlias extends string>(alias: TAlias) => ({
       toString: () => `${propertyPath} as ${alias}`,
     }),
     toString: () => propertyPath,
     substring: (start: number, length?: number) => {
-      const args = length !== undefined ? `${start},${length}` : start.toString()
+      const args =
+        length !== undefined ? `${start},${length}` : start.toString()
 
       return computeBuilder(`substring(${propertyPath},${args})`)
     },
@@ -21,7 +28,7 @@ function computeBuilder(propertyPath: string): Record<string, (...args: any[]) =
 
         return v
       })
-      
+
       // AVJ: below we have to handle the fact that OData concat
       // requires nested concat calls for multiple arguments
       // beyond just two. This will allow a user to pass many arguments
@@ -38,26 +45,39 @@ function computeBuilder(propertyPath: string): Record<string, (...args: any[]) =
         return computeBuilder(result)
       }
     },
-    and: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} and ${typeof value === 'boolean' ? value : value.toString()}`),
-    or: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} or ${typeof value === 'boolean' ? value : value.toString()}`),
+    and: (value: boolean | ComputeBoolean | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} and ${typeof value === 'boolean' ? value : value.toString()}`,
+      ),
+    or: (value: boolean | ComputeBoolean | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} or ${typeof value === 'boolean' ? value : value.toString()}`,
+      ),
     not: () => computeBuilder(`not ${propertyPath}`),
-    equals: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} eq ${typeof value === 'boolean' ? value : value.toString()}`),
-    notEquals: (value: boolean | ComputeBoolean | ComputeExpression) => 
-      computeBuilder(`${propertyPath} ne ${typeof value === 'boolean' ? value : value.toString()}`),
-    multiply: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} mul ${typeof value === 'number' ? value : value.toString()}`)
-    ,
-    divide: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} div ${typeof value === 'number' ? value : value.toString()}`)
-    ,
-    add: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} add ${typeof value === 'number' ? value : value.toString()}`)
-    ,
-    subtract: (value: number | ComputeNumber | ComputeExpression) => 
-      computeBuilder(`${propertyPath} sub ${typeof value === 'number' ? value : value.toString()}`),
+    equals: (value: boolean | ComputeBoolean | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} eq ${typeof value === 'boolean' ? value : value.toString()}`,
+      ),
+    notEquals: (value: boolean | ComputeBoolean | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} ne ${typeof value === 'boolean' ? value : value.toString()}`,
+      ),
+    multiply: (value: number | ComputeNumber | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} mul ${typeof value === 'number' ? value : value.toString()}`,
+      ),
+    divide: (value: number | ComputeNumber | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} div ${typeof value === 'number' ? value : value.toString()}`,
+      ),
+    add: (value: number | ComputeNumber | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} add ${typeof value === 'number' ? value : value.toString()}`,
+      ),
+    subtract: (value: number | ComputeNumber | ComputeExpression) =>
+      computeBuilder(
+        `${propertyPath} sub ${typeof value === 'number' ? value : value.toString()}`,
+      ),
     year: () => computeBuilder(`year(${propertyPath})`),
     month: () => computeBuilder(`month(${propertyPath})`),
     day: () => computeBuilder(`day(${propertyPath})`),
@@ -65,7 +85,7 @@ function computeBuilder(propertyPath: string): Record<string, (...args: any[]) =
     minute: () => computeBuilder(`minute(${propertyPath})`),
     second: () => computeBuilder(`second(${propertyPath})`),
     date: () => computeBuilder(`date(${propertyPath})`),
-    time: () => computeBuilder(`time(${propertyPath})`)
+    time: () => computeBuilder(`time(${propertyPath})`),
   }
 }
 
@@ -73,25 +93,22 @@ function makeCompute<T>(): ComputeBuilder<T> {
   return new Proxy({} as ComputeBuilder<T>, {
     get(_target, prop) {
       if (typeof prop === 'symbol') return undefined
-      
+
       return computeBuilder(prop.toString())
-    }
+    },
   })
 }
 
 export function createCompute<T>(descriptor: QueryDescriptor) {
-  return (
-    exp: (builder: ComputeBuilder<T>) => ComputeExpression
-  ) => {
+  return (exp: (builder: ComputeBuilder<T>) => ComputeExpression) => {
     const builder = makeCompute<T>()
     const expression = exp(builder)
-    
+
     const newDescriptor = {
       ...descriptor,
-      compute: [...descriptor.compute, expression.toString()]
+      compute: [...descriptor.compute, expression.toString()],
     }
-    
+
     return createQuery(newDescriptor)
   }
 }
-

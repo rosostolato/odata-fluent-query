@@ -42,7 +42,7 @@ export interface SearchBuilder {
    * @returns SearchExpression with appropriate quoting
    * @example
    * search(s => s.token('bike')) // Results in: bike
-   * search(s => s.token('mountain bike')) // Results in: mountain bike  
+   * search(s => s.token('mountain bike')) // Results in: mountain bike
    * search(s => s.token(2022)) // Results in: "2022"
    * search(s => s.token('example.com')) // Results in: "example.com"
    */

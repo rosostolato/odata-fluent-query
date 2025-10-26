@@ -1,8 +1,11 @@
+export * from './internal/type-utils'
 export * from './odata-query'
-export * from './query-descriptor'
+export * from './query-compute'
+export * from './query-expand'
 export * from './query-filter'
 export * from './query-groupby'
 export * from './query-orderby'
+export * from './query-paginate'
 export * from './query-search'
 export * from './query-select'
-export * from './query-compute'
+

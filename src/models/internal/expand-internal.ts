@@ -28,8 +28,8 @@ export type ExpandKey<T> = Pick<
 export type ExpandQueryComplex<T> = T extends Array<infer U>
   ? ExpandArrayQuery<U>
   : T extends object
-  ? ExpandObjectQuery<T>
-  : never
+    ? ExpandObjectQuery<T>
+    : never
 
 /**
  * Internal type for queries on expanded object properties

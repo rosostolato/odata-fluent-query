@@ -47,7 +47,7 @@ describe('testing ODataQuery expand', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', e =>
-        e.filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
+        e.filter(q => q.content.startsWith('test').or(q.id.biggerThan(5))),
       )
       .toString()
     const expected =
@@ -61,7 +61,7 @@ describe('testing ODataQuery expand', () => {
       .expand('posts', e =>
         e
           .filter(q => q.content.startsWith('test').or(q.id.biggerThan(5)))
-          .filter(q => q.id.lessThan(10))
+          .filter(q => q.id.lessThan(10)),
       )
       .toString()
     const expected =
@@ -93,7 +93,7 @@ describe('testing ODataQuery expand', () => {
           page: 5,
           pagesize: 10,
           count: false,
-        })
+        }),
       )
       .toString()
     const expected = '$expand=posts($skip=50;$top=10)'
@@ -130,7 +130,7 @@ describe('testing ODataQuery expand with key query', () => {
     const actual = query
       .expand(
         u => u.manager,
-        q => q.select('email')
+        q => q.select('email'),
       )
       .toString()
     const expected = '$expand=manager($select=email)'
@@ -142,7 +142,7 @@ describe('testing ODataQuery expand with key query', () => {
     const actual = query
       .expand(
         u => u.manager,
-        q => q.select('email')
+        q => q.select('email'),
       )
       .toString()
     const expected = '$expand=manager($select=email)'
@@ -154,7 +154,7 @@ describe('testing ODataQuery expand with key query', () => {
     const actual = query
       .expand(
         u => u.manager.posts,
-        q => q.select('id')
+        q => q.select('id'),
       )
       .toString()
     const expected = '$expand=manager/posts($select=id)'

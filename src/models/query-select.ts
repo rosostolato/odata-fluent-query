@@ -9,9 +9,9 @@ export type SelectBuilder<T> = {
 export type SelectBuilderType<T> = T extends Array<infer R>
   ? SelectBuilder<R>
   : T extends string | number | boolean | Date
-  ? SelectExpression
-  : T extends object
-  ? SelectBuilder<T>
-  : SelectExpression
+    ? SelectExpression
+    : T extends object
+      ? SelectBuilder<T>
+      : SelectExpression
 
 export interface SelectExpression {}

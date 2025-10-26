@@ -1,5 +1,5 @@
 import { QueryDescriptor } from '../models/internal/common-internal'
-import { ExpandBuilder, ExpandExpression } from '../models/query-expand'
+import { ExpandBuilder, ExpandExpressionWithKey } from '../models/query-expand'
 import { createQuery, createQueryDescriptor } from './create-query'
 
 function makeExpand(key = ''): ExpandBuilder<unknown> {
@@ -10,16 +10,23 @@ function makeExpand(key = ''): ExpandBuilder<unknown> {
         if (prop === '_key') return key.slice(1)
         return makeExpand(`${key}/${String(prop)}`)
       },
-    }
+    },
   )
 }
 
-export function createExpand(descriptor: QueryDescriptor): ExpandBuilder<unknown> {
-  return (keyOrExp: string | ((exp: ExpandBuilder<unknown>) => ExpandExpression & { _key: string }), query?: Function) => {
+export function createExpand(
+  descriptor: QueryDescriptor,
+): ExpandBuilder<unknown> {
+  return (
+    keyOrExp:
+      | string
+      | ((exp: ExpandBuilder<unknown>) => ExpandExpressionWithKey),
+    query?: Function,
+  ) => {
     let key: string = ''
 
     if (typeof keyOrExp === 'function') {
-      const exp = keyOrExp(makeExpand()) as ExpandExpression & { _key: string }
+      const exp = keyOrExp(makeExpand())
       key = exp._key
     } else {
       key = String(keyOrExp)
@@ -31,7 +38,7 @@ export function createExpand(descriptor: QueryDescriptor): ExpandBuilder<unknown
       ...descriptor,
       expands: descriptor.expands.concat(result._descriptor),
     }
-    
+
     return createQuery(newDescriptor)
   }
 }

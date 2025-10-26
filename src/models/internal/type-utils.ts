@@ -1,4 +1,4 @@
-// Public type utilities for end users working with query result types
+export type Primitive = number | string | boolean | Date | Uint8Array
 
 /**
  * Helper type to exclude undefined from a type
@@ -23,7 +23,9 @@ export type RequiredProperties<T> = {
 
 // Extract optional properties (navigation properties - only included if expanded)
 export type OptionalProperties<T> = {
-  [K in keyof T as {} extends Pick<T, K> ? K : never]: Required<Pick<T, K>>[K] | undefined
+  [K in keyof T as {} extends Pick<T, K> ? K : never]:
+    | Required<Pick<T, K>>[K]
+    | undefined
 }
 
 // Helper to ensure we get the right intersection types
@@ -38,7 +40,7 @@ export type SelectedProperties<T, TSelected extends keyof T> = {
 // Removes undefined from optional properties when they are expanded
 export type ExpandedOptionalProperties<
   T,
-  TExpanded extends keyof OptionalProperties<T>
+  TExpanded extends keyof OptionalProperties<T>,
 > = {
   [K in TExpanded]-?: Required<Pick<T, K>>[K]
 }

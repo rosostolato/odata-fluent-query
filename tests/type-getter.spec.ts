@@ -1,7 +1,7 @@
+import { Equal, Expect } from 'type-testing'
 import { odataQuery } from '../src'
 import { Library, LibraryBranch } from './data/library'
 import { User } from './data/user'
-import { Equal, Expect } from 'type-testing'
 
 describe('Type Getter with Enhanced TypeScript Testing', () => {
   it('should have type property available', () => {
@@ -22,7 +22,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
             'id',
             'name',
             'type',
-            'address'
+            'address',
           )
 
           type LibrarySummary = typeof query.type
@@ -51,7 +51,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
           const processLibraries = (libraries: LibrarySummary[]): string[] => {
             return libraries.map(
-              library => `${library.id}: ${library.name} (${library.type})`
+              library => `${library.id}: ${library.name} (${library.type})`,
             )
           }
 
@@ -88,11 +88,11 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
           type test_no_address = Expect<AddressNotInKeys>
 
           const calculateTotalBooks = (
-            libraries: LibraryWithBooks[]
+            libraries: LibraryWithBooks[],
           ): number => {
             return libraries.reduce(
               (total, library) => total + (library.books?.length || 0),
-              0
+              0,
             )
           }
 
@@ -112,10 +112,10 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
       // Test query generation
       expect(summaryService.query.toString()).toBe(
-        '$select=id,name,type,address'
+        '$select=id,name,type,address',
       )
       expect(booksService.query.toString()).toBe(
-        '$expand=books&$select=id,name,books'
+        '$expand=books&$select=id,name,books',
       )
     })
 
@@ -126,7 +126,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
             'id',
             'name',
             'branchCode',
-            'location'
+            'location',
           )
 
           type BranchProfile = typeof query.type
@@ -191,10 +191,10 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
       // Test query generation
       expect(profileClient.query.toString()).toBe(
-        '$select=id,name,branchCode,location'
+        '$select=id,name,branchCode,location',
       )
       expect(staffClient.query.toString()).toBe(
-        '$expand=staff,mainLibrary&$select=id,name,staff,mainLibrary'
+        '$expand=staff,mainLibrary&$select=id,name,staff,mainLibrary',
       )
     })
 
@@ -231,7 +231,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
             .compute(c =>
               c.name
                 .concat(' (Est. ', c.established.year().toString(), ')')
-                .as('nameWithYear')
+                .as('nameWithYear'),
             )
             .select('id', 'nameWithYear')
 
@@ -255,7 +255,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
       expect(typeof complexQuery.processResults).toBe('function')
 
       expect(displayQuery.query.toString()).toBe(
-        "$select=id,displayName&$compute=concat(concat(name,' - '),type) as displayName"
+        "$select=id,displayName&$compute=concat(concat(name,' - '),type) as displayName",
       )
       expect(complexQuery.query.toString()).toContain('$select=id,nameWithYear')
       expect(complexQuery.query.toString()).toContain('$compute=')
@@ -325,7 +325,7 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
 
       expect(typeof test.processChainedResult).toBe('function')
       expect(test.complexQuery.toString()).toContain(
-        '$select=id,name,type,members'
+        '$select=id,name,type,members',
       )
       expect(test.complexQuery.toString()).toContain('$expand=members')
       expect(test.complexQuery.toString()).toContain('$filter=')
@@ -362,10 +362,10 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
       expect(typeof processLibrary).toBe('function')
       expect(typeof processBranch).toBe('function')
       expect(libraryQuery.toString()).toBe(
-        '$expand=books&$select=id,name,address'
+        '$expand=books&$select=id,name,address',
       )
       expect(branchQuery.toString()).toBe(
-        '$expand=staff&$select=id,name,location'
+        '$expand=staff&$select=id,name,location',
       )
     })
 
@@ -381,14 +381,14 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
         return (
           branch.collections?.reduce(
             (total, collection) => total + collection.itemCount,
-            0
+            0,
           ) || 0
         )
       }
 
       expect(typeof calculateTotalItems).toBe('function')
       expect(branchWithCollectionsQuery.toString()).toBe(
-        '$expand=collections&$select=id,name,collections'
+        '$expand=collections&$select=id,name,collections',
       )
     })
   })
@@ -502,10 +502,10 @@ describe('Type Getter with Enhanced TypeScript Testing', () => {
       expect(typeof demo.renderDashboard).toBe('function')
       expect(typeof demo.renderDetails).toBe('function')
       expect(demo.dashboardQuery.toString()).toContain(
-        '$select=id,name,type,info'
+        '$select=id,name,type,info',
       )
       expect(demo.detailQuery.toString()).toBe(
-        "$filter=id eq 'lib-123'&$expand=books,members"
+        "$filter=id eq 'lib-123'&$expand=books,members",
       )
     })
   })

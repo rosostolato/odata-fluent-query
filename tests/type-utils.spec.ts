@@ -1,11 +1,11 @@
 import { Equal, Expect } from 'type-testing'
 import {
-  RequiredProperties,
-  OptionalProperties,
   ExpandedOptionalProperties,
-  SelectedProperties,
   IntersectTypes,
+  OptionalProperties,
   Prettify,
+  RequiredProperties,
+  SelectedProperties,
 } from '../src/models/type-utils'
 import { Library, LibraryBranch } from './data/library'
 import { User } from './data/user'
@@ -20,9 +20,13 @@ describe('Type Utility Tests', () => {
 
       type test_has_id = Expect<Equal<Required['id'], string>>
       type test_has_name = Expect<Equal<Required['name'], string>>
-      type test_has_type = Expect<Equal<Required['type'], 'public' | 'academic' | 'special'>>
+      type test_has_type = Expect<
+        Equal<Required['type'], 'public' | 'academic' | 'special'>
+      >
       type test_has_established = Expect<Equal<Required['established'], Date>>
-      type test_has_address = Expect<Equal<Required['address'], Library['address']>>
+      type test_has_address = Expect<
+        Equal<Required['address'], Library['address']>
+      >
       type test_has_info = Expect<Equal<Required['info'], Library['info']>>
 
       type RequiredKeys = keyof Required
@@ -39,8 +43,12 @@ describe('Type Utility Tests', () => {
       type test_has_id = Expect<Equal<Required['id'], number>>
       type test_has_email = Expect<Equal<Required['email'], string>>
       type test_has_surname = Expect<Equal<Required['surname'], string | null>>
-      type test_has_address = Expect<Equal<Required['address'], User['address']>>
-      type test_has_phoneNumbers = Expect<Equal<Required['phoneNumbers'], string[]>>
+      type test_has_address = Expect<
+        Equal<Required['address'], User['address']>
+      >
+      type test_has_phoneNumbers = Expect<
+        Equal<Required['phoneNumbers'], string[]>
+      >
 
       type RequiredKeys = keyof Required
       type HasPosts = 'posts' extends RequiredKeys ? false : true
@@ -55,7 +63,9 @@ describe('Type Utility Tests', () => {
 
       type test_has_id = Expect<Equal<Required['id'], string>>
       type test_has_name = Expect<Equal<Required['name'], string>>
-      type test_has_location = Expect<Equal<Required['location'], LibraryBranch['location']>>
+      type test_has_location = Expect<
+        Equal<Required['location'], LibraryBranch['location']>
+      >
 
       type RequiredKeys = keyof Required
       type HasStaff = 'staff' extends RequiredKeys ? false : true
@@ -65,7 +75,9 @@ describe('Type Utility Tests', () => {
     it('should preserve nullable types on required properties', () => {
       type Required = RequiredProperties<User>
 
-      type test_surname_nullable = Expect<Equal<Required['surname'], string | null>>
+      type test_surname_nullable = Expect<
+        Equal<Required['surname'], string | null>
+      >
       type test_age_nullable = Expect<Equal<Required['age'], number | null>>
     })
   })
@@ -75,9 +87,15 @@ describe('Type Utility Tests', () => {
       type Optional = OptionalProperties<Library>
 
       type test_has_books = Expect<Equal<Optional['books'], Library['books']>>
-      type test_has_members = Expect<Equal<Optional['members'], Library['members']>>
-      type test_has_librarians = Expect<Equal<Optional['librarians'], Library['librarians']>>
-      type test_has_events = Expect<Equal<Optional['events'], Library['events']>>
+      type test_has_members = Expect<
+        Equal<Optional['members'], Library['members']>
+      >
+      type test_has_librarians = Expect<
+        Equal<Optional['librarians'], Library['librarians']>
+      >
+      type test_has_events = Expect<
+        Equal<Optional['events'], Library['events']>
+      >
 
       type OptionalKeys = keyof Optional
       type HasId = 'id' extends OptionalKeys ? false : true
@@ -91,7 +109,9 @@ describe('Type Utility Tests', () => {
       type Optional = OptionalProperties<User>
 
       type test_has_posts = Expect<Equal<Optional['posts'], User['posts']>>
-      type test_has_manager = Expect<Equal<Optional['manager'], User['manager']>>
+      type test_has_manager = Expect<
+        Equal<Optional['manager'], User['manager']>
+      >
 
       type OptionalKeys = keyof Optional
       type HasId = 'id' extends OptionalKeys ? false : true
@@ -104,8 +124,12 @@ describe('Type Utility Tests', () => {
     it('should work with LibraryBranch', () => {
       type Optional = OptionalProperties<LibraryBranch>
 
-      type test_has_staff = Expect<Equal<Optional['staff'], LibraryBranch['staff']>>
-      type test_has_mainLibrary = Expect<Equal<Optional['mainLibrary'], LibraryBranch['mainLibrary']>>
+      type test_has_staff = Expect<
+        Equal<Optional['staff'], LibraryBranch['staff']>
+      >
+      type test_has_mainLibrary = Expect<
+        Equal<Optional['mainLibrary'], LibraryBranch['mainLibrary']>
+      >
 
       type OptionalKeys = keyof Optional
       type HasId = 'id' extends OptionalKeys ? false : true
@@ -117,14 +141,20 @@ describe('Type Utility Tests', () => {
     it('should remove undefined from single expanded property', () => {
       type Expanded = ExpandedOptionalProperties<Library, 'books'>
 
-      type test_books = Expect<Equal<Expanded['books'], NonNullable<Library['books']>>>
+      type test_books = Expect<
+        Equal<Expanded['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should remove undefined from multiple expanded properties', () => {
       type Expanded = ExpandedOptionalProperties<Library, 'books' | 'members'>
 
-      type test_books = Expect<Equal<Expanded['books'], NonNullable<Library['books']>>>
-      type test_members = Expect<Equal<Expanded['members'], NonNullable<Library['members']>>>
+      type test_books = Expect<
+        Equal<Expanded['books'], NonNullable<Library['books']>>
+      >
+      type test_members = Expect<
+        Equal<Expanded['members'], NonNullable<Library['members']>>
+      >
     })
 
     it('should work with User navigation properties', () => {
@@ -136,10 +166,20 @@ describe('Type Utility Tests', () => {
     })
 
     it('should work with LibraryBranch', () => {
-      type Expanded = ExpandedOptionalProperties<LibraryBranch, 'staff' | 'mainLibrary'>
+      type Expanded = ExpandedOptionalProperties<
+        LibraryBranch,
+        'staff' | 'mainLibrary'
+      >
 
-      type test_staff = Expect<Equal<Expanded['staff'], NonNullable<LibraryBranch['staff']>>>
-      type test_mainLibrary = Expect<Equal<Expanded['mainLibrary'], NonNullable<LibraryBranch['mainLibrary']>>>
+      type test_staff = Expect<
+        Equal<Expanded['staff'], NonNullable<LibraryBranch['staff']>>
+      >
+      type test_mainLibrary = Expect<
+        Equal<
+          Expanded['mainLibrary'],
+          NonNullable<LibraryBranch['mainLibrary']>
+        >
+      >
     })
 
     it('should handle empty expansion', () => {
@@ -165,7 +205,9 @@ describe('Type Utility Tests', () => {
     it('should preserve property types exactly', () => {
       type Selected = SelectedProperties<Library, 'type' | 'address'>
 
-      type test_type = Expect<Equal<Selected['type'], 'public' | 'academic' | 'special'>>
+      type test_type = Expect<
+        Equal<Selected['type'], 'public' | 'academic' | 'special'>
+      >
       type test_address = Expect<Equal<Selected['address'], Library['address']>>
     })
 
@@ -195,7 +237,9 @@ describe('Type Utility Tests', () => {
 
       type test_has_id = Expect<Equal<Combined['id'], string>>
       type test_has_name = Expect<Equal<Combined['name'], string>>
-      type test_has_books = Expect<Equal<Combined['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Combined['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should combine three types correctly', () => {
@@ -204,7 +248,9 @@ describe('Type Utility Tests', () => {
       type Type3 = { age: number }
       type Combined = IntersectTypes<IntersectTypes<Type1, Type2>, Type3>
 
-      type test_exact = Expect<Equal<Combined, { id: string; name: string; age: number }>>
+      type test_exact = Expect<
+        Equal<Combined, { id: string; name: string; age: number }>
+      >
     })
 
     it('should handle empty object intersection', () => {
@@ -243,7 +289,9 @@ describe('Type Utility Tests', () => {
       }
       type Prettified = Prettify<Complex>
 
-      type test_data = Expect<Equal<Prettified['data'], { nested: { value: number } }>>
+      type test_data = Expect<
+        Equal<Prettified['data'], { nested: { value: number } }>
+      >
       type test_union = Expect<Equal<Prettified['union'], 'a' | 'b' | 'c'>>
     })
   })
@@ -254,10 +302,12 @@ describe('Type Utility Tests', () => {
       type Required = RequiredProperties<Library>
       type Selected = SelectedProperties<Required, 'id' | 'name' | 'address'>
 
-      type test_exact = Expect<Equal<
-        Selected,
-        { id: string; name: string; address: Library['address'] }
-      >>
+      type test_exact = Expect<
+        Equal<
+          Selected,
+          { id: string; name: string; address: Library['address'] }
+        >
+      >
     })
 
     it('should work together for expand scenario', () => {
@@ -267,7 +317,9 @@ describe('Type Utility Tests', () => {
       type Combined = IntersectTypes<Required, Expanded>
 
       type test_has_id = Expect<Equal<Combined['id'], string>>
-      type test_has_books = Expect<Equal<Combined['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Combined['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should work together for select + expand scenario', () => {
@@ -279,7 +331,9 @@ describe('Type Utility Tests', () => {
 
       type test_has_id = Expect<Equal<Combined['id'], string>>
       type test_has_name = Expect<Equal<Combined['name'], string>>
-      type test_has_books = Expect<Equal<Combined['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Combined['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should work together for select + expand + compute scenario', () => {
@@ -288,10 +342,15 @@ describe('Type Utility Tests', () => {
       type Selected = SelectedProperties<Required, 'id'>
       type Expanded = ExpandedOptionalProperties<Library, 'books'>
       type Computed = { total: number }
-      type Combined = IntersectTypes<IntersectTypes<Selected, Expanded>, Computed>
+      type Combined = IntersectTypes<
+        IntersectTypes<Selected, Expanded>,
+        Computed
+      >
 
       type test_has_id = Expect<Equal<Combined['id'], string>>
-      type test_has_books = Expect<Equal<Combined['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Combined['books'], NonNullable<Library['books']>>
+      >
       type test_has_total = Expect<Equal<Combined['total'], number>>
     })
   })

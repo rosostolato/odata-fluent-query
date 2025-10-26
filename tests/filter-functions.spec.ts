@@ -11,25 +11,25 @@ describe('test filter expressions', () => {
 
   it('and expression', () => {
     return expect(makeExp('exp').and(makeExp('exp'))._get()).toEqual(
-      'exp and exp'
+      'exp and exp',
     )
   })
 
   it('or expression', () => {
     return expect(makeExp('exp').or(makeExp('exp'))._get()).toEqual(
-      'exp or exp'
+      'exp or exp',
     )
   })
 
   it('and expression inception', () => {
     return expect(makeExp('exp').and(makeExp('exp or exp'))._get()).toEqual(
-      'exp and (exp or exp)'
+      'exp and (exp or exp)',
     )
   })
 
   it('or expression inception', () => {
     return expect(makeExp('exp').or(makeExp('exp or exp'))._get()).toEqual(
-      'exp or (exp or exp)'
+      'exp or (exp or exp)',
     )
   })
 })

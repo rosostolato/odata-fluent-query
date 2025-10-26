@@ -1,7 +1,12 @@
 // Internal types for the compute builder implementation
 // These types are not exposed to end users
 
-import { ComputeBoolean, ComputeDate, ComputeNumber, ComputeString } from '../query-compute'
+import {
+  ComputeBoolean,
+  ComputeDate,
+  ComputeNumber,
+  ComputeString,
+} from '../query-compute'
 
 /**
  * Internal type utility to infer the TypeScript type from a ComputeExpression
@@ -10,9 +15,9 @@ import { ComputeBoolean, ComputeDate, ComputeNumber, ComputeString } from '../qu
 export type InferComputeType<T> = T extends ComputeNumber
   ? number
   : T extends ComputeString
-  ? string
-  : T extends ComputeBoolean
-  ? boolean
-  : T extends ComputeDate
-  ? Date
-  : unknown
+    ? string
+    : T extends ComputeBoolean
+      ? boolean
+      : T extends ComputeDate
+        ? Date
+        : unknown

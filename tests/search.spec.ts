@@ -63,7 +63,9 @@ describe('test odataQuery search functionality', () => {
   describe('search with logical operators', () => {
     it('search with AND operator', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('bike').and('mountain')).toString()
+      const actual = query
+        .search(s => s.token('bike').and('mountain'))
+        .toString()
       const expected = '$search=bike AND mountain'
 
       expect(actual).toBe(expected)
@@ -79,7 +81,9 @@ describe('test odataQuery search functionality', () => {
 
     it('search with chained AND operations', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('mountain').and('bike').and('red')).toString()
+      const actual = query
+        .search(s => s.token('mountain').and('bike').and('red'))
+        .toString()
       const expected = '$search=mountain AND bike AND red'
 
       expect(actual).toBe(expected)
@@ -87,7 +91,9 @@ describe('test odataQuery search functionality', () => {
 
     it('search with chained OR operations', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('bike').or('car').or('truck')).toString()
+      const actual = query
+        .search(s => s.token('bike').or('car').or('truck'))
+        .toString()
       const expected = '$search=bike OR car OR truck'
 
       expect(actual).toBe(expected)
@@ -137,7 +143,9 @@ describe('test odataQuery search functionality', () => {
 
     it('search with NOT and AND', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('bike').and('red').not()).toString()
+      const actual = query
+        .search(s => s.token('bike').and('red').not())
+        .toString()
       const expected = '$search=NOT bike AND red'
 
       expect(actual).toBe(expected)
@@ -145,9 +153,11 @@ describe('test odataQuery search functionality', () => {
 
     it('search with NOT and OR', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('clothing').not().or('shoes')).toString()
+      const actual = query
+        .search(s => s.token('clothing').not().or('shoes'))
+        .toString()
       const expected = '$search=NOT clothing OR shoes'
-      
+
       expect(actual).toBe(expected)
     })
   })
@@ -214,10 +224,12 @@ describe('test odataQuery search functionality', () => {
   describe('search toObject method', () => {
     it('search converts to object correctly', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('bike').and('mountain')).toObject()
+      const actual = query
+        .search(s => s.token('bike').and('mountain'))
+        .toObject()
 
       expect(actual).toEqual({
-        $search: 'bike AND mountain'
+        $search: 'bike AND mountain',
       })
     })
 
@@ -226,7 +238,7 @@ describe('test odataQuery search functionality', () => {
       const actual = query.search(s => s.token(2022)).toObject()
 
       expect(actual).toEqual({
-        $search: '"2022"'
+        $search: '"2022"',
       })
     })
 
@@ -237,11 +249,11 @@ describe('test odataQuery search functionality', () => {
         .filter(u => u.id.biggerThan(10))
         .select('id', 'email')
         .toObject()
-      
+
       expect(actual).toEqual({
         $search: 'bike',
         $filter: 'id gt 10',
-        $select: 'id,email'
+        $select: 'id,email',
       })
     })
   })
@@ -249,7 +261,9 @@ describe('test odataQuery search functionality', () => {
   describe('complex search expressions', () => {
     it('handles OData operator precedence', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => s.token('bike').or('car').and('red')).toString()
+      const actual = query
+        .search(s => s.token('bike').or('car').and('red'))
+        .toString()
       const expected = '$search=bike OR car AND red'
 
       expect(actual).toBe(expected)
@@ -257,9 +271,9 @@ describe('test odataQuery search functionality', () => {
 
     it('handles mixed logical operators', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => 
-        s.token('mountain').and('bike').or('road').and('bicycle')
-      ).toString()
+      const actual = query
+        .search(s => s.token('mountain').and('bike').or('road').and('bicycle'))
+        .toString()
       const expected = '$search=mountain AND bike OR road AND bicycle'
 
       expect(actual).toBe(expected)
@@ -267,9 +281,9 @@ describe('test odataQuery search functionality', () => {
 
     it('handles NOT with multiple terms', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => 
-        s.token('bike').and('mountain').not().or('car')
-      ).toString()
+      const actual = query
+        .search(s => s.token('bike').and('mountain').not().or('car'))
+        .toString()
       const expected = '$search=NOT bike AND mountain OR car'
 
       expect(actual).toBe(expected)
@@ -277,11 +291,11 @@ describe('test odataQuery search functionality', () => {
 
     it('handles mixed simple text and quoted values in complex expressions', () => {
       const query = odataQuery<User>()
-      const actual = query.search(s => 
-        s.token('bike').and('mountain').or('2022')
-      ).toString()
+      const actual = query
+        .search(s => s.token('bike').and('mountain').or('2022'))
+        .toString()
       const expected = '$search=bike AND mountain OR "2022"'
-      
+
       expect(actual).toBe(expected)
     })
   })
@@ -290,28 +304,30 @@ describe('test odataQuery search functionality', () => {
     it('should work within expand queries', () => {
       const query = odataQuery<User>()
       const actual = query
-        .expand('posts', q => q
-          .search(s => s.token('technology'))
-          .select('id', 'content')
+        .expand('posts', q =>
+          q.search(s => s.token('technology')).select('id', 'content'),
         )
         .toString()
-      
+
       expect(actual).toContain('$expand=posts')
       expect(actual).toContain('$search=technology')
       expect(actual).toContain('$select=id,content')
-      expect(actual).toBe('$expand=posts($select=id,content;$search=technology)')
+      expect(actual).toBe(
+        '$expand=posts($select=id,content;$search=technology)',
+      )
     })
 
     it('should combine search with other query options in expand', () => {
       const query = odataQuery<User>()
       const actual = query
-        .expand('posts', q => q
-          .search(s => s.token(2023))
-          .filter(p => p.id.biggerThan(1))
-          .orderBy('date')
+        .expand('posts', q =>
+          q
+            .search(s => s.token(2023))
+            .filter(p => p.id.biggerThan(1))
+            .orderBy('date'),
         )
         .toString()
-      
+
       expect(actual).toContain('$search="2023"')
       expect(actual).toContain('$filter=id gt 1')
       expect(actual).toContain('$orderby=date')

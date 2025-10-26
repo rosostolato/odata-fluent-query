@@ -1,4 +1,4 @@
-import { Defined, ExtractNull } from './type-utils'
+import { Defined, ExtractNull } from './internal/type-utils'
 
 export type FilterBuilder<T> = {
   readonly [P in keyof T]-?: FilterBuilderProp<T[P]>
@@ -13,16 +13,16 @@ export type FilterBuilderType<Type, Primitive> = Primitive extends Array<
 >
   ? FilterCollection<R>
   : Primitive extends string
-  ? FilterString<Type>
-  : Primitive extends number
-  ? FilterNumber<Type>
-  : Primitive extends boolean
-  ? FilterBoolean<Type>
-  : Primitive extends Date
-  ? FilterDate<Type>
-  : Primitive extends object
-  ? FilterBuilder<Primitive>
-  : never
+    ? FilterString<Type>
+    : Primitive extends number
+      ? FilterNumber<Type>
+      : Primitive extends boolean
+        ? FilterBoolean<Type>
+        : Primitive extends Date
+          ? FilterDate<Type>
+          : Primitive extends object
+            ? FilterBuilder<Primitive>
+            : never
 
 export interface StringOptions {
   /**
@@ -99,7 +99,7 @@ export interface FilterDate<T = Date> {
     m?: number,
     d?: number,
     h?: number,
-    mm?: number
+    mm?: number,
   ): FilterExpression
 
   /**
@@ -121,7 +121,7 @@ export interface FilterDate<T = Date> {
    */
   isSame(
     d: number | Date | FilterDate | ExtractNull<T>,
-    g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
+    g: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second',
   ): FilterExpression
 
   /**
@@ -141,7 +141,7 @@ export interface FilterDate<T = Date> {
    * filter(u => u.createdDate.isAfterOrEqual('2023-01-01'))
    */
   isAfterOrEqual(
-    d: string | Date | FilterDate | ExtractNull<T>
+    d: string | Date | FilterDate | ExtractNull<T>,
   ): FilterExpression
 
   /**
@@ -161,7 +161,7 @@ export interface FilterDate<T = Date> {
    * filter(u => u.createdDate.isBeforeOrEqual('2023-01-01'))
    */
   isBeforeOrEqual(
-    d: string | Date | FilterDate | ExtractNull<T>
+    d: string | Date | FilterDate | ExtractNull<T>,
   ): FilterExpression
 }
 
@@ -176,7 +176,7 @@ export interface FilterString<T = string> {
    */
   contains(
     s: string | FilterString | ExtractNull<T>,
-    options?: StringOptions
+    options?: StringOptions,
   ): FilterExpression
 
   /**
@@ -189,7 +189,7 @@ export interface FilterString<T = string> {
    */
   equals(
     s: string | FilterString | ExtractNull<T>,
-    options?: StringOptions
+    options?: StringOptions,
   ): FilterExpression
 
   /**
@@ -202,7 +202,7 @@ export interface FilterString<T = string> {
    */
   notEquals(
     s: string | FilterString | ExtractNull<T>,
-    options?: StringOptions
+    options?: StringOptions,
   ): FilterExpression
 
   /**
@@ -215,7 +215,7 @@ export interface FilterString<T = string> {
    */
   startsWith(
     s: string | FilterString | ExtractNull<T>,
-    options?: StringOptions
+    options?: StringOptions,
   ): FilterExpression
 
   /**
@@ -228,7 +228,7 @@ export interface FilterString<T = string> {
    */
   endsWith(
     s: string | FilterString | ExtractNull<T>,
-    options?: StringOptions
+    options?: StringOptions,
   ): FilterExpression
 
   /**

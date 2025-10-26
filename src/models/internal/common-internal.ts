@@ -1,8 +1,5 @@
-// Internal types shared across multiple modules
-// These types are not exposed to end users
-
 /**
- * Internal key-value pair structure
+ * key-value pair structure
  * Used for query parameter representation
  */
 export interface KeyValue<T> {

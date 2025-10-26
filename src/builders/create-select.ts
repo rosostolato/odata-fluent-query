@@ -10,18 +10,22 @@ function makeSelect(key = ''): SelectBuilder<unknown> {
         if (prop === '_key') return key.slice(1)
         return makeSelect(`${key}/${String(prop)}`)
       },
-    }
+    },
   )
 }
 
 export function createSelect(descriptor: QueryDescriptor) {
   return (
-    ...keys: Array<PropertyKey | ((exp: SelectBuilder<unknown>) => SelectExpression)>
+    ...keys: Array<
+      PropertyKey | ((exp: SelectBuilder<unknown>) => SelectExpression)
+    >
   ) => {
     const _keys = keys
       .map(keyOrExp => {
         if (typeof keyOrExp === 'function') {
-          const exp = keyOrExp(makeSelect()) as SelectExpression & { _key: string }
+          const exp = keyOrExp(makeSelect()) as SelectExpression & {
+            _key: string
+          }
           return exp._key
         } else {
           return String(keyOrExp)

@@ -1,7 +1,7 @@
 import { Equal, Expect, NotEqual } from 'type-testing'
 import { QueryResultType } from '../src/models/odata-query'
 import { Library, LibraryBranch } from './data/library'
-import { User, Post } from './data/user'
+import { Post, User } from './data/user'
 
 // This file uses the type-testing library to validate that QueryResultType
 // correctly infers the result types based on select, expand, and compute operations.
@@ -17,10 +17,14 @@ describe('QueryResultType Type Tests', () => {
 
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-      type test_has_type = Expect<Equal<Result['type'], 'public' | 'academic' | 'special'>>
+      type test_has_type = Expect<
+        Equal<Result['type'], 'public' | 'academic' | 'special'>
+      >
       type test_has_established = Expect<Equal<Result['established'], Date>>
       type test_has_isOpen = Expect<Equal<Result['isOpen'], boolean>>
-      type test_has_address = Expect<Equal<Result['address'], Library['address']>>
+      type test_has_address = Expect<
+        Equal<Result['address'], Library['address']>
+      >
       type test_has_info = Expect<Equal<Result['info'], Library['info']>>
 
       type ResultKeys = keyof Result
@@ -34,7 +38,9 @@ describe('QueryResultType Type Tests', () => {
       type test_has_id = Expect<Equal<Result['id'], number>>
       type test_has_email = Expect<Equal<Result['email'], string>>
       type test_has_address = Expect<Equal<Result['address'], User['address']>>
-      type test_has_phoneNumbers = Expect<Equal<Result['phoneNumbers'], string[]>>
+      type test_has_phoneNumbers = Expect<
+        Equal<Result['phoneNumbers'], string[]>
+      >
 
       type ResultKeys = keyof Result
       type PostsNotInKeys = 'posts' extends ResultKeys ? false : true
@@ -76,7 +82,9 @@ describe('QueryResultType Type Tests', () => {
 
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-      type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Result['books'], NonNullable<Library['books']>>
+      >
 
       type ResultKeys = keyof Result
       type MembersNotInKeys = 'members' extends ResultKeys ? false : true
@@ -86,8 +94,12 @@ describe('QueryResultType Type Tests', () => {
     it('should include multiple expanded properties', () => {
       type Result = QueryResultType<Library, never, {}, 'books' | 'members'>
 
-      type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
-      type test_has_members = Expect<Equal<Result['members'], NonNullable<Library['members']>>>
+      type test_has_books = Expect<
+        Equal<Result['books'], NonNullable<Library['books']>>
+      >
+      type test_has_members = Expect<
+        Equal<Result['members'], NonNullable<Library['members']>>
+      >
 
       type ResultKeys = keyof Result
       type LibrariansNotInKeys = 'librarians' extends ResultKeys ? false : true
@@ -136,11 +148,18 @@ describe('QueryResultType Type Tests', () => {
 
   describe('Combined Operations', () => {
     it('should handle select + expand', () => {
-      type Result = QueryResultType<Library, 'id' | 'name' | 'books', {}, 'books'>
+      type Result = QueryResultType<
+        Library,
+        'id' | 'name' | 'books',
+        {},
+        'books'
+      >
 
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-      type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Result['books'], NonNullable<Library['books']>>
+      >
 
       type ResultKeys = keyof Result
       type AddressNotInKeys = 'address' extends ResultKeys ? false : true
@@ -167,7 +186,9 @@ describe('QueryResultType Type Tests', () => {
       >
 
       type test_has_id = Expect<Equal<Result['id'], string>>
-      type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Result['books'], NonNullable<Library['books']>>
+      >
       type test_has_bookCount = Expect<Equal<Result['bookCount'], number>>
     })
 
@@ -181,7 +202,9 @@ describe('QueryResultType Type Tests', () => {
 
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-      type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Result['books'], NonNullable<Library['books']>>
+      >
       type test_has_bookCount = Expect<Equal<Result['bookCount'], number>>
 
       type ResultKeys = keyof Result
@@ -216,7 +239,9 @@ describe('QueryResultType Type Tests', () => {
       type Result = QueryResultType<Library, 'id' | 'books', {}, 'books'>
 
       type test_has_id = Expect<Equal<Result['id'], string>>
-      type test_has_books = Expect<Equal<Result['books'], NonNullable<Library['books']>>>
+      type test_has_books = Expect<
+        Equal<Result['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should handle empty type parameters correctly', () => {
@@ -238,7 +263,9 @@ describe('QueryResultType Type Tests', () => {
 
       type test_has_id = Expect<Equal<Result['id'], string>>
       type test_has_name = Expect<Equal<Result['name'], string>>
-      type test_has_staff = Expect<Equal<Result['staff'], NonNullable<LibraryBranch['staff']>>>
+      type test_has_staff = Expect<
+        Equal<Result['staff'], NonNullable<LibraryBranch['staff']>>
+      >
     })
 
     it('should preserve nullable types correctly', () => {
@@ -255,7 +282,9 @@ describe('QueryResultType Type Tests', () => {
       type test_valid = Expect<Equal<ValidResult['id'], string>>
 
       type ValidExpand = QueryResultType<Library, never, {}, 'books'>
-      type test_valid_expand = Expect<Equal<ValidExpand['books'], NonNullable<Library['books']>>>
+      type test_valid_expand = Expect<
+        Equal<ValidExpand['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should distinguish between different entity types', () => {
@@ -284,13 +313,19 @@ describe('QueryResultType Type Tests', () => {
         'books' | 'members'
       >
 
-      type test_list = Expect<Equal<
-        ListQuery,
-        { id: string; name: string; type: 'public' | 'academic' | 'special' }
-      >>
+      type test_list = Expect<
+        Equal<
+          ListQuery,
+          { id: string; name: string; type: 'public' | 'academic' | 'special' }
+        >
+      >
 
-      type test_detail_has_computed = Expect<Equal<DetailQuery['totalItems'], number>>
-      type test_detail_has_books = Expect<Equal<DetailQuery['books'], NonNullable<Library['books']>>>
+      type test_detail_has_computed = Expect<
+        Equal<DetailQuery['totalItems'], number>
+      >
+      type test_detail_has_books = Expect<
+        Equal<DetailQuery['books'], NonNullable<Library['books']>>
+      >
     })
 
     it('should support dashboard query patterns', () => {
@@ -301,7 +336,9 @@ describe('QueryResultType Type Tests', () => {
       >
 
       type test_has_required = Expect<Equal<DashboardQuery['id'], number>>
-      type test_has_computed = Expect<Equal<DashboardQuery['displayName'], string>>
+      type test_has_computed = Expect<
+        Equal<DashboardQuery['displayName'], string>
+      >
     })
 
     it('should support nested relationship queries', () => {
@@ -312,8 +349,15 @@ describe('QueryResultType Type Tests', () => {
         'mainLibrary' | 'staff'
       >
 
-      type test_has_main = Expect<Equal<NestedQuery['mainLibrary'], NonNullable<LibraryBranch['mainLibrary']>>>
-      type test_has_staff = Expect<Equal<NestedQuery['staff'], NonNullable<LibraryBranch['staff']>>>
+      type test_has_main = Expect<
+        Equal<
+          NestedQuery['mainLibrary'],
+          NonNullable<LibraryBranch['mainLibrary']>
+        >
+      >
+      type test_has_staff = Expect<
+        Equal<NestedQuery['staff'], NonNullable<LibraryBranch['staff']>>
+      >
     })
   })
 })

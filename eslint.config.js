@@ -62,5 +62,5 @@ module.exports = tseslint.config(
   },
   {
     ignores: ['dist/', 'coverage/', 'node_modules/', '*.config.js'],
-  }
+  },
 )

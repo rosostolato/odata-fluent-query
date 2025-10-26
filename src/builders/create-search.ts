@@ -1,5 +1,9 @@
 import { QueryDescriptor } from '../models/internal/common-internal'
-import { SearchBuilder, SearchExpression, SearchExpressionInternal } from '../models/query-search'
+import {
+  SearchBuilder,
+  SearchExpression,
+  SearchExpressionInternal,
+} from '../models/query-search'
 import { createQuery } from './create-query'
 
 function shouldAddTokenQuotes(value: string): boolean {
@@ -11,8 +15,8 @@ function processToken(value: number | boolean | string): string {
     return `"${String(value)}"`
   }
 
-  const stringValue = String(value);
-  
+  const stringValue = String(value)
+
   return shouldAddTokenQuotes(stringValue) ? `"${stringValue}"` : stringValue
 }
 
@@ -22,7 +26,7 @@ function makeSearchExp(expression: string): SearchExpressionInternal {
     not: () => makeSearchExp(`NOT ${expression}`),
     and: (value: number | boolean | string) => {
       const processedValue = processToken(value)
-      
+
       return makeSearchExp(`${expression} AND ${processedValue}`)
     },
     or: (value: number | boolean | string) => {
@@ -37,7 +41,7 @@ function makeSearchBuilder(): SearchBuilder {
   return {
     token: (value: number | boolean | string) => {
       const stringValue = processToken(value)
-      
+
       return makeSearchExp(stringValue)
     },
   }
@@ -47,7 +51,7 @@ export function createSearch(descriptor: QueryDescriptor) {
   return (exp: (builder: SearchBuilder) => SearchExpression) => {
     const builder = makeSearchBuilder()
     const expression = exp(builder) as SearchExpressionInternal
-    
+
     return createQuery({
       ...descriptor,
       search: expression._get(),

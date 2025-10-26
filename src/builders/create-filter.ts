@@ -1,14 +1,14 @@
 import { validate as isUUID } from 'uuid'
 import { FilterBuilder, StringOptions } from '../models'
+import { QueryDescriptor } from '../models/internal/common-internal'
 import {
   ExpressionWithGet,
-  FilterWithKey,
-  FilterValue,
   FilterFunction,
+  FilterValue,
+  FilterWithKey,
   IntrospectableFunction,
 } from '../models/internal/filter-internal'
 import { createQuery } from './create-query'
-import { QueryDescriptor } from '../models/internal/common-internal'
 
 export function getFuncArgs(func: IntrospectableFunction): string[] {
   const [, , paramStr] = /(function)?(.*?)(?=[={])/.exec(func.toString()) ?? []
@@ -50,19 +50,22 @@ export function makeExp(exp: string): ExpressionWithGet {
   return {
     _get,
     not: () => makeExp(`not (${exp})`),
-    and: (otherExp: ExpressionWithGet) => makeExp(`${_get()} and ${otherExp._get(true)}`),
-    or: (otherExp: ExpressionWithGet) => makeExp(`${_get()} or ${otherExp._get(true)}`),
+    and: (otherExp: ExpressionWithGet) =>
+      makeExp(`${_get()} and ${otherExp._get(true)}`),
+    or: (otherExp: ExpressionWithGet) =>
+      makeExp(`${_get()} or ${otherExp._get(true)}`),
   }
 }
 
 function filterBuilder(key: string): FilterBuilder<unknown> {
-  const arrFuncBuilder = (method: 'any' | 'all') => (exp: IntrospectableFunction) => {
-    const [arg] = getFuncArgs(exp)
-    const builder = exp(makeFilter(arg)) as ExpressionWithGet
-    const expr = builder._get()
+  const arrFuncBuilder =
+    (method: 'any' | 'all') => (exp: IntrospectableFunction) => {
+      const [arg] = getFuncArgs(exp)
+      const builder = exp(makeFilter(arg)) as ExpressionWithGet
+      const expr = builder._get()
 
-    return makeExp(`${key}/${method}(${arg}: ${expr})`)
-  }
+      return makeExp(`${key}/${method}(${arg}: ${expr})`)
+    }
 
   const strFuncBuilder =
     (method: 'contains' | 'startswith' | 'endswith') =>
@@ -73,60 +76,68 @@ function filterBuilder(key: string): FilterBuilder<unknown> {
             typeof s == 'string'
               ? `'${s.toLocaleLowerCase()}'`
               : `tolower(${s._key})`
-          })`
+          })`,
         )
       } else if (typeof s !== 'string' && s.getPropName) {
         return makeExp(`${method}(${key}, ${s._key})`)
       } else {
         return makeExp(
-          `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`
+          `${method}(${key}, ${typeof s == 'string' ? `'${s}'` : s})`,
         )
       }
     }
 
-  const equalityBuilder = (t: 'eq' | 'ne') => (val: FilterValue, opt?: StringOptions) => {
-    if (val === undefined) {
-      throw new Error(
-        `Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.`
-      )
+  const equalityBuilder =
+    (t: 'eq' | 'ne') => (val: FilterValue, opt?: StringOptions) => {
+      if (val === undefined) {
+        throw new Error(
+          `Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.`,
+        )
+      }
+
+      switch (typeof val) {
+        case 'string':
+          if (isUUID(val) && !opt?.ignoreGuid) {
+            return makeExp(`${key} ${t} ${val}`) // no quote around ${val}
+          } else if (opt?.caseInsensitive) {
+            return makeExp(`tolower(${key}) ${t} '${val.toLocaleLowerCase()}'`)
+          } else {
+            return makeExp(`${key} ${t} '${val}'`)
+          }
+
+        case 'number':
+          return makeExp(`${key} ${t} ${val}`)
+
+        case 'boolean':
+          return makeExp(`${key} ${t} ${val}`)
+
+        default:
+          if (val instanceof Date) {
+            return makeExp(`${key} ${t} ${val.toISOString()}`)
+          } else if (val && opt?.caseInsensitive) {
+            return makeExp(
+              `tolower(${key}) ${t} tolower(${(val as { _key: string })._key})`,
+            )
+          } else {
+            return makeExp(
+              `${key} ${t} ${(val as { _key: string })?._key || null}`,
+            )
+          }
+      }
     }
 
-    switch (typeof val) {
-      case 'string':
-        if (isUUID(val) && !opt?.ignoreGuid) {
-          return makeExp(`${key} ${t} ${val}`) // no quote around ${val}
-        } else if (opt?.caseInsensitive) {
-          return makeExp(`tolower(${key}) ${t} '${val.toLocaleLowerCase()}'`)
-        } else {
-          return makeExp(`${key} ${t} '${val}'`)
-        }
-
-      case 'number':
-        return makeExp(`${key} ${t} ${val}`)
-
-      case 'boolean':
-        return makeExp(`${key} ${t} ${val}`)
-
-      default:
-        if (val instanceof Date) {
-          return makeExp(`${key} ${t} ${val.toISOString()}`)
-        } else if (val && opt?.caseInsensitive) {
-          return makeExp(`tolower(${key}) ${t} tolower(${(val as { _key: string })._key})`)
-        } else {
-          return makeExp(`${key} ${t} ${(val as { _key: string })?._key || null}`)
-        }
+  const dateComparison =
+    (compare: 'ge' | 'gt' | 'le' | 'lt') =>
+    (d: string | Date | FilterWithKey) => {
+      if (typeof d === 'string') return makeExp(`${key} ${compare} ${d}`)
+      else if (d instanceof Date)
+        return makeExp(`${key} ${compare} ${d.toISOString()}`)
+      else return makeExp(`${key} ${compare} ${d._key}`)
     }
-  }
 
-  const dateComparison = (compare: 'ge' | 'gt' | 'le' | 'lt') => (d: string | Date | FilterWithKey) => {
-    if (typeof d === 'string') return makeExp(`${key} ${compare} ${d}`)
-    else if (d instanceof Date)
-      return makeExp(`${key} ${compare} ${d.toISOString()}`)
-    else return makeExp(`${key} ${compare} ${d._key}`)
-  }
-
-  const numberComparison = (compare: 'ge' | 'gt' | 'le' | 'lt') => (n: number | FilterWithKey) =>
-    makeExp(`${key} ${compare} ${typeof n == 'number' ? n : n._key}`)
+  const numberComparison =
+    (compare: 'ge' | 'gt' | 'le' | 'lt') => (n: number | FilterWithKey) =>
+      makeExp(`${key} ${compare} ${typeof n == 'number' ? n : n._key}`)
 
   return {
     _key: key,
@@ -138,7 +149,7 @@ function filterBuilder(key: string): FilterBuilder<unknown> {
       m?: number,
       d?: number,
       h?: number,
-      mm?: number
+      mm?: number,
     ) => {
       const exps = [`year(${key}) eq ${y}`]
       if (m != undefined) exps.push(`month(${key}) eq ${m}`)
@@ -150,7 +161,7 @@ function filterBuilder(key: string): FilterBuilder<unknown> {
 
     isSame: (
       val: string | number | Date | FilterWithKey,
-      g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
+      g?: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second',
     ) => {
       if (typeof val === 'string') {
         return makeExp(`${key} eq ${val}`)
@@ -229,15 +240,12 @@ function makeFilter(prefix = ''): FilterBuilder<unknown> {
           ? methods[prop as keyof typeof methods]
           : makeFilter(String(key))
       },
-    }
+    },
   ) as FilterBuilder<unknown>
 }
 
 export function createFilter(descriptor: QueryDescriptor) {
-  return (
-    keyOrExp: string | FilterFunction,
-    exp?: FilterFunction
-  ) => {
+  return (keyOrExp: string | FilterFunction, exp?: FilterFunction) => {
     const expr =
       typeof keyOrExp === 'string'
         ? exp!(filterBuilder(keyOrExp))

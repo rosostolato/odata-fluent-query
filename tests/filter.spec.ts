@@ -165,7 +165,7 @@ describe('test odataQuery filter by string', () => {
           .tolower()
           .append('foo')
           .prepend('bar')
-          .contains(q.address.street.tolower())
+          .contains(q.address.street.tolower()),
       )
       .toString()
     const expected =
@@ -468,8 +468,8 @@ describe('test odataQuery filter by array', () => {
     const selectedSegmentId = 1
     const query = odataQuery<Product>().filter(q =>
       q.productType.category.segmentCategories.any((p: any) =>
-        p.segmentId.equals(selectedSegmentId)
-      )
+        p.segmentId.equals(selectedSegmentId),
+      ),
     )
     const actual = query.toString()
     const expected =
@@ -554,7 +554,7 @@ describe('test odataQuery filter composed', () => {
         q.email
           .startsWith('a')
           .and(q.email.contains('o'))
-          .and(q.email.endsWith('z'))
+          .and(q.email.endsWith('z')),
       )
       .toString()
 
@@ -583,7 +583,7 @@ describe('test odataQuery filter composed', () => {
         q.email
           .startsWith('a')
           .or(q.email.contains('o'))
-          .or(q.email.endsWith('z'))
+          .or(q.email.endsWith('z')),
       )
       .toString()
 
@@ -598,7 +598,7 @@ describe('test odataQuery filter composed', () => {
       .filter(q =>
         q.givenName
           .startsWith('search')
-          .and(q.surname.startsWith('search').or(q.email.startsWith('search')))
+          .and(q.surname.startsWith('search').or(q.email.startsWith('search'))),
       )
       .toString()
 
@@ -614,7 +614,7 @@ describe('test odataQuery filter composed', () => {
         q.givenName
           .startsWith('search')
           .or(q.surname.startsWith('search'))
-          .or(q.email.startsWith('search'))
+          .or(q.email.startsWith('search')),
       )
       .filter(q => q.accountEnabled.equals(true))
       .toString()
@@ -906,7 +906,7 @@ describe('undefined value rejection', () => {
     expect(() => {
       query.filter(q => q.email.equals(undefinedValue))
     }).toThrow(
-      'Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.'
+      'Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.',
     )
   })
 
@@ -917,7 +917,7 @@ describe('undefined value rejection', () => {
     expect(() => {
       query.filter(q => q.id.equals(undefinedValue))
     }).toThrow(
-      'Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.'
+      'Cannot filter by undefined value. OData only supports null values. Use null instead of undefined, or use .isNull() method for nullable checks.',
     )
   })
 })

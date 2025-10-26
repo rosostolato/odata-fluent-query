@@ -23,9 +23,9 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
     const [key, ...valueParts] = param.split('=')
     if (!key || valueParts.length === 0) continue
 
-    const value = valueParts.join('=') 
+    const value = valueParts.join('=')
     const trimmedValue = decodeURIComponent(value).trim()
-    if (!trimmedValue) continue 
+    if (!trimmedValue) continue
 
     switch (key) {
       case '$filter':
@@ -72,7 +72,7 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
           .map(s => s.trim())
           .filter(s => s.length > 0)
         break
-        
+
       case '$search':
         descriptor.search = trimmedValue
         break
@@ -84,7 +84,6 @@ export function parseODataQuery(queryString: string): QueryDescriptor {
       case '$apply':
         parseApply(trimmedValue, descriptor)
         break
-
     }
   }
 
@@ -114,7 +113,7 @@ function parseExpand(expandValue: string): QueryDescriptor[] {
       const key = trimmed.substring(0, openParenIndex).trim()
       const nestedQuery = trimmed.substring(
         openParenIndex + 1,
-        trimmed.lastIndexOf(')')
+        trimmed.lastIndexOf(')'),
       )
 
       const nestedDescriptor = parseNestedQuery(nestedQuery)
@@ -282,7 +281,7 @@ function splitNestedParams(nestedQuery: string): string[] {
  */
 function parseApply(applyValue: string, descriptor: QueryDescriptor): void {
   const groupbyMatch = applyValue.match(
-    /groupby\(\(([^)]+)\)(?:,\s*aggregate\(([^)]+)\))?\)/
+    /groupby\(\(([^)]+)\)(?:,\s*aggregate\(([^)]+)\))?\)/,
   )
 
   if (groupbyMatch && groupbyMatch[1]) {

@@ -1,5 +1,5 @@
-import { OrderByProxy } from '../models/internal/orderby-internal'
 import { QueryDescriptor } from '../models/internal/common-internal'
+import { OrderByProxy } from '../models/internal/orderby-internal'
 import { createQuery } from './create-query'
 
 function makeOrderby(key = ''): OrderByProxy {
@@ -13,18 +13,21 @@ function makeOrderby(key = ''): OrderByProxy {
     desc: () => makeOrderby(`${key} desc`),
   }
 
-  return new Proxy(
-    {} as OrderByProxy,
-    {
-      get(_, prop) {
-        return methods[prop as keyof typeof methods] || makeOrderby(`${key}/${String(prop)}`)
-      },
-    }
-  )
+  return new Proxy({} as OrderByProxy, {
+    get(_, prop) {
+      return (
+        methods[prop as keyof typeof methods] ||
+        makeOrderby(`${key}/${String(prop)}`)
+      )
+    },
+  })
 }
 
 export function createOrderby(descriptor: QueryDescriptor) {
-  return (keyOrExp: string | number | symbol | ((exp: OrderByProxy) => OrderByProxy), order?: 'asc' | 'desc') => {
+  return (
+    keyOrExp: string | number | symbol | ((exp: OrderByProxy) => OrderByProxy),
+    order?: 'asc' | 'desc',
+  ) => {
     let expr =
       typeof keyOrExp === 'string'
         ? makeOrderby(keyOrExp)

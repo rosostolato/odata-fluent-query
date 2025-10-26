@@ -31,7 +31,7 @@ describe('testing ODataQuery groupBy', () => {
 
     const actual = query
       .groupBy(['email', 'surname'], a =>
-        a.countdistinct('id', 'all').max('phoneNumbers', 'test')
+        a.countdistinct('id', 'all').max('phoneNumbers', 'test'),
       )
       .toString()
 

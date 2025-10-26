@@ -271,7 +271,7 @@ describe('testing ODataQuery fromString', () => {
       const query = odataQuery.fromString<User>(queryString)
       const actual = query.toString()
       expect(actual).toBe(
-        '$select=id,email,surname&$orderby=email asc, id desc'
+        '$select=id,email,surname&$orderby=email asc, id desc',
       )
     })
 
@@ -313,7 +313,7 @@ describe('testing ODataQuery fromString', () => {
 
     it('should handle expand with empty nested query', () => {
       const query = odataQuery.fromString<User>(
-        '$expand=posts()&$select=id,name'
+        '$expand=posts()&$select=id,name',
       )
       const actual = query.toString()
       expect(actual).toBe('$expand=posts&$select=id,name')
@@ -321,7 +321,7 @@ describe('testing ODataQuery fromString', () => {
 
     it('should handle malformed query parameters', () => {
       const query = odataQuery.fromString<User>(
-        '=value&key=&$select=id&=&invalid'
+        '=value&key=&$select=id&=&invalid',
       )
       const actual = query.toString()
       expect(actual).toBe('$select=id')
@@ -329,7 +329,7 @@ describe('testing ODataQuery fromString', () => {
 
     it('should handle empty expand parts', () => {
       const query = odataQuery.fromString<User>(
-        '$expand=,posts($select=title),'
+        '$expand=,posts($select=title),',
       )
       const actual = query.toString()
       expect(actual).toBe('$expand=posts($select=title)')
@@ -337,7 +337,7 @@ describe('testing ODataQuery fromString', () => {
 
     it('should handle nested query with empty values', () => {
       const query = odataQuery.fromString<User>(
-        '$expand=posts($select=;$filter=)'
+        '$expand=posts($select=;$filter=)',
       )
       const actual = query.toString()
       expect(actual).toBe('$expand=posts')
@@ -345,11 +345,11 @@ describe('testing ODataQuery fromString', () => {
 
     it('should handle expand with key and nested parameters', () => {
       const query = odataQuery.fromString<User>(
-        '$expand=posts($select=title,content)&$select=id,name'
+        '$expand=posts($select=title,content)&$select=id,name',
       )
       const actual = query.toString()
       expect(actual).toBe(
-        '$expand=posts($select=title,content)&$select=id,name'
+        '$expand=posts($select=title,content)&$select=id,name',
       )
     })
   })

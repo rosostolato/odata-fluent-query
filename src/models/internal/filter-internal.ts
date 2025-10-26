@@ -33,10 +33,18 @@ export interface FilterWithKey {
  * Union type of all possible filter values
  * Used internally by equality and comparison builders
  */
-export type FilterValue = string | number | boolean | Date | FilterWithKey | null
+export type FilterValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | FilterWithKey
+  | null
 
 /**
  * Type for filter builder callback functions
  * Used in the createFilter function signature
  */
-export type FilterFunction = (builder: FilterBuilder<unknown>) => ExpressionWithGet
+export type FilterFunction = (
+  builder: FilterBuilder<unknown>,
+) => ExpressionWithGet

@@ -1,4 +1,4 @@
-type Primitive = number | string | boolean | Date | Uint8Array
+import { Primitive } from './internal/type-utils'
 
 /**
  * Type for expand parameter callbacks
@@ -19,6 +19,11 @@ export type ExpandBuilder<T> = {
       : ExpandBuilder<R>
     : ExpandBuilder<NonNullable<T[K]>>
 }
+
+/**
+ * Represents an expand expression that includes a unique key identifier.
+ */
+export type ExpandExpressionWithKey = ExpandExpression & { _key: string }
 
 /**
  * Marker interface for expand expressions

@@ -21,7 +21,7 @@ describe('testing odataQuery select', () => {
     const actual = query
       .select(
         x => x.id,
-        x => x.address.street
+        x => x.address.street,
       )
       .toString()
     const expected = '$select=id,address/street'
@@ -42,7 +42,7 @@ describe('testing odataQuery select', () => {
     const actual = query
       .select(
         x => x.givenName,
-        x => x.surname
+        x => x.surname,
       )
       .toString()
     const expected = '$select=givenName,surname'
@@ -75,7 +75,7 @@ describe('testing odataQuery select', () => {
     const query = odataQuery<User>()
     const actual = query
       .expand('posts', p =>
-        p.select('id', 'content').filter(post => post.id.biggerThan(5))
+        p.select('id', 'content').filter(post => post.id.biggerThan(5)),
       )
       .select('email', 'givenName')
       .toString()

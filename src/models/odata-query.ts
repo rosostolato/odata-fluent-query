@@ -1,10 +1,14 @@
-import {
-  ComputeBuilder,
-  ComputeExpressionWithAlias,
-} from './query-compute'
 import { InferComputeType } from './internal/compute-internal'
-import { ExpandParam } from './query-expand'
 import { ExpandKey, ExpandQueryComplex } from './internal/expand-internal'
+import {
+  ExpandedOptionalProperties,
+  IntersectTypes,
+  OptionalProperties,
+  RequiredProperties,
+  SelectedProperties,
+} from './internal/type-utils'
+import { ComputeBuilder, ComputeExpressionWithAlias } from './query-compute'
+import { ExpandParam } from './query-expand'
 import {
   FilterBuilder,
   FilterBuilderProp,
@@ -15,13 +19,6 @@ import { OrderBy, OrderByBuilder, OrderByExpression } from './query-orderby'
 import { CreatePaginateParams } from './query-paginate'
 import { SearchBuilder, SearchExpression } from './query-search'
 import { SelectParams } from './query-select'
-import {
-  ExpandedOptionalProperties,
-  IntersectTypes,
-  OptionalProperties,
-  RequiredProperties,
-  SelectedProperties,
-} from './type-utils'
 
 export type QueryObject = {
   $apply?: string
@@ -42,7 +39,7 @@ export type QueryResultType<
   T,
   TSelected extends keyof T | keyof TComputed | never = never,
   TComputed = {},
-  TExpanded extends keyof OptionalProperties<T> = never
+  TExpanded extends keyof OptionalProperties<T> = never,
 > = [TSelected] extends [never]
   ? IntersectTypes<
       IntersectTypes<
@@ -63,7 +60,7 @@ export interface ODataQuery<
   T,
   TSelected extends keyof T | keyof TComputed | never = never,
   TComputed = {},
-  TExpanded extends keyof OptionalProperties<T> = never
+  TExpanded extends keyof OptionalProperties<T> = never,
 > {
   /**
    * Creates an ODataQuery from a query string
@@ -97,7 +94,7 @@ export interface ODataQuery<
    */
   expand<Tkey extends keyof ExpandKey<T>, U = Required<T>[Tkey]>(
     key: Tkey | ExpandParam<T, U>,
-    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>
+    query?: (x: ExpandQueryComplex<U>) => ExpandQueryComplex<U>,
   ): ODataQuery<
     T,
     TSelected,
@@ -115,7 +112,7 @@ export interface ODataQuery<
    * q.filter(u => u.id.equals(1))
    */
   filter(
-    exp: (x: FilterBuilder<T>) => FilterExpression
+    exp: (x: FilterBuilder<T>) => FilterExpression,
   ): ODataQuery<T, TSelected, TComputed, TExpanded>
   /**
    * Adds $filter operator in the OData query.
@@ -129,7 +126,7 @@ export interface ODataQuery<
    */
   filter<TKey extends keyof T>(
     key: TKey,
-    exp: (x: FilterBuilderProp<T[TKey]>) => FilterExpression
+    exp: (x: FilterBuilderProp<T[TKey]>) => FilterExpression,
   ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
@@ -146,7 +143,7 @@ export interface ODataQuery<
    */
   groupBy<key extends keyof T>(
     keys: key[],
-    aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>
+    aggregate?: (aggregator: GroupbyBuilder<T>) => GroupbyBuilder<T>,
   ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
@@ -161,7 +158,7 @@ export interface ODataQuery<
    */
   orderBy<TKey extends keyof T>(
     key: TKey,
-    order?: 'asc' | 'desc'
+    order?: 'asc' | 'desc',
   ): ODataQuery<T, TSelected, TComputed, TExpanded>
   /**
    * Adds $orderby operator in the OData query.
@@ -173,7 +170,7 @@ export interface ODataQuery<
    * q.orderBy(u => u.blogs().id.desc())
    */
   orderBy(
-    exp: (ob: OrderByBuilder<T>) => OrderBy | OrderByExpression
+    exp: (ob: OrderByBuilder<T>) => OrderBy | OrderByExpression,
   ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
@@ -189,7 +186,7 @@ export interface ODataQuery<
    */
   paginate(
     pagesize: number,
-    page?: number
+    page?: number,
   ): ODataQuery<T, TSelected, TComputed, TExpanded>
   /**
    * Adds $skip and $top in the OData query.
@@ -200,7 +197,9 @@ export interface ODataQuery<
    * @example
    * q.paginate({ pagesize: 50, page: 0, count: false })
    */
-  paginate(options: CreatePaginateParams): ODataQuery<T, TSelected, TComputed, TExpanded>
+  paginate(
+    options: CreatePaginateParams,
+  ): ODataQuery<T, TSelected, TComputed, TExpanded>
 
   /**
    * Adds $select operator in the OData query.
@@ -216,36 +215,36 @@ export interface ODataQuery<
   select<K1 extends keyof T>(k1: K1): ODataQuery<T, K1, TComputed, TExpanded>
   select<K1 extends keyof T, K2 extends keyof T>(
     k1: K1,
-    k2: K2
+    k2: K2,
   ): ODataQuery<T, K1 | K2, TComputed, TExpanded>
   select<K1 extends keyof T, K2 extends keyof T, K3 extends keyof T>(
     k1: K1,
     k2: K2,
-    k3: K3
+    k3: K3,
   ): ODataQuery<T, K1 | K2 | K3, TComputed, TExpanded>
   select<
     K1 extends keyof T,
     K2 extends keyof T,
     K3 extends keyof T,
-    K4 extends keyof T
+    K4 extends keyof T,
   >(
     k1: K1,
     k2: K2,
     k3: K3,
-    k4: K4
+    k4: K4,
   ): ODataQuery<T, K1 | K2 | K3 | K4, TComputed, TExpanded>
   select<
     K1 extends keyof T,
     K2 extends keyof T,
     K3 extends keyof T,
     K4 extends keyof T,
-    K5 extends keyof T
+    K5 extends keyof T,
   >(
     k1: K1,
     k2: K2,
     k3: K3,
     k4: K4,
-    k5: K5
+    k5: K5,
   ): ODataQuery<T, K1 | K2 | K3 | K4 | K5, TComputed, TExpanded>
   select<TKey extends keyof T>(
     ...keys: SelectParams<T, TKey>
@@ -270,7 +269,7 @@ export interface ODataQuery<
    *  .orderBy('totalPrice', 'desc')
    */
   compute<K extends string, V>(
-    exp: (builder: ComputeBuilder<T>) => ComputeExpressionWithAlias<K, V>
+    exp: (builder: ComputeBuilder<T>) => ComputeExpressionWithAlias<K, V>,
   ): ODataQuery<
     T & Record<K, InferComputeType<V>>,
     TSelected extends never ? never : TSelected,
@@ -289,11 +288,11 @@ export interface ODataQuery<
    * // Basic search
    * q.search(s => s.token('bike'))        // → $search=bike
    * q.search(s => s.token(2023))          // → $search="2023"
-   * 
+   *
    * // Search with logical operators
    * q.search(s => s.token('mountain').and('bike'))  // → $search=mountain AND bike
    * q.search(s => s.token('bike').or(2022))         // → $search=bike OR "2022"
-   * 
+   *
    * // Negation
    * q.search(s => s.token('clothing').not())        // → $search=NOT clothing
    */

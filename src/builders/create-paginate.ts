@@ -19,15 +19,18 @@ export function createPaginate(descriptor: QueryDescriptor) {
         data.count = true
       }
     }
+
     const queryDescriptor: QueryDescriptor = {
       ...descriptor,
       take: data.pagesize,
       skip: data.pagesize * data.page,
       count: data.count ?? false,
     }
+
     if (!queryDescriptor.skip) {
       delete queryDescriptor.skip
     }
+
     return createQuery(queryDescriptor)
   }
 }

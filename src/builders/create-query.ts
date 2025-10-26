@@ -45,8 +45,8 @@ export function createQuery(descriptor: QueryDescriptor): any {
     },
     type: {}, // Empty object for TypeScript type inference only
     toObject(): QueryObject {
-      return makeQuery(descriptor).reduce((obj, x) => {
-        obj[x.key as keyof QueryObject] = x.value
+      return makeQuery(descriptor).reduce((obj, keyVal) => {
+        obj[keyVal.key as keyof QueryObject] = keyVal.value
         return obj
       }, {} as QueryObject)
     },
